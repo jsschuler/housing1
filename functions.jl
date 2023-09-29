@@ -102,3 +102,4 @@ function loanGen()
     paymentsMade::Int64
     collateral::house
     paidInFull::Bool
+end

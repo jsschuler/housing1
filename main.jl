@@ -47,9 +47,10 @@ end
 initialSwapping()
 # now generate the loans for each agent
 for house in houseList
-    
+
 
 # then, we randomly age the agents a Poisson number of years so they can pay down their loan balances 
 payOffs=rand(DiscreteUniform(12*30),length(agtList))
 for i in 1:length(agtList)
     currAgt=agtList[i]
+end
