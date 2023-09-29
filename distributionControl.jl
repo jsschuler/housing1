@@ -12,4 +12,25 @@ U=Uniform()
 π=0.05
 Δ=0.05
 
-function 
+function switchProb(cauchyParameter)
+    global Δ
+    global qualityDistribution
+    U=Uniform(0,1-Δ)
+    X1=rand(U,100000)
+    X2=X1 .+ Δ
+    function F(x)
+        return quantile(qualityDistribution,x)
+    end
+
+    Y1=F.(X1)
+    Y2=F.(X2)
+    cauchy=Cauchy(0,cauchyParameter)
+    Z1=Y1.+rand(cauchy,100000)
+    Z2=Y2.+rand(cauchy,100000)
+
+    return mean(Z1 .> Z2)
+end
+
+
+
+
