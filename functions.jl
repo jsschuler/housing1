@@ -2,23 +2,23 @@
 function mortgageCalc(payment::Int64)
     global interestRate
     monthlyRate::Float64=interestRate/12.0 
-    return payment*(((1+monthlyRate)^30) -1)/(monthlyRate*(1+monthlyRate)^30)
+    return floor(Int64,payment*(((1+monthlyRate)^30) -1)/(monthlyRate*(1+monthlyRate)^30))+1
 end
 
 function principalPayment(obj::loan)
-    return floor(Int64,loan.monthlyPayment-(loan.interestRate*loan.outstandingBalance))+1
+    return floor(Int64,obj.monthlyPayment-(obj.interestRate*obj.outstandingBalance))+1
 end
 # the function that pays down a loan
 function payLoan(obj::loan)
-    if !loan.paidInFull 
-        loan.paymentsMade=paymentsMade+1
-        loan.outstandingBalance=max(loan.outstandingBalance-principalPayment(loan),0)
+    if !obj.paidInFull 
+        obj.paymentsMade=obj.paymentsMade+1
+        obj.outstandingBalance=max(obj.outstandingBalance-principalPayment(obj),0)
     end
 
-    if loan.outStandingBalance==0
-        loan.paidInFull=true
+    if obj.outstandingBalance==0
+        obj.paidInFull=true
     end
-    return loan.paidInFull
+    return obj.paidInFull
 end
 
 # the function that generates an agent
@@ -93,13 +93,9 @@ function initialSwapping()
     end
 end
 
-function loanGen()
+function loanGen(payment::Int64,collat::house)
     global interestRate
-    #interestRate::Float64
-    initialBalance::Int64
-    monthlyPayment::Int64
-    outstandingBalance::Int64
-    paymentsMade::Int64
-    collateral::house
-    paidInFull::Bool
+    initialBalance=mortgageCalc(payment)
+    global loanList
+    push!(loanList,loan(interestRate,initialBalance,payment,initialBalance,0,collat,false))
 end

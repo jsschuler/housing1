@@ -42,15 +42,21 @@ for i in 1:agtCnt
     houseGen()
 end
 
+houseShuffle()
 # then agents can outbid other agents for houses they like better. 
 # this process continues until it stabilizes 
 initialSwapping()
 # now generate the loans for each agent
 for house in houseList
+    loanGen(house.owner.budget,house)
+end
 
 
 # then, we randomly age the agents a Poisson number of years so they can pay down their loan balances 
-payOffs=rand(DiscreteUniform(12*30),length(agtList))
-for i in 1:length(agtList)
-    currAgt=agtList[i]
+payOffs=rand(DiscreteUniform(12*30),length(loanList))
+for i in eachindex(payOffs)
+    currLoan=loanList[i]
+    for j in 1:payOffs[i]
+        payLoan(currLoan)
+    end 
 end
