@@ -12,11 +12,11 @@ using Distributions
 using StatsBase
 # we have a few global parameters 
 # the interest rate (mutable)
-interestRate::Float64=0.04
+interestRate::Float64=.04
 # distribution of agent budgets
-paymentDistribution::Levy=Levy(500,100)
+paymentDistribution::Truncated{Levy{Float64}, Continuous, Float64, Float64, Float64}=Truncated(Levy(500,100),0,5*10^9)
 # distribution of house qualities 
-qualityDistribution::Levy=Levy(0,10)
+qualityDistribution::Truncated{Levy{Float64}, Continuous, Float64, Float64, Float64}=Truncated(Levy(0,10),0,63658)
 # initial agent count
 agtCnt::Int64=5000
 # population inflow (agents who can buy without selling)
@@ -29,6 +29,11 @@ construction::Int64=100
 
 include("objects.jl")
 include("functions.jl")
+
+# now, we include the code that finds the global cauchy parameter for noise in agent
+# quality perception
+include("distributionControl.jl")
+
 # in the initial set up, we generate a bunch of houses and a bunch of agents and 
 # assign agents to houses at random. 
 houseList=house[]
@@ -52,11 +57,21 @@ for house in houseList
 end
 
 
-# then, we randomly age the agents a Poisson number of years so they can pay down their loan balances 
-payOffs=rand(DiscreteUniform(12*30),length(loanList))
+# then, we randomly age the agents a Uniform number of years so they can pay down their loan balances 
+payOffs=rand(DiscreteUniform(12*50),length(loanList))
 for i in eachindex(payOffs)
     currLoan=loanList[i]
     for j in 1:payOffs[i]
         payLoan(currLoan)
     end 
 end
+
+# are any loans paid off?
+loanBool=Bool[]
+loanBalance=Int64[]
+for ln in loanList
+    push!(loanBool,ln.paidInFull)
+    push!(loanBalance,ln.outstandingBalance)
+end
+
+any(loanBool)

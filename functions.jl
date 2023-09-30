@@ -1,22 +1,37 @@
 
 function mortgageCalc(payment::Int64)
     global interestRate
-    monthlyRate::Float64=interestRate/12.0 
-    return floor(Int64,payment*(((1+monthlyRate)^30) -1)/(monthlyRate*(1+monthlyRate)^30))+1
+    monthlyRate::Float64=interestRate/12 
+    # apply interest rate calculation
+    
+    
+    return floor(Int64,payment*(((1+monthlyRate)^(12*30)) -1)/(monthlyRate*(1+monthlyRate)^(12*30)))+1
 end
 
-function principalPayment(obj::loan)
-    return floor(Int64,obj.monthlyPayment-(obj.interestRate*obj.outstandingBalance))+1
+function outstandingBalance(ln::loan,k::Int64)
+    #println(k)
+    monthlyRate=ln.interestRate/12
+    #println(ln.interestRate)
+    #println(monthlyRate)
+    n=30*12
+    ratDelta=Rational((1+monthlyRate)^n)-Rational((1+monthlyRate)^k)
+    denom=-1+(1+monthlyRate)^n
+    ratio=ratDelta/denom
+    return floor(Int64,ln.initialBalance*ratio)
 end
+
+
 # the function that pays down a loan
 function payLoan(obj::loan)
+    
     if !obj.paidInFull 
         obj.paymentsMade=obj.paymentsMade+1
-        obj.outstandingBalance=max(obj.outstandingBalance-principalPayment(obj),0)
+        obj.outstandingBalance=floor(Int64,outstandingBalance(obj,obj.paymentsMade))
     end
 
-    if obj.outstandingBalance==0
+    if obj.paymentsMade==30*12
         obj.paidInFull=true
+        obj.outstandingBalance=0
     end
     return obj.paidInFull
 end
@@ -49,22 +64,22 @@ end
 # now we need the function that sorts the agents into houses of quality corresponding to their budget
 
 function housingSwap(house1,house2)
-    println("Debug")
+    #println("Debug")
     #println(house1.quality)
     #println(house2.quality)
     #println(house1.owner.budget)
     #println(house2.owner.budget)
-    println((house1.quality > house2.quality) & (house1.owner.budget < house2.owner.budget))
-    println((house2.quality > house1.quality) & (house2.owner.budget < house1.owner.budget))
+    #println((house1.quality > house2.quality) & (house1.owner.budget < house2.owner.budget))
+    #println((house2.quality > house1.quality) & (house2.owner.budget < house1.owner.budget))
 
     if (house1.quality > house2.quality) & (house1.owner.budget < house2.owner.budget)
-        println("swapped")
+        #println("swapped")
         richOwner=house2.owner
         house2.owner=house1.owner
         house1.owner=richOwner
         swap=true
     elseif (house2.quality > house1.quality) & (house2.owner.budget < house1.owner.budget)
-        println("swapped")
+        #println("swapped")
         richOwner=house1.owner
         house1.owner=house2.owner
         house2.owner=richOwner
@@ -83,7 +98,7 @@ function initialSwapping()
         # select two random houses 
         twoHouses=sample(houseList,2,replace=false)
         tick=tick+1
-        println(tick)
+        #println(tick)
         if housingSwap(twoHouses[1],twoHouses[2])
             tick=0
         end
