@@ -3,6 +3,7 @@
 # basic agent object 
 
 struct agent
+    init::Int64
     budget::Int64
     
 end

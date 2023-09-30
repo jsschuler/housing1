@@ -25,7 +25,11 @@ inFlow::Int64=100
 outFlow::Int64=100
 # new housing construction 
 construction::Int64=100
-
+# how many agents simply want to move within the market?
+inPlace::Int64=100
+# what 
+# how many ticks to run the model ?
+ticks=100
 
 include("objects.jl")
 include("functions.jl")
@@ -75,3 +79,39 @@ for ln in loanList
 end
 
 any(loanBool)
+
+for t in 1:ticks
+    forSale=house[]
+    buyerList=agent[]
+    sellerList=agent[]
+    # generate incoming agents 
+    for j in 1:inFlow
+        push!(buyerList,agtGen())
+    end
+    # generate a graph 
+    transactionGraph=SimpleDiGraph(length(agtList))
+
+    # select randomly agents exiting 
+    # this is equivalent to selecting houses
+    exitList=sample(houseList,outFlow,replace=false)
+    for haus in exitList
+        push!(forSale,haus)
+        push!(sellerList,haus.owner)
+    end
+    # now, select the agents who want to move in place 
+    stayingHouses=collect(setdiff(Set(houseList),Set(exitList)))
+    inPlace=sample(stayingHouses,inPlace,replace=false)
+    for haus in inPlace
+        push!(forSale,haus)
+        push!(buyerList,haus.owner)
+        push!(sellerList,haus.owner)
+    end
+    # now generate new construction and put these up for sale
+    for j in 1:construction
+        push!(forSale,houseGen())
+    end
+    
+
+
+
+end
