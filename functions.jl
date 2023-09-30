@@ -114,3 +114,29 @@ function loanGen(payment::Int64,collat::house)
     global loanList
     push!(loanList,loan(interestRate,initialBalance,payment,initialBalance,0,collat,false))
 end
+
+function qualityAssessment(haus::house)
+    global qualityError
+    return haus.quality + rand(qualityError,1)[1]
+end
+# we need a function that returns the quality of an agent's current house 
+# if the agent has no house, it returns -inf 
+function hausQuality(agt::agent)
+    global houseList
+    myHaus=filter(x -> x.owner==agt,houseList)
+    if length(myHaus)==0
+        return -Inf
+    else
+        return myHaus[1]
+    end
+end
+
+# likewise, we need a function that turns an agent into its graph index and vice versa
+
+function indexAgt(idx::Int64)
+    return agtList[idx]
+end
+
+function agtIndex(agt::agent)
+    return collect(1:length(agtList))[agtList.==agt][1]
+end

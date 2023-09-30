@@ -110,8 +110,16 @@ for t in 1:ticks
     for j in 1:construction
         push!(forSale,houseGen())
     end
-    
 
-
-
+    # now, all agents who wish to buy decide which homes they like at least as much as their current home
+    # agents without a home like all homes as much as their current home
+    buyerDict=Dict{agent,Array{house}}[]
+    for buyer in buyerList
+        preferred=qualityAssessment.(forSale) .> hausQuality(buyer)
+        for k in eachindex(preferred)
+            if preferred[k] 
+                add_edge!(transactionGraph,buyer,forSale[k].owner)
+            end
+        end
+    end
 end
