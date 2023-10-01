@@ -5,6 +5,7 @@
 struct agent
     init::Int64
     budget::Int64
+    offers::Array{Int64}
     
 end
 

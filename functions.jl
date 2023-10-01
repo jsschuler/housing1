@@ -41,7 +41,7 @@ end
 function agtGen()
     global agtList
     global paymentDistribution
-    push!(agtList,agent(length(agtList),floor(Int64,rand(paymentDistribution,1)[1])))
+    push!(agtList,agent(length(agtList),floor(Int64,rand(paymentDistribution,1)[1]),Int64[]))
 end
 
 #the function that generates a house
