@@ -84,9 +84,12 @@ for t in 1:ticks
     forSale=house[]
     buyerList=agent[]
     sellerList=agent[]
+    newBuyerList=agent[]
     # generate incoming agents 
     for j in 1:inFlow
-        push!(buyerList,agtGen())
+        currAgt=agtGen()
+        push!(buyerList,currAgt)
+        push!(newBuyerList,currAgt)
     end
     # generate a graph 
     transactionGraph=SimpleDiGraph(length(agtList))
@@ -122,6 +125,20 @@ for t in 1:ticks
             end
         end
     end
+
+    # now, run through all agents 
+    # agents without houses bid on their favorite house
+    # owners select the highest bid and communicate this to agents 
+    # agents then bid on their next most preferred house
+    # this process continues until no agent has a preferred house with an accepted bid
+    # then the agents with bids make their bids
+    newBidders=newBuyerList
+    while length(newBidders) > 0
+        
+
+    end
+
+
 
     
 end

@@ -140,3 +140,42 @@ end
 function agtIndex(agt::agent)
     return collect(1:length(agtList))[agtList.==agt][1]
 end
+
+# does an agent own a house?
+
+function houseOwner(agt::agent)
+    houseVec=filter(x-> x.owner==agt,houseList)
+    if length(houseVec) > 0
+        return houseVec[1]
+    else
+        return nothing
+    end
+end
+
+function agtLoan(agt::agent)
+    haus=houseOwner(agt)
+    loanHeld=filter(x->x.collateral==haus)
+    if length(loanHeld)==0
+        return nothing
+    else
+        return loanHeld[2]
+    end
+end
+
+
+# also, we need a function where an agent calculates its budget for a house
+
+function budgetCalc(agt,saleValue)
+    global interestRate
+    # does the agent own a house?
+    agtHaus=houseOwner(agt)
+    if isnothing(agtHaus)
+        homeBudget=mortgageCalc(agt.budget)
+    else
+        currLoan=agtLoan(agt)
+        # how much equity does the agent have?
+        equity=saleValue-currLoan.outstandingBalance
+        homeBudget=equity+mortgageCalc(agt.budget)
+    end
+    return homeBudget
+end
