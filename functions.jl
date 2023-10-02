@@ -194,9 +194,18 @@ end
 
 # finally, we need some network functions 
 
-function agtNeighbors(agt::agent)
-    global transactionGraph
-    agtNum=(1:length(agtList))[agtList.==agt][1]
-    neighbors(transactionGraph,agtNum)
-
+function dwellingIdx(dwell::dwelling)
+    global dwellingList
+    return (1:length(dwellingList))[dwellingList.==dwell][1]
 end
+
+# we need the function to clear a stage of the market 
+
+function marketClear(demand::Array{dwelling},supply::Array{dwelling})
+    # if the agent has an offer on its house, it uses that to 
+end
+
+# some ground rules, 
+# an agent will not sell for less than the loan balance 
+# and will not buy a less preferred house 
+

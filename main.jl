@@ -98,7 +98,7 @@ for t in 1:ticks
     end
     # generate a graph 
     global transactionGraph
-    transactionGraph=SimpleDiGraph(length(agtList))
+    transactionGraph=SimpleDiGraph(length(dwellingList))
 
     # select randomly agents exiting 
     # this is equivalent to selecting houses
@@ -122,18 +122,34 @@ for t in 1:ticks
 
     # now, all agents who wish to buy decide which homes they like at least as much as their current home
     # agents without a home like all homes
-    buyerDict=Dict{agent,Array{house}}[]
-    for buyer in buyerList
-        preferred=qualityAssessment.(forSale) .> hausQuality(buyer)
-        for k in eachindex(preferred)
-            if preferred[k] 
-                add_edge!(transactionGraph,buyer,forSale[k].owner)
+    for hotel in hotelList
+        for haus in forSale
+            add_edge!(transactionGraph,dwellingIdx(hotel),dwellingIdx(haus))
+        end
+    end
+    # other agents who are not exiting, decide which houses they prefer to their current house
+    for haus1 in collect(setdiff(forSale,exitList))
+        for haus2 in forSale
+            if haus1!=haus2
+                if haus1.quality <= qualityAssessment(haus2)
+                    add_edge!(transactionGraph,dwellingIdx(haus1,dwellingIdx(haus2)))
+                end
             end
         end
     end
 
+    # now, we clear the market in the following way:
+    # we start with the agents who do not have houses 
+    # each agent sends to each other agent a price and a rank ordering
+    # if the transaction is both the buyer's first choice and the sellers, 
+    # the transaction clears and the two homes are removed 
 
+    # then we repeat the process until every arrow from an agent in a hotel
+    # points to one home
 
-
+    # then, the agents with bids on their homes make bids in turn and the process continues 
     
+
+
+
 end

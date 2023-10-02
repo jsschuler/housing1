@@ -1,46 +1,40 @@
-
-
 # basic agent object 
 
 struct agent
     init::Int64
     budget::Int64
-    offers::Array{Int64}
+    
     
 end
+
 
 # we need an abstract dwelling type to make the network work correctly 
 abstract type dwelling end
 
-# basic house object 
+# basic house objects
 
-mutable struct house <: dwelling
+abstract type house <: dwelling end
+
+mutable struct newHouse <: house
     quality::Float64
-    owner::Union{agent,Nothing}
+    owner::Nothing
 end
+
+mutable struct exitHouse <: house
+    quality::Float64
+    owner::agent
+end
+
+mutable struct oldHouse <: house
+    quality::Float64
+    owner::agent
+end
+
 
 # we need a temporary "dwelling" new agents 
 
 mutable struct hotel <: dwelling
     owner::Union{agent,Nothing}
-end
-
-
-# an object to buy
-
-abstract type transaction end
-
-
-struct buy <: transaction
-    conditional::Union{transaction,Nothing}
-    target::house
-    price::Int64
-end
-
-struct sell <: transaction
-    conditional::Union{transaction,Nothing}
-    target::house
-    price::Int64
 end
 
 # basic loan object 
