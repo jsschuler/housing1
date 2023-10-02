@@ -51,6 +51,12 @@ function houseGen()
     push!(houseList,house(rand(qualityDistribution,1)[1],nothing))
 end
 
+function hotelGen()
+    global hotelList
+    push!(hotelList,hotel(nothing))
+end
+
+
 # now we need the function that randomly assigns agents and houses 
 
 function houseShuffle()
@@ -178,4 +184,13 @@ function budgetCalc(agt,saleValue)
         homeBudget=equity+mortgageCalc(agt.budget)
     end
     return homeBudget
+end
+
+# finally, we need some network functions 
+
+function agtNeighbors(agt::agent)
+    global transactionGraph
+    agtNum=(1:length(agtList))[agtList.==agt][1]
+    neighbors(transactionGraph,agtNum)
+
 end

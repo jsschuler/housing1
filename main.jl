@@ -41,11 +41,16 @@ include("distributionControl.jl")
 # in the initial set up, we generate a bunch of houses and a bunch of agents and 
 # assign agents to houses at random. 
 houseList=house[]
+hotelList=hotel[]
+dwellingList=dwelling[]
 agtList=agent[]
 loanList=loan[]
 for i in 1:agtCnt
     agtGen()
 end
+
+# generate place holder graph so it is global
+transactionGraph=SimpleDiGraph(0)
 
 for i in 1:agtCnt
     houseGen()
@@ -92,6 +97,7 @@ for t in 1:ticks
         push!(newBuyerList,currAgt)
     end
     # generate a graph 
+    global transactionGraph
     transactionGraph=SimpleDiGraph(length(agtList))
 
     # select randomly agents exiting 
@@ -115,7 +121,7 @@ for t in 1:ticks
     end
 
     # now, all agents who wish to buy decide which homes they like at least as much as their current home
-    # agents without a home like all homes as much as their current home
+    # agents without a home like all homes
     buyerDict=Dict{agent,Array{house}}[]
     for buyer in buyerList
         preferred=qualityAssessment.(forSale) .> hausQuality(buyer)
@@ -126,17 +132,6 @@ for t in 1:ticks
         end
     end
 
-    # now, run through all agents 
-    # agents without houses bid on their favorite house
-    # owners select the highest bid and communicate this to agents 
-    # agents then bid on their next most preferred house
-    # this process continues until no agent has a preferred house with an accepted bid
-    # then the agents with bids make their bids
-    newBidders=newBuyerList
-    while length(newBidders) > 0
-        
-
-    end
 
 
 

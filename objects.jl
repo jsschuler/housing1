@@ -9,14 +9,21 @@ struct agent
     
 end
 
+# we need an abstract dwelling type to make the network work correctly 
+abstract type dwelling end
+
 # basic house object 
 
-mutable struct house
+mutable struct house <: dwelling
     quality::Float64
     owner::Union{agent,Nothing}
 end
 
+# we need a temporary "dwelling" new agents 
 
+mutable struct hotel <: dwelling
+    owner::Union{agent,Nothing}
+end
 
 
 # an object to buy
