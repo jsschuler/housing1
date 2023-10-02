@@ -48,12 +48,18 @@ end
 
 function houseGen()
     global houseList
-    push!(houseList,house(rand(qualityDistribution,1)[1],nothing))
+    global dwellingList
+    haus=house(rand(qualityDistribution,1)[1],nothing)
+    push!(houseList,haus)
+    push!(dwellingList,haus)
 end
 
 function hotelGen()
     global hotelList
-    push!(hotelList,hotel(nothing))
+    global dwellingList
+    hot=hotel(nothing)
+    push!(hotelList,hot)
+    push!(dwellingList,hot)
 end
 
 
