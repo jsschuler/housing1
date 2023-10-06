@@ -1,12 +1,11 @@
 # now consider the probability distribution of sales 
 
-# agents always buy houses they prefer 
+# agents always buy houses they prefer (arrows always point in the direction of weak preference)
 # agents will not sell for below the loan balance 
 # hotels have exactly one arrow pointing out
 # exit houses exactly one arrow pointing in
 # new houses have one arrow pointing in 
 # old houses have exactly one arrow flowing in and one arrow flowing out 
-# arrows do not flow from houses of higher quality to houses of lower quality
 
 function generateRandomSaleNetwork()
     global dwellingList 
@@ -26,9 +25,15 @@ function generateRandomSaleNetwork()
 
     # step 2: for any hotel, randomly select which arrow will point out 
     global hotelList
-    houseTargets=sample(houseList,length(hotelList),relace=false)
+    # get all houses listed in random order
+    houseTargets=sample(houseList,length(houseList),relace=false)
     # keep list of old houses that receive an in-arrow
     inHaus=oldHouse[]
+    for haus in houseTargets
+        
+    end
+    
+    
     for haus in houseTargets
         if typeof(haus)==oldHouse
             push!(inHaus,haus)
@@ -42,8 +47,7 @@ function generateRandomSaleNetwork()
     end
 
     # step 3: then for each of the houses to which these arrows point
-        # we repeat this process until there are 
-        # now, range over the houses with new in arrows 
+        # we repeat this process until there are no nodes that violate the rules
 
 
 end

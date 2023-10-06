@@ -66,6 +66,8 @@ for house in houseList
 end
 
 
+
+
 # then, we randomly age the agents a Uniform number of years so they can pay down their loan balances 
 payOffs=rand(DiscreteUniform(12*50),length(loanList))
 for i in eachindex(payOffs)

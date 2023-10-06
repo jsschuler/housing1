@@ -256,13 +256,3 @@ function idxDwelling(idx::Int64)
     return dwellingList[idx]
 end
 
-# we need the function to clear a stage of the market 
-
-function marketClear(demand::Array{dwelling},supply::Array{dwelling})
-    # if the agent has an offer on its house, it uses that to 
-end
-
-# some ground rules, 
-# an agent will not sell for less than the loan balance 
-# and will not buy a less preferred house 
-
