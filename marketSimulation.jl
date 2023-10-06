@@ -25,7 +25,11 @@ function generateRandomSaleNetwork()
     end
 
     # step 2: for any hotel, randomly select which arrow will point out 
+    global hotelList
+    for hotel in hotelList
+        
 
+    end
     # step 3: then for each of the houses to which these arrows point
         # if they are exit houses or new houses, only an arrow points in 
         # if they are not, then randomly choose another house to which they point
