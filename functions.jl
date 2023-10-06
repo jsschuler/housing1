@@ -162,6 +162,49 @@ function agtIndex(agt::agent)
     return collect(1:length(agtList))[agtList.==agt][1]
 end
 
+function indexDwell(idx::Int64)
+    global dwellingList
+    return dwellingList[idx]
+end
+
+# now, we need some functions that analyse the network in terms of agents and dwellings rather than node numbers 
+
+function add_edge!(g::SimpleDiGraph{Int64},node1::dwelling,node2::dwelling)
+    global dwellingList
+    nodeIdx1=(eachindex(dwellingList))[node1.==dwellingList][1]
+    nodeIdx2=(eachindex(dwellingList))[node2.==dwellingList][1]
+    add_edge!(g,nodeIdx1,nodeIdx2)
+
+end
+
+function rem_edge!(g::SimpleDiGraph{Int64},node1::dwelling,node2::dwelling)
+    global dwellingList
+    nodeIdx1=(eachindex(dwellingList))[node1.==dwellingList][1]
+    nodeIdx2=(eachindex(dwellingList))[node2.==dwellingList][1]
+    rem_edge!(g,nodeIdx1,nodeIdx2)
+
+end
+
+function outneighbors(g::SimpleDiGraph{Int64},node::dwelling)
+    global dwellingList
+    nodeIdx=(eachindex(dwellingList))[node1.==dwellingList][1]
+    nbh=outneighbors(g,nodeIdx)
+    return indexDwell.(nmh)
+
+end
+
+function inneighbors(g::SimpleDiGraph{Int64},node::dwelling)
+    global dwellingList
+    nodeIdx=(eachindex(dwellingList))[node1.==dwellingList][1]
+    nbh=inneighbors(g,nodeIdx)
+    return indexDwell.(nmh)
+
+end
+
+
+
+
+
 # does an agent own a house?
 
 function houseOwner(agt::agent)

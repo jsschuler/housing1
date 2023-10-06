@@ -14,29 +14,36 @@ function generateRandomSaleNetwork()
     transactionGraph=CompleteDiGraph(length(dwellingList))
     # step 1: remove arrows pointing from better houses to worse 
     for dwell in dwellingList
-        goingOut=idxDwelling.(outneighbors(dwellingIdx(dwell)))
+        goingOut=outneighbors(dwell)
         currQual=hausQuality(dwell)
-        preferredHouses=hausQuality.(dwellingIdx.(goingOut)) .>=currQual
+        preferredHouses=hausQuality.(goingOut) .>=currQual
         for j in eachindex(goingOut)
             if !preferredHouse[j]
-                rem_edge!(transactionGraph,dwellingIdx(dwell),goingOut[j])
+                rem_edge!(transactionGraph,dwell,goingOut[j])
             end
         end
     end
 
     # step 2: for any hotel, randomly select which arrow will point out 
     global hotelList
-    for hotel in hotelList
-        
-
+    houseTargets=sample(houseList,length(hotelList),relace=false)
+    # keep list of old houses that receive an in-arrow
+    inHaus=oldHouse[]
+    for haus in houseTargets
+        if typeof(haus)==oldHouse
+            push!(inHaus,haus)
+        # select one of the house's out-neighbors
+        pointOut=sample(outneigbors(transactionGraph,haus),1)[1]
+        # delete all other in neighbors 
+        pointIn=collect(setdiff(inneighbors(transactionGraph,pointOut),Set(pointOut)))
+        for dwell in pointIn
+            rem_edge!(transactionGraph,dwell,pointOut)
+        end
     end
+
     # step 3: then for each of the houses to which these arrows point
-        # if they are exit houses or new houses, only an arrow points in 
-        # if they are not, then randomly choose another house to which they point
-        # continue this until we run out of old houses
-        # survey old houses that have lack one arrow
-        # an old house that lacks an arrow pointing out can switch with a new house or an exit house
-        # and old house that lacks an arrow point in 
+        # we repeat this process until there are 
+        # now, range over the houses with new in arrows 
 
 
 end
