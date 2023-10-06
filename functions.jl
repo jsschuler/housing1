@@ -139,9 +139,18 @@ function hausQuality(agt::agent)
     if length(myHaus)==0
         return -Inf
     else
-        return myHaus[1]
+        return myHaus[1].quality +rand(qualityError,1)[1]
     end
 end
+# and the same function applied directly to a house
+function hausQuality(haus::house)
+    return haus.quality+rand(qualityError,1)[1]
+end
+
+function hausQuality(haus::hotel)
+    return -Inf
+end
+
 
 # likewise, we need a function that turns an agent into its graph index and vice versa
 
@@ -197,6 +206,11 @@ end
 function dwellingIdx(dwell::dwelling)
     global dwellingList
     return (1:length(dwellingList))[dwellingList.==dwell][1]
+end
+
+function idxDwelling(idx::Int64)
+    global dwellingList
+    return dwellingList[idx]
 end
 
 # we need the function to clear a stage of the market 
