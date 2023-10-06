@@ -17,7 +17,7 @@ function generateRandomSaleNetwork()
         goingOut=idxDwelling.(outneighbors(dwellingIdx(dwell)))
         currQual=hausQuality(dwell)
         preferredHouses=hausQuality.(dwellingIdx.(goingOut)) .>=currQual
-        for j eachindex(goingOut)
+        for j in eachindex(goingOut)
             if !preferredHouse[j]
                 rem_edge!(transactionGraph,dwellingIdx(dwell),goingOut[j])
             end
