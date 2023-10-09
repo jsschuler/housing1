@@ -60,6 +60,8 @@ houseShuffle()
 # then agents can outbid other agents for houses they like better. 
 # this process continues until it stabilizes 
 initialSwapping()
+# make a dictionary keyed by 
+
 # now generate the loans for each agent
 for house in houseList
     loanGen(house.owner.budget,house)

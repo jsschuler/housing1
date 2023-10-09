@@ -27,30 +27,31 @@ function generateRandomSaleNetwork()
     global hotelList
     # get all houses listed in random order
     houseTargets=sample(houseList,length(houseList),relace=false)
-    # keep list of old houses that receive an in-arrow
-    inHaus=oldHouse[]
-    for haus in houseTargets
-        
-    end
-    
-    
-    for haus in houseTargets
-        if typeof(haus)==oldHouse
-            push!(inHaus,haus)
-        # select one of the house's out-neighbors
-        pointOut=sample(outneigbors(transactionGraph,haus),1)[1]
-        # delete all other in neighbors 
-        pointIn=collect(setdiff(inneighbors(transactionGraph,pointOut),Set(pointOut)))
-        for dwell in pointIn
-            rem_edge!(transactionGraph,dwell,pointOut)
+    # we want a list of all dwellings with hotels first 
+    dwellingTank::Array{dwelling}=cat(hotelList,houseList,dims=1)
+    while true 
+        for dwell in dwellingTank
+            if typeof(dwell)==hotel
+                # case 1, dwelling is a hotel 
+                # if the dwelling is a hotel, the hotel dweller targets a house
+                # if the offer from the hotel dweller is enough to pay off the mortgage, the house dweller accepts
+                for targ in houseTargets
+                    # what is the hotel dweller offering?
+                    totOffer=mortgageCalc(dwell.budget)
+                    # does this cover the seller's mortgage?
+                    targ.
+                end
+
+            end
+            # case 2: dwelling is either an exit house or a new house 
+            # dweller does nothing actively but passively accepts offers great enough to pay off 
+            # mortgages 
+
+            # case 3: dwelling is an old house 
+            # dweller takes the received offer and uses it to make an offer on another random house
+
         end
+
     end
-
-    # step 3: then for each of the houses to which these arrows point
-        # we repeat this process until there are no nodes that violate the rules
-
-
+    
 end
-
-# is there are the same number of agents, as houses, every agent gets a house 
-# given an income and a quality distribution, we can ask: what does the quality error term need to be to get every agent a house?
