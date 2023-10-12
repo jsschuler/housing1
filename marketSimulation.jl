@@ -28,6 +28,7 @@ function generateRandomSaleNetwork()
     # get all houses listed in random order
     houseTargets=sample(houseList,length(houseList),relace=false)
     # we want a list of all dwellings with hotels first 
+    hotelList=sample(hotelList,length(hotelList),replace=false)
     dwellingTank::Array{dwelling}=cat(hotelList,houseList,dims=1)
     while true 
         for dwell in dwellingTank
@@ -39,7 +40,11 @@ function generateRandomSaleNetwork()
                     # what is the hotel dweller offering?
                     totOffer=mortgageCalc(dwell.budget)
                     # does this cover the seller's mortgage?
-                    targ.
+                    if totOffer >= houseLoan(targ).outstandingBalance
+
+                    else
+
+                    end
                 end
 
             end

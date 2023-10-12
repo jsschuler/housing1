@@ -222,7 +222,16 @@ function agtLoan(agt::agent)
     if length(loanHeld)==0
         return nothing
     else
-        return loanHeld[2]
+        return loanHeld[1]
+    end
+end
+
+function houseLoan(haus::hause)
+    loanHeld=filter(x->x.collateral==haus)
+    if length(loanHeld)==0
+        return nothing
+    else
+        return loanHeld[1]
     end
 end
 
