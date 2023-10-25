@@ -163,7 +163,8 @@ for t in 1:ticks
         budgetDict[agt]=mortgageCalc(agt.budget)
     end
 
-    # and make dictionary entries for all 
+    # and make dictionary entries for all sellers containing the dwellings of interested buyers 
+    for seller in sellerList
 
     while dynamic 
         if !dynamic
