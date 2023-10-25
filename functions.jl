@@ -68,8 +68,11 @@ end
 function houseShuffle()
     global agtList
     global houseList
+    global dwellingAgtDict
     for i in 1:length(agtList)
         houseList[i].owner=agtList[i]
+        dwellingAgtDict[agtList[i]]=houseList[i]
+
     end
 end
 
@@ -83,18 +86,23 @@ function housingSwap(house1,house2)
     #println(house2.owner.budget)
     #println((house1.quality > house2.quality) & (house1.owner.budget < house2.owner.budget))
     #println((house2.quality > house1.quality) & (house2.owner.budget < house1.owner.budget))
-
+    global dwellingAgtDict
     if (house1.quality > house2.quality) & (house1.owner.budget < house2.owner.budget)
         #println("swapped")
         richOwner=house2.owner
         house2.owner=house1.owner
+        dwellingAgtDict[house2.owner]=house2
         house1.owner=richOwner
+        dwellingAgtDict[richOwner]=house1
+
         swap=true
     elseif (house2.quality > house1.quality) & (house2.owner.budget < house1.owner.budget)
         #println("swapped")
         richOwner=house1.owner
         house1.owner=house2.owner
+        dwellingAgtDict[house1.owner]=house1
         house2.owner=richOwner
+        dwellingAgtDict[richOwner]=house2
         swap=true
     else
         #println("Flag3")
@@ -135,10 +143,11 @@ end
 # if the agent has no house, it returns -inf 
 function hausQuality(agt::agent)
     global houseList
-    myHaus=filter(x -> x.owner==agt,houseList)
-    if length(myHaus)==0
+    global dwellingAgtDict
+    if !haskey(dwellingAgtDict,agt)
         return -Inf
     else
+        myHaus=dwellingAgtDict[agt]
         return myHaus[1].quality +rand(qualityError,1)[1]
     end
 end
@@ -198,12 +207,26 @@ function inneighbors(g::SimpleDiGraph{Int64},node::dwelling)
     nodeIdx=(eachindex(dwellingList))[node1.==dwellingList][1]
     nbh=inneighbors(g,nodeIdx)
     return indexDwell.(nmh)
+end
+
+function outneighbors(g::SimpleDiGraph{Int64},node::agent)
+    global dwellingList
+    global dwellingAgtDict
+    node1=dwellingAgtDict[agt]
+    nodeIdx=(eachindex(dwellingList))[node1.==dwellingList][1]
+    nbh=outneighbors(g,nodeIdx)
+    return indexDwell.(nmh)
 
 end
 
-
-
-
+function inneighbors(g::SimpleDiGraph{Int64},agt::agent)
+    global dwellingList
+    global dwellingAgtDict
+    node1=dwellingAgtDict[agt]
+    nodeIdx=(eachindex(dwellingList))[node1.==dwellingList][1]
+    nbh=inneighbors(g,nodeIdx)
+    return indexDwell.(nmh)
+end
 
 # does an agent own a house?
 

@@ -38,6 +38,10 @@ include("functions.jl")
 # quality perception
 include("distributionControl.jl")
 
+
+# we need a dictionary that associates agents with dwellings
+dwellingAgtDict=Dict{agent,dwelling}()
+
 # in the initial set up, we generate a bunch of houses and a bunch of agents and 
 # assign agents to houses at random. 
 houseList=house[]
@@ -60,7 +64,7 @@ houseShuffle()
 # then agents can outbid other agents for houses they like better. 
 # this process continues until it stabilizes 
 initialSwapping()
-# make a dictionary keyed by 
+
 
 # now generate the loans for each agent
 for house in houseList
@@ -85,99 +89,4 @@ loanBalance=Int64[]
 for ln in loanList
     push!(loanBool,ln.paidInFull)
     push!(loanBalance,ln.outstandingBalance)
-end
-
-any(loanBool)
-
-for t in 1:ticks
-    forSale=house[]
-    buyerList=agent[]
-    sellerList=agent[]
-    newBuyerList=agent[]
-    # generate incoming agents 
-    for j in 1:inFlow
-        currAgt=agtGen()
-        push!(buyerList,currAgt)
-        push!(newBuyerList,currAgt)
-    end
-    # generate a graph 
-    global transactionGraph
-    transactionGraph=SimpleDiGraph(length(dwellingList))
-
-    # select randomly agents exiting 
-    # this is equivalent to selecting houses
-    exitList=sample(houseList,outFlow,replace=false)
-    for haus in exitList
-        push!(forSale,haus)
-        push!(sellerList,haus.owner)
-    end
-    # now, select the agents who want to move in place 
-    stayingHouses=collect(setdiff(Set(houseList),Set(exitList)))
-    inPlace=sample(stayingHouses,inPlace,replace=false)
-    for haus in inPlace
-        push!(forSale,haus)
-        push!(buyerList,haus.owner)
-        push!(sellerList,haus.owner)
-    end
-    # now generate new construction and put these up for sale
-    for j in 1:construction
-        push!(forSale,houseGen())
-    end
-
-    # now, all agents who wish to buy decide which homes they like at least as much as their current home
-    # agents without a home like all homes
-    for hotel in hotelList
-        for haus in forSale
-            add_edge!(transactionGraph,dwellingIdx(hotel),dwellingIdx(haus))
-        end
-    end
-    # other agents who are not exiting, decide which houses they prefer to their current house
-    for haus1 in collect(setdiff(forSale,exitList))
-        for haus2 in forSale
-            if haus1!=haus2
-                if haus1.quality <= qualityAssessment(haus2)
-                    add_edge!(transactionGraph,dwellingIdx(haus1,dwellingIdx(haus2)))
-                end
-            end
-        end
-    end
-
-
-    # each agent places a bid 
-    # sellers rank buyers
-    # buyers rank sellers
-    # if an agent receives a new bid, it also places a new bid
-    # whenever any change happens, every agent reranks
-    # agents end up paying the second highest bid price
-
-    sellerDict=Dict{dwelling,Array{dwelling}}()
-    buyerDict=Dict{dwelling,Array{dwelling}}()
-    sellerBid=Dict{dwelling,Array{dwelling}}()
-    buyerBid=Dict{dwelling,Array{dwelling}}()
-
-    budgetDict=Dict{agent,Int64}()
-
-    # now, we clear the market in the following way:
-    # initially, the agent assumes calculates its bid based on its monthly income
-    for agt in buyerList
-        budgetDict[agt]=mortgageCalc(agt.budget)
-    end
-
-    # and make dictionary entries for all 
-
-    while dynamic 
-        if !dynamic
-            break
-        end
-    
-
-
-    
-    end
-
-
-    
-
-
-
 end
