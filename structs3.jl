@@ -12,28 +12,37 @@ abstract type dwelling <: object end
 
 # basic house objects
 
-abstract type house <: dwelling end
+abstract type house <: dwelling 
+
+end
 
 mutable struct newHouse <: house
     quality::Float64
     owner::Nothing
+    preferenceOrdering::Union(Nothing,Array{house})
+    bidOrdering::Union(Nothing,DataFrame)
 end
 
 mutable struct exitHouse <: house
     quality::Float64
     owner::agent
+    preferenceOrdering::Union(Nothing,Array{house})
+    bidOrdering::Union(Nothing,DataFrame)
 end
 
 mutable struct oldHouse <: house
     quality::Float64
     owner::agent
+    preferenceOrdering::Union(Nothing,Array{house})
+    bidOrdering::Union(Nothing,DataFrame)
 end
 
 
 # we need a temporary "dwelling" new agents 
 
 mutable struct hotel <: dwelling
-    owner::Union{agent,Nothing}
+    owner::agent
+    preferenceOrdering::Union(Nothing,DataFrame)
 end
 
 # and a loan object
