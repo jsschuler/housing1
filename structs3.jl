@@ -17,6 +17,7 @@ abstract type house <: dwelling
 end
 
 mutable struct newHouse <: house
+    index::Int64
     quality::Float64
     owner::Nothing
     preferenceOrdering::Union{Nothing,Array{house}}
@@ -24,6 +25,7 @@ mutable struct newHouse <: house
 end
 
 mutable struct exitHouse <: house
+    index::Int64
     quality::Float64
     owner::agent
     preferenceOrdering::Union{Nothing,Array{house}}
@@ -31,6 +33,7 @@ mutable struct exitHouse <: house
 end
 
 mutable struct oldHouse <: house
+    index::Int64
     quality::Float64
     owner::agent
     preferenceOrdering::Union{Nothing,Array{house}}
@@ -41,9 +44,18 @@ end
 # we need a temporary "dwelling" new agents 
 
 mutable struct hotel <: dwelling
+    index::Int64
     owner::agent
     preferenceOrdering::Union{Nothing,DataFrame}
 end
+
+# define hash and equality operators for dwellings so we can use them as dictionary keys
+
+Base.hash(m::dwelling, h::UInt) = hash(m.index, hash(m.index, h))
+
+Base.:(==)(m1::dwelling, m2::dwelling) = m1.index == m2.index
+
+
 
 # basic loan object 
 mutable struct loan

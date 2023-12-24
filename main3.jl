@@ -39,6 +39,9 @@ include("functions3.jl")
 # quality perception
 include("distributionControl.jl")
 
+houseCounter=0
+hotelCounter=0
+
 
 # in the initial set up, we generate a bunch of houses and a bunch of agents and 
 # assign agents to houses at random. 
@@ -87,30 +90,33 @@ end
 # now, the trading algorithm
 
 # we need a global node dictionary
-nodeDict::Dict{dwelling,Int64}=Dict{Int64,dwelling}()
-agtDict::Dict{Int64,dwelling}=Dict{Int64,dwelling}()
+nodeDict=Dict{Int64,dwelling}()
+agtDict=Dict{Int64,dwelling}()
+
+# we need a dictionary to keep track of the second highest bid
+bidDict=Dict{house,Int64}()
 
 onMarket::Array{house}=house[]
 for t in 1:ticks
     # randomly generate houses to go on market
     # which houses are currently off Market?
     offMarket=setdiff(houseList,onMarket)
-    println("Debug")
-    println(arraySummarize(offMarket))
+    #println("Debug")
+    #println(arraySummarize(offMarket))
     # take a (possibly empty) random sample
     exitEnteringMarket=sample(offMarket,min(outFlow,length(offMarket)),replace=false)
     offMarket=setdiff(offMarket,exitEnteringMarket)
-    println("Debug")
-    println(arraySummarize(offMarket))
-    println(arraySummarize(exitEnteringMarket))   
+    #println("Debug")
+    #println(arraySummarize(offMarket))
+    #println(arraySummarize(exitEnteringMarket))   
     for haus in exitEnteringMarket
         push!(onMarket,makeExit(haus))
     end
     inPlaceEnteringMarket=sample(offMarket,min(inPlace,length(offMarket)),replace=false)
     offMarket=setdiff(offMarket,inPlaceEnteringMarket)
-    println("Debug")
-    println(arraySummarize(offMarket))
-    println(arraySummarize(inPlaceEnteringMarket))   
+    #println("Debug")
+    #println(arraySummarize(offMarket))
+    #println(arraySummarize(inPlaceEnteringMarket))   
     for haus in inPlaceEnteringMarket
         push!(onMarket,haus)
     end
@@ -124,6 +130,7 @@ for t in 1:ticks
     end
 
     # now set up the network
+    global transactionGraph
     transactionGraph=SimpleDiGraph(length(hotelList)+length(houseList))
 
     # now, set up dictionaries to relate the nodes to dwellings
@@ -162,9 +169,13 @@ for t in 1:ticks
         preferenceFrame.preference=hausQuality.(onMarket)
         sort!(preferenceFrame,:preference,rev=true)
         hot.preferenceOrdering=preferenceFrame
-        println("Preference Frame")
-        println(preferenceFrame)
+        #println("Preference Frame")
+        #println(preferenceFrame)
         for haus in onMarket
+            #println("Debug")
+            #println(length(keys(nodeDict)))
+            #println(any(keys(nodeDict).==repeat([hot],length(keys(nodeDict)))))
+            #println(any(keys(nodeDict).==repeat([haus],length(keys(nodeDict)))))
             addArrow!(hot,haus)
         end
     end
@@ -181,20 +192,38 @@ for t in 1:ticks
             source=pair[1]
             dest=pair[2]
             # is the destination at the top of the source's list?
-            mostPreferred=src.preferenceOrdering[1,1]==dest
+            println(source)
+            println(source.preferenceOrdering[1,1])
+            mostPreferred=source.preferenceOrdering[1,1]==dest
             # is the source the destination's highest bidder?
             highestBidder=dest.bidOrdering[1,1]==source
             # if both conditions hold, remove all other edges flowing into the destination and
             # all other arrows flowing out of the source
             if mostPreferred & highestBidder
                 # record second highest bid
-                
-
-            # and remove the source from the bid table and the destination from the preference table of all agents
-
-
+                bidDict[dest]=dest.bidOrdering[2,2]
+                # remove all other edges flowing into the destination
+                for inNbh in inNeighbors(dest)
+                    if inNbh != source
+                        removeEdge!(inNbh,dest)
+                    end
+                end
+                # remove all other edges flowing out of the source
+                for outNbh in outNeighbors(source)
+                    if outNbh != dest
+                        removeEdge!(source,outNbh)
+                    end
+                end
+                # and remove the source from the bid table and the destination from the preference table of all agents
+                hotelBidFrame=hotelBidFrame[hotelBidFrame.dwelling.!=source,:]
+                for hot in hotelList
+                    if hot != source
+                        hot.preferenceOrdering=hot.preferenceOrdering[hot.preferenceOrdering.houses .!= dest,:]
+                    end
+                end
+            
+            end
         end
-
     end
 
     # find the house, agent pair where each ranks the other first

@@ -54,14 +54,18 @@ end
 
 function houseGen()
     global houseList
-    haus=newHouse(rand(qualityDistribution,1)[1],nothing,nothing,nothing)
+    global houseCounter
+    houseCounter=houseCounter+1
+    haus=newHouse(houseCounter,rand(qualityDistribution,1)[1],nothing,nothing,nothing)
     push!(houseList,haus)
     return haus
 end
 
 function hotelGen()
     global hotelList
-    hot=hotel(agtGen(),nothing)
+    global hotelCounter
+    hotelCounter=hotelCounter+1
+    hot=hotel(hotelCounter,agtGen(),nothing)
     push!(hotelList,hot)
     return hot
 end
@@ -70,6 +74,10 @@ end
 function addArrow!(dwelling1::dwelling,dwelling2::dwelling)
     global nodeDict
     global transactionGraph
+    #println(dwelling1)
+    #println(dwelling2)
+    #println(nodeDict[dwelling1])
+    #println(nodeDict[dwelling2])
     add_edge!(transactionGraph,nodeDict[dwelling1],nodeDict[dwelling2])
 end
 # and one that removes them
@@ -124,7 +132,7 @@ function outNeighbors(dwell::dwelling)
     return structNbh
 end
 
-function removeEdge(dwell1::dwelling,dwell2::dwelling)
+function removeEdge!(dwell1::dwelling,dwell2::dwelling)
     global nodeDict
     global transactionGraph
     rem_vertex!(transactionGraph,nodeDict[dwell1],nodeDict[dwell2])
@@ -140,7 +148,7 @@ function makeOld(haus::newHouse,agt::agent)
             hIndex=i
         end
     end
-    currHaus=oldHouse(haus.quality,agt,nothing,nothing)
+    currHaus=oldHouse(haus.index,haus.quality,agt,nothing,nothing)
     houseList[hIndex]=currHaus
     return haus
 end
@@ -153,7 +161,7 @@ function makeExit(haus::oldHouse)
             hIndex=i
         end
     end
-    currHaus=exitHouse(haus.quality,haus.owner,nothing,nothing)
+    currHaus=exitHouse(haus.index,haus.quality,haus.owner,nothing,nothing)
     houseList[hIndex]=currHaus
     return haus
 end
