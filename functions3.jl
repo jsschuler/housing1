@@ -45,16 +45,17 @@ end
 function agtGen()
     global agtList
     global paymentDistribution
-    push!(agtList,agent(length(agtList),floor(Int64,rand(paymentDistribution,1)[1])))
+    outAgt=agent(length(agtList),floor(Int64,rand(paymentDistribution,1)[1]))
+    push!(agtList,outAgt)
+    return outAgt
 end
 
 #the function that generates a house
 
 function houseGen()
     global houseList
-    haus=newHouse(rand(qualityDistribution,1)[1],nothing,nothing)
+    haus=newHouse(rand(qualityDistribution,1)[1],nothing,nothing,nothing)
     push!(houseList,haus)
-    push!(dwellingList,haus)
     return haus
 end
 
@@ -62,52 +63,76 @@ function hotelGen()
     global hotelList
     hot=hotel(agtGen(),nothing)
     push!(hotelList,hot)
+    return hot
 end
 
-# we need a function that generates the network
-
-function networkGen()
+# we need a function that adds arrows 
+function addArrow!(dwelling1::dwelling,dwelling2::dwelling)
+    global nodeDict
     global transactionGraph
-    global houseList
-    global hotelList
-    # generate graph
-    transactionGraph=SimpleDiGraph(length(houseList)+length(hotelList))
+    add_edge!(transactionGraph,nodeDict[dwelling1],nodeDict[dwelling2])
+end
+# and one that removes them
+
+function remArrow!(dwelling1::dwelling,dwelling2::dwelling)
+    global nodeDict
+    global transactionGraph
+    rem_edge!(transactionGraph,nodeDict[dwelling1],nodeDict[dwelling2])
 end
 
-# now, we need functions that give neighbors in agent terms
+# we need a function that returns all the edges as ordered pairs of dwellings 
 
-function agtNeighbor(agt::agent)
+function dwellEdges()
+    global transactionGraph
+    global agtDict
+
+    allEdges=edges(transactionGraph)
+    allSources=src.(allEdges)
+    allDests=dst.(allEdges)
+    allTuples=[]
+    for i in 1:length(allSources)
+        push!(allTuples,(agtDict[allSources[i]],agtDict[allDests[i]]))
+    end
+    return allTuples
 end
 
-function agtNeighbor(dwell::dwelling)
+# we need neighbor functions
+
+function inNeighbors(dwell::dwelling)
+    global agtDict
+    global transactionGraph
+    global nodeDict
+
+    nbhs=inneighbors(transactionGraph,nodeDict[dwell])
+    structNbh=[]
+    for nb in nbhs
+        push!(structNbh,agtDict[nb])
+    end
+    return structNbh
 end
 
-function agtNeighbor(ln::loan)
-end
-# and neighbors in terms of dwellings
-function dwellNeighbor(agt::agent)
+function outNeighbors(dwell::dwelling)
+    global agtDict
+    global transactionGraph
+    global nodeDict
+
+    nbhs=outneighbors(transactionGraph,nodeDict[dwell])
+    structNbh=[]
+    for nb in nbhs
+        push!(structNbh,agtDict[nb])
+    end
+    return structNbh
 end
 
-function dwellNeighbor(dwell::dwelling)
+function removeEdge(dwell1::dwelling,dwell2::dwelling)
+    global nodeDict
+    global transactionGraph
+    rem_vertex!(transactionGraph,nodeDict[dwell1],nodeDict[dwell2])
 end
-
-function dwellNeighbor(ln::loan)
-end
-
-# and neighbors in terms of loans
-function loanNeighbor(agt::agent)
-end
-
-function loanNeighbor(dwell::dwelling)
-end
-
-function loanNeighbor(ln::loan)
-end
-
 
 # we need the function that turns a new house into an old house 
 
-function makeOld(haus::oldHouse,agt::Agent)
+function makeOld(haus::newHouse,agt::agent)
     global houseList
     hIndex=0
     for i in 1:length(houseList)
@@ -115,7 +140,7 @@ function makeOld(haus::oldHouse,agt::Agent)
             hIndex=i
         end
     end
-    currHaus=exitHouse(haus.quality,agt)
+    currHaus=oldHouse(haus.quality,agt,nothing,nothing)
     houseList[hIndex]=currHaus
     return haus
 end
@@ -128,7 +153,7 @@ function makeExit(haus::oldHouse)
             hIndex=i
         end
     end
-    currHaus=exitHouse(haus.quality,haus.owner)
+    currHaus=exitHouse(haus.quality,haus.owner,nothing,nothing)
     houseList[hIndex]=currHaus
     return haus
 end
@@ -145,6 +170,35 @@ function houseShuffle()
     end
 end
 
+# this function will allow richer agents to get their more preferred house
+
+function housingSwap(house1,house2)
+    #println("Debug")
+    #println(house1.quality)
+    #println(house2.quality)
+    #println(house1.owner.budget)
+    #println(house2.owner.budget)
+    #println((house1.quality > house2.quality) & (house1.owner.budget < house2.owner.budget))
+    #println((house2.quality > house1.quality) & (house2.owner.budget < house1.owner.budget))
+    if (house1.quality > house2.quality) & (house1.owner.budget < house2.owner.budget)
+        #println("swapped")
+        richOwner=house2.owner
+        house2.owner=house1.owner
+        house1.owner=richOwner
+
+        swap=true
+    elseif (house2.quality > house1.quality) & (house2.owner.budget < house1.owner.budget)
+        #println("swapped")
+        richOwner=house1.owner
+        house1.owner=house2.owner
+        house2.owner=richOwner
+        swap=true
+    else
+        #println("Flag3")
+        swap=false
+    end
+    return swap
+end
 
 function initialSwapping()
     tick::Int64=0
@@ -173,7 +227,7 @@ end
 
 # we need a function that returns the quality of an agent's current house 
 # if the agent has no house, it returns -inf 
-f
+
 function hausQuality(haus::house)
     return haus.quality+rand(qualityError,1)[1]
 end
@@ -186,7 +240,7 @@ end
 
 function budgetCalc(hotel)
     global interestRate
-    homeBudget=mortgageCalc(agt.budget)
+    homeBudget=mortgageCalc(hotel.owner.budget)
     return homeBudget
 end
 
@@ -195,7 +249,7 @@ function budgetCalc(haus::house,saleValue)
     # does the agent own a house?
     agtHaus=houseOwner(agt)
     if isnothing(agtHaus)
-        homeBudget=mortgageCalc(agt.budget)
+        homeBudget=mortgageCalc(haus.owner.budget)
     else
         currLoan=agtLoan(agt)
         # how much equity does the agent have?
@@ -203,4 +257,10 @@ function budgetCalc(haus::house,saleValue)
         homeBudget=equity+mortgageCalc(agt.budget)
     end
     return homeBudget
+end
+
+# summary functions
+
+function arraySummarize(array::Vector)
+    return countmap(typeof.(array))
 end

@@ -15,9 +15,9 @@ using DataFrames
 # the interest rate (mutable)
 interestRate::Float64=.04
 # distribution of agent budgets
-paymentDistribution::Truncated{Levy{Float64}, Continuous, Float64, Float64, Float64}=Truncated(Levy(500,100),0,5*10^9)
+paymentDistribution=Truncated(Levy(500,100),0,5*10^9)
 # distribution of house qualities 
-qualityDistribution::Truncated{Levy{Float64}, Continuous, Float64, Float64, Float64}=Truncated(Levy(0,10),0,63658)
+qualityDistribution=Truncated(Levy(0,10),0,63658)
 # initial agent count
 agtCnt::Int64=5000
 # population inflow (agents who can buy without selling)
@@ -30,29 +30,14 @@ construction::Int64=100
 inPlace::Int64=100
 # what 
 # how many ticks to run the model ?
-ticks=100
+ticks=1
 
-include("objects.jl")
-include("functions.jl")
+include("structs3.jl")
+include("functions3.jl")
 
 # now, we include the code that finds the global cauchy parameter for noise in agent
 # quality perception
 include("distributionControl.jl")
-
-# we need some global dictionaries to associate the objects 
-
-agtLoans::Dict{agt,Union{loan,Nothing}}=Dict{agt,Union{loan,Nothing}}()
-agtDwellings::Dict{agt,Union{dwelling,Nothing}}=Dict{agt,Union{dwelling,Nothing}}()
-# loan objects have associated collateral and collateral has an owner so not dictionary is needed in these directions
-# we do need a dictionary that associates a dwelling with a loan 
-
-# and a dictionary that associates a dwelling with a loan. Every dwelling needs an entry but it need not have a loan
-dwellingLoan::Dict{dwelling,Union{loan,Nothing}}=Dict{dwelling,Union{loan,Nothing}}()
-
-# we need a dictionary that associates a graph node with an agent 
-graphAgt::Dict{Int64,agent}=Dict{Int64,agent}()
-# and vice versa 
-agtGraph::Dict{agent,Union{Int64,Nothing}}=Dict{agent,Union{Int64,Nothing}}()
 
 
 # in the initial set up, we generate a bunch of houses and a bunch of agents and 
@@ -101,17 +86,32 @@ end
 
 # now, the trading algorithm
 
+# we need a global node dictionary
+nodeDict::Dict{dwelling,Int64}=Dict{Int64,dwelling}()
+agtDict::Dict{Int64,dwelling}=Dict{Int64,dwelling}()
+
 onMarket::Array{house}=house[]
 for t in 1:ticks
     # randomly generate houses to go on market
     # which houses are currently off Market?
     offMarket=setdiff(houseList,onMarket)
+    println("Debug")
+    println(arraySummarize(offMarket))
     # take a (possibly empty) random sample
-    for haus in sample(offMarket,min(outFlow,length(offMarket)))
+    exitEnteringMarket=sample(offMarket,min(outFlow,length(offMarket)),replace=false)
+    offMarket=setdiff(offMarket,exitEnteringMarket)
+    println("Debug")
+    println(arraySummarize(offMarket))
+    println(arraySummarize(exitEnteringMarket))   
+    for haus in exitEnteringMarket
         push!(onMarket,makeExit(haus))
     end
-
-    for haus in sample(offMarket,min(inPlace,length(offMarket)))
+    inPlaceEnteringMarket=sample(offMarket,min(inPlace,length(offMarket)),replace=false)
+    offMarket=setdiff(offMarket,inPlaceEnteringMarket)
+    println("Debug")
+    println(arraySummarize(offMarket))
+    println(arraySummarize(inPlaceEnteringMarket))   
+    for haus in inPlaceEnteringMarket
         push!(onMarket,haus)
     end
     # now generate new houses 
@@ -123,10 +123,30 @@ for t in 1:ticks
         push!(hotelList,hotelGen())
     end
 
+    # now set up the network
+    transactionGraph=SimpleDiGraph(length(hotelList)+length(houseList))
+
+    # now, set up dictionaries to relate the nodes to dwellings
+    global nodeDict
+    nodeDict=Dict{dwelling,Int64}()
+    global agtDict
+    agtDict=Dict{Int64,dwelling}()
+    kdx=0
+    for hot in hotelList
+        kdx=kdx+1
+        nodeDict[hot]=kdx
+        agtDict[kdx]=hot
+    end
+    for haus in houseList
+        kdx=kdx+1
+        nodeDict[haus]=kdx
+        agtDict[kdx]=haus
+    end
+
     # since every hotel dweller bids on every on-market home, we can record each bid 
     bidList=Int64[]
     for hot in hotelList
-        push!(bidList,budgetCalc(hot.owner.budget))
+        push!(bidList,budgetCalc(hot))
     end
     hotelBidFrame=DataFrame(dwelling=hotelList,bid=bidList)
     # sort this by descending offer
@@ -142,10 +162,41 @@ for t in 1:ticks
         preferenceFrame.preference=hausQuality.(onMarket)
         sort!(preferenceFrame,:preference,rev=true)
         hot.preferenceOrdering=preferenceFrame
+        println("Preference Frame")
+        println(preferenceFrame)
+        for haus in onMarket
+            addArrow!(hot,haus)
+        end
     end
 
-    for hot in hotelList
-        for hau
+    haltCond=true
+    while haltCond
+        # here is the algorithm:
+        # for each network edge, we check:
+        # whether the source node is the highest bidder and the destination node is the most preferred 
+        # if so, we record the second highest bid price
+        # we delete all other edges coming out of the source 
+        # and we delete all other edges going in to the destination
+        for pair in dwellEdges()
+            source=pair[1]
+            dest=pair[2]
+            # is the destination at the top of the source's list?
+            mostPreferred=src.preferenceOrdering[1,1]==dest
+            # is the source the destination's highest bidder?
+            highestBidder=dest.bidOrdering[1,1]==source
+            # if both conditions hold, remove all other edges flowing into the destination and
+            # all other arrows flowing out of the source
+            if mostPreferred & highestBidder
+                # record second highest bid
+                
+
+            # and remove the source from the bid table and the destination from the preference table of all agents
+
+
+        end
+
+    end
+
     # find the house, agent pair where each ranks the other first
     # for that house, save the second highest bidder's bid 
     # remove the agent's other bids

@@ -19,22 +19,22 @@ end
 mutable struct newHouse <: house
     quality::Float64
     owner::Nothing
-    preferenceOrdering::Union(Nothing,Array{house})
-    bidOrdering::Union(Nothing,DataFrame)
+    preferenceOrdering::Union{Nothing,Array{house}}
+    bidOrdering::Union{Nothing,DataFrame}
 end
 
 mutable struct exitHouse <: house
     quality::Float64
     owner::agent
-    preferenceOrdering::Union(Nothing,Array{house})
-    bidOrdering::Union(Nothing,DataFrame)
+    preferenceOrdering::Union{Nothing,Array{house}}
+    bidOrdering::Union{Nothing,DataFrame}
 end
 
 mutable struct oldHouse <: house
     quality::Float64
     owner::agent
-    preferenceOrdering::Union(Nothing,Array{house})
-    bidOrdering::Union(Nothing,DataFrame)
+    preferenceOrdering::Union{Nothing,Array{house}}
+    bidOrdering::Union{Nothing,DataFrame}
 end
 
 
@@ -42,10 +42,8 @@ end
 
 mutable struct hotel <: dwelling
     owner::agent
-    preferenceOrdering::Union(Nothing,DataFrame)
+    preferenceOrdering::Union{Nothing,DataFrame}
 end
-
-# and a loan object
 
 # basic loan object 
 mutable struct loan
