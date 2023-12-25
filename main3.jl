@@ -160,8 +160,12 @@ for t in 1:ticks
     sort!(hotelBidFrame,:bid,rev=true)
 
     for haus in onMarket
+        println("Debugging")
+        println(haus.bidOrdering)
         haus.bidOrdering=hotelBidFrame
+        println(haus.bidOrdering)
     end
+
 
     # now, beginning with hotels, the agents within them select their preferred houses (all on Market houses for all hotel agents)
     for hot in hotelList
@@ -188,16 +192,17 @@ for t in 1:ticks
         # if so, we record the second highest bid price
         # we delete all other edges coming out of the source 
         # and we delete all other edges going in to the destination
-        println("edges")
-        println(dwellEdges())
+        #println("edges")
+        #println(dwellEdges())
         for pair in dwellEdges()
             source=pair[1]
             dest=pair[2]
             # is the destination at the top of the source's list?
-            #println(source)
-            #println(typeof(source))
-            #println(typeof(dest))
-            #println(source.preferenceOrdering)
+            println(source)
+            println(typeof(source))
+            println(typeof(dest))
+            println(source.preferenceOrdering)
+            println(dest.bidOrdering)
             #println(source.preferenceOrdering[1,1])
             mostPreferred=source.preferenceOrdering[1,1]==dest
             # is the source the destination's highest bidder?
@@ -229,6 +234,18 @@ for t in 1:ticks
             
             end
         end
+        # now, if all hotels have 0 or 1 arrows pointing out of them and 
+        # all houses have 0 or 1 arrows pointing in, we halt 
+        haltCond=true
+        for edge in dwellEdges()
+            if length(outNeighbors(edge[1])) > 1 & length(inNeighbors(edge[2]))
+                haltCond=false
+            end
+        end
+        if haltCond
+            println("Halt First")
+        end
+
     end
 
     # find the house, agent pair where each ranks the other first
