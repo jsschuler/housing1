@@ -188,12 +188,17 @@ for t in 1:ticks
         # if so, we record the second highest bid price
         # we delete all other edges coming out of the source 
         # and we delete all other edges going in to the destination
+        println("edges")
+        println(dwellEdges())
         for pair in dwellEdges()
             source=pair[1]
             dest=pair[2]
             # is the destination at the top of the source's list?
-            println(source)
-            println(source.preferenceOrdering[1,1])
+            #println(source)
+            #println(typeof(source))
+            #println(typeof(dest))
+            #println(source.preferenceOrdering)
+            #println(source.preferenceOrdering[1,1])
             mostPreferred=source.preferenceOrdering[1,1]==dest
             # is the source the destination's highest bidder?
             highestBidder=dest.bidOrdering[1,1]==source
