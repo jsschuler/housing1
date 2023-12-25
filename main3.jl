@@ -126,7 +126,7 @@ for t in 1:ticks
     end
     # generate hotels, which in turn generate agents 
     for i in 1:inFlow
-        push!(hotelList,hotelGen())
+        hotelGen()
     end
 
     # now set up the network
@@ -194,15 +194,18 @@ for t in 1:ticks
         # and we delete all other edges going in to the destination
         #println("edges")
         #println(dwellEdges())
+        kk=0
         for pair in dwellEdges()
+            kk=kk+1
+            #print(kk)
             source=pair[1]
             dest=pair[2]
             # is the destination at the top of the source's list?
-            println(source)
-            println(typeof(source))
-            println(typeof(dest))
-            println(source.preferenceOrdering)
-            println(dest.bidOrdering)
+            #println(source)
+            #println(typeof(source))
+            #println(typeof(dest))
+            #println(source.preferenceOrdering)
+            #println(dest.bidOrdering)
             #println(source.preferenceOrdering[1,1])
             mostPreferred=source.preferenceOrdering[1,1]==dest
             # is the source the destination's highest bidder?
@@ -236,13 +239,12 @@ for t in 1:ticks
         end
         # now, if all hotels have 0 or 1 arrows pointing out of them and 
         # all houses have 0 or 1 arrows pointing in, we halt 
-        haltCond=true
         for edge in dwellEdges()
             if length(outNeighbors(edge[1])) > 1 & length(inNeighbors(edge[2]))
                 haltCond=false
             end
         end
-        if haltCond
+        if !haltCond
             println("Halt First")
         end
 

@@ -64,8 +64,8 @@ end
 function hotelGen()
     global hotelList
     global hotelCounter
-    hotelCounter=-(hotelCounter+1)
-    hot=hotel(hotelCounter,agtGen(),nothing)
+    hotelCounter=hotelCounter+1
+    hot=hotel(-hotelCounter,agtGen(),nothing)
     push!(hotelList,hot)
     return hot
 end
@@ -163,7 +163,7 @@ function makeExit(haus::oldHouse)
     end
     currHaus=exitHouse(haus.index,haus.quality,haus.owner,nothing,nothing)
     houseList[hIndex]=currHaus
-    return haus
+    return currHaus
 end
 
 
