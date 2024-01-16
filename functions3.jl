@@ -272,3 +272,9 @@ end
 function arraySummarize(array::Vector)
     return countmap(typeof.(array))
 end
+
+# we need a function for an agent to make an offer
+
+function offer(currDwelling::dwelling,targetDwelling::dwelling)
+    
+end

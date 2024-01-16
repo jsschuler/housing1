@@ -20,24 +20,23 @@ mutable struct newHouse <: house
     index::Int64
     quality::Float64
     owner::Nothing
-    preferenceOrdering::Union{Nothing,Array{house}}
-    bidOrdering::Union{Nothing,DataFrame}
+    bestOffer::Union{Nothing,Int64}
+
 end
 
 mutable struct exitHouse <: house
     index::Int64
     quality::Float64
     owner::agent
-    preferenceOrdering::Union{Nothing,Array{house}}
-    bidOrdering::Union{Nothing,DataFrame}
+    bestOffer::Union{Nothing,Int64}
 end
 
 mutable struct oldHouse <: house
     index::Int64
     quality::Float64
     owner::agent
-    preferenceOrdering::Union{Nothing,Array{house}}
-    bidOrdering::Union{Nothing,DataFrame}
+    bestOffer::Union{Nothing,Int64}
+    
 end
 
 
