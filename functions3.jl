@@ -70,7 +70,9 @@ function hotelGen()
     return hot
 end
 
-# we need a function that adds arrows 
+# we need a function that links properties when the agent 
+# living in one property prefers the other
+
 function addArrow!(dwelling1::dwelling,dwelling2::dwelling)
     global nodeDict
     global transactionGraph
@@ -79,7 +81,26 @@ function addArrow!(dwelling1::dwelling,dwelling2::dwelling)
     #println(nodeDict[dwelling1])
     #println(nodeDict[dwelling2])
     add_edge!(transactionGraph,nodeDict[dwelling1],nodeDict[dwelling2])
+    # now add 
 end
+
+function preferenceLink(dwelling1::dwelling,dwelling2::dwelling)
+    global nodeDict
+    global transactionGraph
+    qual2=hausQuality(haus2)
+    qual1=hausQuality(haus1)
+
+     if qual2 > qual2
+        addArrow!(haus1,haus2)
+        # now, add the bid and the utility as properties of the edge
+        set_prop!(transactionGraph,Edge(nodeDict[dwelling1],nodeDict[dwelling2]),:bid,haus1.budget)
+        set_prop!(transactionGraph,Edge(nodeDict[dwelling1],nodeDict[dwelling2]),:util,qual2)
+    end
+end
+
+
+
+
 # and one that removes them
 
 function remArrow!(dwelling1::dwelling,dwelling2::dwelling)
@@ -137,6 +158,13 @@ function removeEdge!(dwell1::dwelling,dwell2::dwelling)
     global transactionGraph
     rem_vertex!(transactionGraph,nodeDict[dwell1],nodeDict[dwell2])
 end
+
+function nodeBidder(haus::dwelling)
+    # this function identifies and removes all but the highest bidder and records the second highest bidder's bid
+    allIn=inNeighbors(haus)
+    
+end
+
 
 # we need the function that turns a new house into an old house 
 

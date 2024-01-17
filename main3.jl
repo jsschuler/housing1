@@ -55,9 +55,9 @@ for i in 1:agtCnt
 end
 
 # generate place holder graph so it is global
+
 transactionGraph=MetaDiGraph(0)
-# same thing for the preferences Graph
-preferenceGraph=SimpleDiGraph(0)
+
 for i in 1:agtCnt
     houseGen()
 end
@@ -157,18 +157,48 @@ for t in 1:ticks
     # the agent receiving the offer
     # the agent who was outbid
 
-    haltCond=false
-    while !haltCond
-        # Step 1, build the transaction graph 
-        for haus1 in vcat(hotelList,inPlaceEnteringMarket)
-            for haus2 in onMarket
-                
-            end
+    # Step 1, build the transaction graph 
+    for haus1 in vcat(hotelList,inPlaceEnteringMarket)
+        for haus2 in onMarket
+            preferenceLink(haus1,haus2)
         end
-
     end
 
+    # now, we keep the transaction graph static each model tick
+    # only the budget property of edges may change
+
+    # but we need a copy of it to pair back
+
+    # we form two subgraphs as needed
+
+    # the highest bidder graph consists of the agent who is the highest bidder on each property 
+    # the most preferred graph consists of arrows connecting to the house that the agent likes best 
 
 
+    # form transaction graph copy
+    mutableGraph=transactionGraph
+    haltCond=false
+    while !haltCond
+        
+        # in each sub-step
+            # form the highest bidder graph
+
+            # form the most preferred graph
+
+            # now, form the sale graph where these both coincide
+
+            # now remove this link from the mutable transaction graph and repeat
+
+            # halt this sub-process when the mutable transaction graph is identical to the sale graph!
+        # Step 2:
+            # have all agents recalculate their budgets based on the sales graph's in-arrow
+            # now, repeat the above steps 
+            # halt when the final sale graph is stable between ticks
+    end
+    # now, after the halt, 
+        # move agents in the direction of the sales graph
+        # pay down loans on sold homes
+        # generate mortgages on new homes
+        # log all sales and prices 
 
 end

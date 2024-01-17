@@ -29,6 +29,7 @@ mutable struct exitHouse <: house
     quality::Float64
     owner::agent
     bestOffer::Union{Nothing,Int64}
+    budget::Union{Nothing,Int64}
 end
 
 mutable struct oldHouse <: house
