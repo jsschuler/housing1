@@ -192,6 +192,7 @@ for t in 1:ticks
             # halt this sub-process when the mutable transaction graph is identical to the sale graph!
         # Step 2:
             # have all agents recalculate their budgets based on the sales graph's in-arrow
+            # alter the budgets in the transaction graph edges accordingly
             # now, repeat the above steps 
             # halt when the final sale graph is stable between ticks
     end
