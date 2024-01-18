@@ -20,25 +20,25 @@ mutable struct newHouse <: house
     index::Int64
     quality::Float64
     owner::Nothing
-    bestOffer::Union{Nothing,Int64}
-
+    bestOffer::Int64
 end
 
 mutable struct exitHouse <: house
     index::Int64
     quality::Float64
     owner::agent
-    bestOffer::Union{Nothing,Int64}
-    budget::Union{Nothing,Int64}
+    bestOffer::Int64
 end
 
 mutable struct oldHouse <: house
     index::Int64
     quality::Float64
     owner::agent
-    bestOffer::Union{Nothing,Int64}
+    bestOffer::Int64
     
 end
+
+
 
 
 # we need a temporary "dwelling" new agents 

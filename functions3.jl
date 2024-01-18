@@ -84,20 +84,38 @@ function addArrow!(dwelling1::dwelling,dwelling2::dwelling)
     # now add 
 end
 
+# we also need to be able to add arrows to other graphs in dwelling terms 
+function addArrow!(graph::SimpleDiGraph{Int64},dwelling1::dwelling,dwelling2::dwelling)
+    global nodeDict
+    #println(dwelling1)
+    #println(dwelling2)
+    #println(nodeDict[dwelling1])
+    #println(nodeDict[dwelling2])
+    add_edge!(graph,nodeDict[dwelling1],nodeDict[dwelling2])
+    # now add 
+end
+
+# and an 
+
 function preferenceLink(dwelling1::dwelling,dwelling2::dwelling)
     global nodeDict
     global transactionGraph
-    qual2=hausQuality(haus2)
-    qual1=hausQuality(haus1)
+    qual2=hausQuality(dwelling2)
+    qual1=hausQuality(dwelling1)
 
      if qual2 > qual2
-        addArrow!(haus1,haus2)
-        # now, add the bid and the utility as properties of the edge
-        set_prop!(transactionGraph,Edge(nodeDict[dwelling1],nodeDict[dwelling2]),:bid,haus1.budget)
-        set_prop!(transactionGraph,Edge(nodeDict[dwelling1],nodeDict[dwelling2]),:util,qual2)
+        addArrow!(dwelling1,dwelling2)
+        # now, add the  utility each agent gets from owning the house as an edge property
+        set_prop!(transactionGraph,Edge(nodeDict[dwelling1],nodeDict[dwelling2]),:qual,qual2)
     end
 end
 
+# now, we need a function that retrieves the quality
+function quality(dwelling1::dwelling,dwelling2::dwelling)
+    global nodeDict
+    global transactionGraph
+    return get_prop(transactionGraph, Edge(nodeDict[dwelling1],nodeDict[dwelling2]), :qual)   
+end
 
 
 
@@ -140,6 +158,20 @@ function inNeighbors(dwell::dwelling)
     return structNbh
 end
 
+function inNeighbors(graph::,dwell::dwelling)
+    global agtDict
+    global transactionGraph
+    global nodeDict
+
+    nbhs=inneighbors(transactionGraph,nodeDict[dwell])
+    structNbh=[]
+    for nb in nbhs
+        push!(structNbh,agtDict[nb])
+    end
+    return structNbh
+end
+
+
 function outNeighbors(dwell::dwelling)
     global agtDict
     global transactionGraph
@@ -159,11 +191,17 @@ function removeEdge!(dwell1::dwelling,dwell2::dwelling)
     rem_vertex!(transactionGraph,nodeDict[dwell1],nodeDict[dwell2])
 end
 
-function nodeBidder(haus::dwelling)
-    # this function identifies and removes all but the highest bidder and records the second highest bidder's bid
-    allIn=inNeighbors(haus)
-    
+function removeEdge!(graph::SimpleDiGraph{Int64},dwell1::dwelling,dwell2::dwelling)
+    global nodeDict
+    rem_vertex!(graph,nodeDict[dwell1],nodeDict[dwell2])
 end
+
+# a function to log the bids to the global transaction network
+function setHiBid!(dwelling1::dwelling,dwelling2::dwelling,winBid::Int64)
+    global transactionGraph
+    set_prop!(transactionGraph,Edge(nodeDict[dwelling1],nodeDict[dwelling2]),:bid,winBid)
+end
+
 
 
 # we need the function that turns a new house into an old house 
@@ -272,28 +310,47 @@ function hausQuality(haus::hotel)
     return -Inf
 end
 
+# we need a function to determine the outstanding loan on a house
+function outstandingLoan(haus::newHouse)
+    return 0
+end
+
+function outstandingLoan(haus::oldHouse)
+    loanHeld=filter(x->x.collateral==haus)
+    if length(loanHeld)==0
+        return nothing
+    else
+        return loanHeld[1].outstandingBalance
+    end
+end
+
+function outstandingLoan(haus::exitHouse)
+    loanHeld=filter(x->x.collateral==haus)
+    if length(loanHeld)==0
+        return nothing
+    else
+        return loanHeld[1].outstandingBalance
+    end
+end
+
 # also, we need a function where an agent calculates its budget for a house
 
-function budgetCalc(hotel)
+function budgetCalc(hotel::hotel)
     global interestRate
     homeBudget=mortgageCalc(hotel.owner.budget)
-    return homeBudget
+    return mortgageCalc(homeBudget)
 end
 
-function budgetCalc(haus::house,saleValue)
+function budgetCalc(haus::oldHouse)
     global interestRate
-    # does the agent own a house?
-    agtHaus=houseOwner(agt)
-    if isnothing(agtHaus)
-        homeBudget=mortgageCalc(haus.owner.budget)
-    else
-        currLoan=agtLoan(agt)
-        # how much equity does the agent have?
-        equity=saleValue-currLoan.outstandingBalance
-        homeBudget=equity+mortgageCalc(agt.budget)
-    end
-    return homeBudget
+    balance=outstandingLoan(haus)
+    bestOffer=haus.bestOffer
+    # what is the maximum mortgage the agent can take out?
+    maxMort=mortgageCalc(haus.owner.budget)
+    return maxMort+bestOffer-balance
 end
+
+
 
 # summary functions
 
@@ -301,8 +358,3 @@ function arraySummarize(array::Vector)
     return countmap(typeof.(array))
 end
 
-# we need a function for an agent to make an offer
-
-function offer(currDwelling::dwelling,targetDwelling::dwelling)
-    
-end

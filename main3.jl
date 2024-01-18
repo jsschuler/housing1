@@ -57,6 +57,8 @@ end
 # generate place holder graph so it is global
 
 transactionGraph=MetaDiGraph(0)
+# and give this transaction graph two possible edge properties
+
 
 for i in 1:agtCnt
     houseGen()
@@ -133,7 +135,7 @@ for t in 1:ticks
 
     # now set up the network
     global transactionGraph
-    transactionGraph=MetaDiGraph(length(hotelList)+length(houseList))
+    transactionGraph=MetaDiGraph(length(hotelList)+length(onMarket))
 
     # now, set up dictionaries to relate the nodes to dwellings
     global nodeDict
@@ -178,28 +180,120 @@ for t in 1:ticks
     # form transaction graph copy
     mutableGraph=transactionGraph
     haltCond=false
-    while !haltCond
-        
-        # in each sub-step
-            # form the highest bidder graph
-
+    counter=0
+    oldSaleGraph=SimpleDiGraph()
+    newSaleGraph=SimpleDiGraph()
+    while !haltCond1
+        haltcond2=false
+        counter=counter+1
+        while !haltcond2
+            saleGraph=SimpleDiGraph(length(hotelList)+length(onMarket))()
+            # in each sub-step
+            # form the highest bidder graph for all houses
+            highBidGraph=SimpleDiGraph(length(hotelList)+length(onMarket))
+            # go in random order so we can assign randomly in the case of tie
+            for haus in sample(onMarket,length(onMarket),false)
+                hiBudget=0
+                secondHiBudget=0
+                hiHaus=nothing
+                # find all arrows pointing to this house
+                pointingIn=inNeighbors(haus)
+                for dwell in pointingIn
+                    budg=budgetCalc(dwell.owner)
+                    if budg >= hiBudget
+                        secondHiBudget=hiBudget
+                        hiBudget=budg
+                        hiHaus=dwell
+                end
+                addArrow!(highBidGraph,hiHaus,haus)
+                # log the second highest bid to the transaction network
+                setHiBid!(hiHaus,haus,secondHiBudget)
+                # have the offered house record the second best offer
+                haus.bestOffer=secondHiBudget
+            end
             # form the most preferred graph
+            mostPreferredGraph=SimpleDiGraph(length(hotelList)+length(onMarket))
+            allPreferers=vcat(hotelList,inPlaceEnteringMarket)
+            for haus1 in sample(allPreferers,length(allPreferers),false)
+                hiQual=-Inf
+                hiHaus=nothing
+                # find all arrows pointing out
+                pointingOut=outNeighbors(haus1)
+                for haus2 in pointingOut
+                    curQual=quality(haus2,haus1)
+                    if curQual >= hiQual
+                        hiHaus=haus2
+                    end
+                end
+                addArrow!(mostPreferredGraph,hiHaus,haus1)
+            end
+            
 
-            # now, form the sale graph where these both coincide
+            # now, form the intersection graph and join with the sale graph
+            interGraph=intersect(highBidGraph,mostPreferredGraph)
+            # if the link pointing to an exit house is not an offer that covers the mortgage balance
+            # delete the link before it reaches the sale graph.
+            for edge in collect(edges(interGraph))
+                destHaus=nodeDict[dst(edge)]
+                srcHaus=nodeDict[src(edge)]
+                if typeof(destHause)==exitHouse
+                    curLoan=outstandingLoan(destHause)
+                    # now get the bid
+                    hiBid=get_prop(transactionGraph, Edge(nodeDict[src(edge),dst(edge)]), :bid)
+                    if hiBid < curLoan
+                        removeEdge!(srcHaus,destHaus)
+                    end
+                end
+            end
+            saleGraph=join(saleGraph,interGraph)
 
-            # now remove this link from the mutable transaction graph and repeat
-
+            # now remove from the mutable graph all other links pointing to the sale house 
+            # and all other links pointing out of the buying house and repeat
+            # This ensures the same home owner can be the highest bidder, that of most preference, or sell twice
+            for edge in collect(edges(saleGraph))
+                destNode=dst(edge)
+                srcNode=src(edge)
+                # get all edges pointing to the destination node
+                for inNbh in inneighbors(destNode)
+                    # if the inNeighbor is not the same as the source node, delete
+                    if inNbh!=srcNode
+                        rem_edge!(mutableGraph, Edge(inNbh,destNode))
+                    end
+                end
+                for outNbh in outneighbors(srcNode)
+                    # if the outNeighbor is not the same as the destination node, delete
+                    if outNbh!=destNode
+                        rem_edge!(mutableGraph, Edge(srcNode,outNbh!))
+                    end
+                end
+            end
             # halt this sub-process when the mutable transaction graph is identical to the sale graph!
+            if mutableGraph==saleGraph
+                haltCond2=true
+            end
+        end
         # Step 2:
-            # have all agents recalculate their budgets based on the sales graph's in-arrow
-            # alter the budgets in the transaction graph edges accordingly
-            # now, repeat the above steps 
-            # halt when the final sale graph is stable between ticks
+        # alter the best offers on houses based on the bid in the transaction graph
+        # but iterate through the edges of the sales graph
+        # then, agents in the loop can recalculate their budget
+        for edge in edges(saleGraph)
+            nodeDict[dst(edge)].bestOffer=get_prop(transactionGraph,edge,:bid)
+        end
+        # now, repeat the above steps 
+        # halt when the final sale graph is stable between ticks
+        if oldSaleGraph==newSaleGraph
+            haltCond1=true
+        else
+            oldSaleGraph=newSaleGraph
+            newSaleGraph=saleGraph
+        end
     end
+    
     # now, after the halt, 
         # move agents in the direction of the sales graph
         # pay down loans on sold homes
         # generate mortgages on new homes
         # log all sales and prices 
+    
 
 end
