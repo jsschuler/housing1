@@ -316,18 +316,20 @@ function outstandingLoan(haus::newHouse)
 end
 
 function outstandingLoan(haus::oldHouse)
-    loanHeld=filter(x->x.collateral==haus)
+    global loanList
+    loanHeld=filter(x->x.collateral==haus,loanList)
     if length(loanHeld)==0
-        return nothing
+        return 0
     else
         return loanHeld[1].outstandingBalance
     end
 end
 
 function outstandingLoan(haus::exitHouse)
-    loanHeld=filter(x->x.collateral==haus)
+    global loanList
+    loanHeld=filter(x->x.collateral==haus,loanList)
     if length(loanHeld)==0
-        return nothing
+        return 0
     else
         return loanHeld[1].outstandingBalance
     end
@@ -350,6 +352,41 @@ function budgetCalc(haus::oldHouse)
     return maxMort+bestOffer-balance
 end
 
+# we need a function to pay loans in full
+function payFull(haus::house)
+    global loanList
+    loanHeld=filter(loanList,x->x.collateral==haus2)
+    if length(loanHeld) > 0
+        filter!(x-> x!=loanHeld[1],loanList)
+    end
+end
+
+# we need the final step processing functions
+# implemented as an iteration
+
+function cleanUp(arg::Nothing,graph::SimpleDiGraph)
+    global nodeDict
+    global loanList
+    noInNbh=[]
+    for vert in vertices(graph)
+        if length(inneighbors(vert))==0
+            push!(noInNbh,vert)
+        end
+    end
+    return noInNbh
+end
+
+function cleanUp(arg::Array{Int64},graph::SimpleDiGraph)
+    global nodeDict
+    global loanList
+    outNbhs=[]
+    for vert in vertices(graph)
+        for nbh in outNeighbors(vert)
+            push!(outNbhs,nbh)
+        end
+    end
+    return outNbhs
+end
 
 
 # summary functions

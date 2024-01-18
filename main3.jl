@@ -290,10 +290,34 @@ for t in 1:ticks
     end
     
     # now, after the halt, 
-        # move agents in the direction of the sales graph
+    # move agents in the direction of the sales graph
+
+    # We need a function that iterates on the graph. 
+    # first, it gives us all the nodes with no inNeighbors, then their outNeighbors, etc
+    funcArg=nothing
+    while isnothing(funcArg) || length(funcArg) > 0
+        funcArg=cleanUp(funcArg,oldSaleGraph)
+    end
+
+    # handle cycles separately
+
+
+    for edge in edges(oldSaleGraph)
+        haus1=nodeDict[src(edge)]
+        haus2=nodeDict[dst[edge]]
+        agt1=haus1.owner
+        agt2=haus2.owner
+
+        haus2.owner=agt1
         # pay down loans on sold homes
+        payFull(haus2)
         # generate mortgages on new homes
+        bestBid=get_prop(transactionGraph,edge,:bid)
+        # Now, 
         # log all sales and prices 
+    end
+    
+
     
 
 end
