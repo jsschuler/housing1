@@ -94,6 +94,9 @@ function transactionGraphGen(env::environment,
             preferenceLink(env,haus1,haus2,qualityError)
         end
     end
+    # now log the transaction graph
+    graphLog(env,env.transactionGraph,"transaction")
+
     return env.transactionGraph
 end
 
@@ -127,6 +130,7 @@ function mostPreferredGraph(env::environment,
         end
         add_edge!(mostPreferredGraph,env.nodeDict[hiHaus],env.nodeDict[haus1])
     end
+    graphLog(env,mostPreferredGraph,"mostPreferred")
     return mostPreferredGraph
 end
 # note that the highest bidder must be able to cover the outstanding mortgage of an exit house
@@ -170,12 +174,15 @@ function highestBidderGraph(env::environment,
             haus.bestOffer=secondHiBudget
         end
     end
+    graphLog(env,highBidGraph,"highestBid")
     return highBidGraph
 end
 
 # now, we need the function that performs the intersection
 function graphIntersect(mostPreferredGraph::SimpleDiGraph,highBidGraph::SimpleDiGraph)
-    return intersect(highBidGraph,mostPreferredGraph)
+    interSect=intersect(highBidGraph,mostPreferredGraph)
+    graphLog(env,interSect,"intersection")
+    return interSect
 end
 
 # now a function to pair back links to exit houses where the best offer won't
@@ -205,6 +212,7 @@ function tempTransactionPare(env::environment,saleGraph::SimpleDiGraph,mutableGr
             end
         end
     end
+    graphLog(env,mutableGraph,"mutableGraph")
     return mutableGraph
 end
 
@@ -231,6 +239,8 @@ function innerGraphIterate(env::environment,
     # now, pair back mutable transaction Graph
     mutableGraph=tempTransactionPare(env,interGraph,mutableGraph)
     saleGraph=join(saleGraph,interGraph)
+    graphLog(env,saleGraph,"saleGraphIter")
+    graphLog(env,mutableGraph,"mutableGraphIter")
     return (saleGraph,mutableGraph)
 end
 
@@ -280,7 +290,7 @@ function modelStep(env::environment,
         oldSaleGraph=newSaleGraph
         newSaleGraph=saleGraph
         if oldSaleGraph==newSaleGraph
-            haldCond=true
+            haltCond=true
         end
     end 
     return newSaleGraph
@@ -308,7 +318,7 @@ function modelTick(env::environment)
 
     # now, we need a dictionary to store all payments
     paymentDict=Dict{dwelling,Int64}()
-    for key in keys(nodeDict)
+    for key in keys(env.nodeDict)
             paymentDict[key]=0
     end
 
