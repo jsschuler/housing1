@@ -1,11 +1,46 @@
+# basic functions
+function aSort(arr::Array)
+    return sample(arr,length(arr),replace=false)
+end
 
-function mortgageCalc(payment::Int64)
-    global interestRate
-    monthlyRate::Float64=interestRate/12 
+# basic object generation functions
+
+function agtGen(env::environment)
+    outAgt=agent(length(env.agtList),floor(Int64,rand(env.paymentDistribution,1)[1]))
+    push!(env.agtList,outAgt)
+    return outAgt
+end
+
+
+function houseGen(env::environment)
+    houseCounter=length(env.allHouses)+1
+    
+    haus=newHouse(houseCounter,rand(env.qualityDistribution,1)[1],nothing,nothing)
+    push!(env.allHouses,haus)
+    return haus
+end
+
+function hotelGen(env::environment)
+    hotelCounter=length(env.hotelList)+1
+    hot=hotel(hotelCounter,agtGen(),nothing)
+    push!(env.hotelList,hot)
+    return hot
+end
+
+### LOAN FUNCTIONS ####
+
+function maxMortgage(env::environment,haus::oldHouse)
+    monthlyRate::Float64=env.interestRate/12 
     # apply interest rate calculation
-    
-    
+    payment=haus.owner.budget
     return floor(Int64,payment*(((1+monthlyRate)^(12*30)) -1)/(monthlyRate*(1+monthlyRate)^(12*30)))+1
+end
+
+# we need a function that calculates the monthly payment
+
+function mortgageCosts(env::environment,borrowed::Int64)
+    r=env.interestRate/12
+    return floor(Int64,r*borrowed/(1-(1+r)^-(30*12)))
 end
 
 function outstandingBalance(ln::loan,k::Int64)
@@ -21,64 +56,76 @@ function outstandingBalance(ln::loan,k::Int64)
 end
 
 
-# the function that pays down a loan
-function payLoan(obj::loan)
-    
-    if !obj.paidInFull 
-        obj.paymentsMade=obj.paymentsMade+1
-        obj.outstandingBalance=floor(Int64,outstandingBalance(obj,obj.paymentsMade))
+# the function generating a loan from just a house assumes agents are borrowing as much as they can
+function loanGen(env::environment,collat::oldHouse)
+    initialBalance=maxMortgage(env,collat)
+    push!(env.loanList,loan(env.interestRate,initialBalance,collat.owner.budget,initialBalance,0,collat,false))
+end
+
+# the function generating a loan with a given quantity works differently
+function loanGen(env::environment,collat::oldHouse,amount::Int64)
+    push!(env.loanList,loan(env.interestRate,initialBalance,collat.owner.budget,initialBalance,0,collat,false))
+end
+
+# now we need the house conversion functions
+
+# moving into a new house or an exit house converts it to an old house
+
+function moveIn(env::environment,haus::newHouse,agt::agent)
+    hIndex=0
+    for i in 1:length(env.allHouses)
+        if env.allHouses[i]==haus
+            hIndex=i
+        end
     end
+    currHaus=oldHouse(haus.index,haus.quality,agt,nothing)
+    env.allHouses[hIndex]=currHaus
+    return haus
+end
 
-    if obj.paymentsMade==30*12
-        obj.paidInFull=true
-        obj.outstandingBalance=0
+function moveIn(env::environment,haus::exitHouse,agt::agent)
+    hIndex=0
+    for i in 1:length(env.allHouses)
+        if env.allHouses[i]==haus
+            hIndex=i
+        end
     end
-    return obj.paidInFull
+    currHaus=oldHouse(haus.index,haus.quality,agt,nothing)
+    env.allHouses[hIndex]=currHaus
+    return haus
 end
 
-# the function that generates an agent
-
-function agtGen()
-    global agtList
-    global paymentDistribution
-    push!(agtList,agent(length(agtList),floor(Int64,rand(paymentDistribution,1)[1]),Int64[]))
+function moveIn(env::environment,haus::oldHouse,agt::agent)
+    hIndex=0
+    for i in 1:length(env.allHouses)
+        if env.allHouses[i]==haus
+            hIndex=i
+        end
+    end
+    currHaus.owner=agt
+    return haus
 end
 
-#the function that generates a house
+# a function to list for agents who wish to exit
 
-function houseGen()
-    global houseList
-    global dwellingList
-    haus=house(rand(qualityDistribution,1)[1],nothing)
-    push!(houseList,haus)
-    push!(dwellingList,haus)
-end
-
-function hotelGen()
-    global hotelList
-    global dwellingList
-    hot=hotel(nothing)
-    push!(hotelList,hot)
-    push!(dwellingList,hot)
+function exitList(env::environment,haus::oldHouse)
+    for i in 1:length(env.allHouses)
+        idx=0
+        if env.allHouses==haus
+            idx=i
+        end
+    end
+    currHaus=env.allHouses[i]
+    exitHome=exitHouse(currHaus.index,currHaus.quality,currHaus.owner,currHaus.bestOffer)
+    env.allHouses[i]=exitHome
+    return exitHome
 end
 
 
+# initialization functions
 # now we need the function that randomly assigns agents and houses 
 
-function houseShuffle()
-    global agtList
-    global houseList
-    global dwellingAgtDict
-    for i in 1:length(agtList)
-        houseList[i].owner=agtList[i]
-        dwellingAgtDict[agtList[i]]=houseList[i]
-
-    end
-end
-
-# now we need the function that sorts the agents into houses of quality corresponding to their budget
-
-function housingSwap(house1,house2)
+function housingSwap(house1::dwelling,house2::dwelling)
     #println("Debug")
     #println(house1.quality)
     #println(house2.quality)
@@ -86,23 +133,18 @@ function housingSwap(house1,house2)
     #println(house2.owner.budget)
     #println((house1.quality > house2.quality) & (house1.owner.budget < house2.owner.budget))
     #println((house2.quality > house1.quality) & (house2.owner.budget < house1.owner.budget))
-    global dwellingAgtDict
     if (house1.quality > house2.quality) & (house1.owner.budget < house2.owner.budget)
         #println("swapped")
         richOwner=house2.owner
         house2.owner=house1.owner
-        dwellingAgtDict[house2.owner]=house2
         house1.owner=richOwner
-        dwellingAgtDict[richOwner]=house1
 
         swap=true
     elseif (house2.quality > house1.quality) & (house2.owner.budget < house1.owner.budget)
         #println("swapped")
         richOwner=house1.owner
         house1.owner=house2.owner
-        dwellingAgtDict[house1.owner]=house1
         house2.owner=richOwner
-        dwellingAgtDict[richOwner]=house2
         swap=true
     else
         #println("Flag3")
@@ -111,12 +153,11 @@ function housingSwap(house1,house2)
     return swap
 end
 
-function initialSwapping()
+function initialSwapping(env::environment)
     tick::Int64=0
-    global houseList
     while true
         # select two random houses 
-        twoHouses=sample(houseList,2,replace=false)
+        twoHouses=sample(env.allHouses,2,replace=false)
         tick=tick+1
         #println(tick)
         if housingSwap(twoHouses[1],twoHouses[2])
@@ -128,30 +169,24 @@ function initialSwapping()
     end
 end
 
-function loanGen(payment::Int64,collat::house)
-    global interestRate
-    initialBalance=mortgageCalc(payment)
-    global loanList
-    push!(loanList,loan(interestRate,initialBalance,payment,initialBalance,0,collat,false))
-end
+##### LOAN PAYING FUNCTIONS #####
+# the function that pays down a loan
+function payLoan(env::environment,obj::loan)
+    
+    if !obj.paidInFull 
+        obj.paymentsMade=obj.paymentsMade+1
+        obj.outstandingBalance=floor(Int64,outstandingBalance(obj,obj.paymentsMade))
+    end
 
-function qualityAssessment(haus::house)
-    global qualityError
-    return haus.quality + rand(qualityError,1)[1]
-end
-# we need a function that returns the quality of an agent's current house 
-# if the agent has no house, it returns -inf 
-function hausQuality(agt::agent)
-    global houseList
-    global dwellingAgtDict
-    if !haskey(dwellingAgtDict,agt)
-        return -Inf
-    else
-        myHaus=dwellingAgtDict[agt]
-        return myHaus[1].quality +rand(qualityError,1)[1]
+    if obj.paymentsMade==30*12
+        obj.paidInFull=true
+        obj.outstandingBalance=0
     end
 end
-# and the same function applied directly to a house
+
+
+# house quality functions
+
 function hausQuality(haus::house)
     return haus.quality+rand(qualityError,1)[1]
 end
@@ -160,131 +195,80 @@ function hausQuality(haus::hotel)
     return -Inf
 end
 
+## Graph manipulation functions
+function inNeighbors(env::environment,dwell::dwelling)
+    global agtDict
+    global transactionGraph
+    global nodeDict
 
-# likewise, we need a function that turns an agent into its graph index and vice versa
-
-function indexAgt(idx::Int64)
-    return agtList[idx]
-end
-
-function agtIndex(agt::agent)
-    return collect(1:length(agtList))[agtList.==agt][1]
-end
-
-function indexDwell(idx::Int64)
-    global dwellingList
-    return dwellingList[idx]
-end
-
-# now, we need some functions that analyse the network in terms of agents and dwellings rather than node numbers 
-
-function add_edge!(g::SimpleDiGraph{Int64},node1::dwelling,node2::dwelling)
-    global dwellingList
-    nodeIdx1=(eachindex(dwellingList))[node1.==dwellingList][1]
-    nodeIdx2=(eachindex(dwellingList))[node2.==dwellingList][1]
-    add_edge!(g,nodeIdx1,nodeIdx2)
-
-end
-
-function rem_edge!(g::SimpleDiGraph{Int64},node1::dwelling,node2::dwelling)
-    global dwellingList
-    nodeIdx1=(eachindex(dwellingList))[node1.==dwellingList][1]
-    nodeIdx2=(eachindex(dwellingList))[node2.==dwellingList][1]
-    rem_edge!(g,nodeIdx1,nodeIdx2)
-
-end
-
-function outneighbors(g::SimpleDiGraph{Int64},node::dwelling)
-    global dwellingList
-    nodeIdx=(eachindex(dwellingList))[node1.==dwellingList][1]
-    nbh=outneighbors(g,nodeIdx)
-    return indexDwell.(nmh)
-
-end
-
-function inneighbors(g::SimpleDiGraph{Int64},node::dwelling)
-    global dwellingList
-    nodeIdx=(eachindex(dwellingList))[node1.==dwellingList][1]
-    nbh=inneighbors(g,nodeIdx)
-    return indexDwell.(nmh)
-end
-
-function outneighbors(g::SimpleDiGraph{Int64},node::agent)
-    global dwellingList
-    global dwellingAgtDict
-    node1=dwellingAgtDict[agt]
-    nodeIdx=(eachindex(dwellingList))[node1.==dwellingList][1]
-    nbh=outneighbors(g,nodeIdx)
-    return indexDwell.(nmh)
-
-end
-
-function inneighbors(g::SimpleDiGraph{Int64},agt::agent)
-    global dwellingList
-    global dwellingAgtDict
-    node1=dwellingAgtDict[agt]
-    nodeIdx=(eachindex(dwellingList))[node1.==dwellingList][1]
-    nbh=inneighbors(g,nodeIdx)
-    return indexDwell.(nmh)
-end
-
-# does an agent own a house?
-
-function houseOwner(agt::agent)
-    houseVec=filter(x-> x.owner==agt,houseList)
-    if length(houseVec) > 0
-        return houseVec[1]
-    else
-        return nothing
+    nbhs=inneighbors(transactionGraph,nodeDict[dwell])
+    structNbh=[]
+    for nb in nbhs
+        push!(structNbh,agtDict[nb])
     end
+    return structNbh
 end
 
-function agtLoan(agt::agent)
-    haus=houseOwner(agt)
-    loanHeld=filter(x->x.collateral==haus)
+
+
+function outNeighbors(dwell::dwelling)
+    global agtDict
+    global transactionGraph
+    global nodeDict
+
+    nbhs=outneighbors(transactionGraph,nodeDict[dwell])
+    structNbh=[]
+    for nb in nbhs
+        push!(structNbh,agtDict[nb])
+    end
+    return structNbh
+end
+
+#### some budget functions #####
+
+function outstandingLoan(env::environment,haus::newHouse)
+    return 0
+end
+
+function outstandingLoan(env::environment,haus::oldHouse)
+    loanHeld=filter(x->x.collateral==haus,env.loanList)
     if length(loanHeld)==0
-        return nothing
+        return 0
     else
-        return loanHeld[1]
+        return loanHeld[1].outstandingBalance
     end
 end
 
-function houseLoan(haus::hause)
-    loanHeld=filter(x->x.collateral==haus)
+function outstandingLoan(env::environment,haus::exitHouse)
+    loanHeld=filter(x->x.collateral==haus,env.loanList)
     if length(loanHeld)==0
-        return nothing
+        return 0
     else
-        return loanHeld[1]
+        return loanHeld[1].outstandingBalance
     end
 end
 
 
-# also, we need a function where an agent calculates its budget for a house
 
-function budgetCalc(agt,saleValue)
-    global interestRate
-    # does the agent own a house?
-    agtHaus=houseOwner(agt)
-    if isnothing(agtHaus)
-        homeBudget=mortgageCalc(agt.budget)
-    else
-        currLoan=agtLoan(agt)
-        # how much equity does the agent have?
-        equity=saleValue-currLoan.outstandingBalance
-        homeBudget=equity+mortgageCalc(agt.budget)
+function budgetCalc(env::environment,hotel::hotel)
+    homeBudget=maxMortgage(env,hotel.owner.budget)
+    return mortgageCalc(homeBudget)
+end
+
+function budgetCalc(env::environment,haus::oldHouse)
+    balance=outstandingLoan(haus)
+    bestOffer=haus.bestOffer
+    # what is the maximum mortgage the agent can take out?
+    maxMort=mortgageCalc(env,haus.owner.budget)
+    return maxMort+bestOffer-balance
+end
+
+# a loan payment function
+
+# we need a function to pay loans in full
+function payFull(env::environment,haus::house)
+    loanHeld=filter(env.loanList,x->x.collateral==haus2)
+    if length(loanHeld) > 0
+        filter!(x-> x!=loanHeld[1],env.loanList)
     end
-    return homeBudget
 end
-
-# finally, we need some network functions 
-
-function dwellingIdx(dwell::dwelling)
-    global dwellingList
-    return (1:length(dwellingList))[dwellingList.==dwell][1]
-end
-
-function idxDwelling(idx::Int64)
-    global dwellingList
-    return dwellingList[idx]
-end
-
