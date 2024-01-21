@@ -21,9 +21,9 @@ function houseGen(env::environment)
 end
 
 function hotelGen(env::environment)
-    hotelCounter=length(env.hotelList)+1
-    hot=hotel(hotelCounter,agtGen(),nothing)
-    push!(env.hotelList,hot)
+    hotelCounter=length(env.allHotels)+1
+    hot=hotel(hotelCounter,-Inf,agtGen(env),nothing)
+    push!(env.allHotels,hot)
     return hot
 end
 
@@ -115,9 +115,9 @@ function exitList(env::environment,haus::oldHouse)
             idx=i
         end
     end
-    currHaus=env.allHouses[i]
+    currHaus=env.allHouses[idx]
     exitHome=exitHouse(currHaus.index,currHaus.quality,currHaus.owner,currHaus.bestOffer)
-    env.allHouses[i]=exitHome
+    env.allHouses[idx]=exitHome
     return exitHome
 end
 
@@ -271,4 +271,33 @@ function payFull(env::environment,haus::house)
     if length(loanHeld) > 0
         filter!(x-> x!=loanHeld[1],env.loanList)
     end
+end
+
+# graph searching functions
+
+# we need the final step processing functions
+# implemented as an iteration
+
+function cleanUp(arg::Nothing,graph::SimpleDiGraph)
+    global nodeDict
+    global loanList
+    noInNbh=[]
+    for vert in vertices(graph)
+        if length(inneighbors(vert))==0
+            push!(noInNbh,vert)
+        end
+    end
+    return noInNbh
+end
+
+function cleanUp(arg::Array{Int64},graph::SimpleDiGraph)
+    global nodeDict
+    global loanList
+    outNbhs=[]
+    for vert in vertices(graph)
+        for nbh in outNeighbors(vert)
+            push!(outNbhs,nbh)
+        end
+    end
+    return outNbhs
 end

@@ -11,7 +11,11 @@ function exitHomesGen(env::environment)
     # how many can exit?
     maxExit=min(env.outFlow,length(canExit))
     exitHomes=sample(canExit,maxExit,replace=false)
-    return exitList.(env,exitHomes)
+    retHomes=exitHouse[]
+    for exit in exitHomes
+        push!(retHomes,exitList(env,exit))
+    end
+    return retHomes
 end
 # a function that randomly selects agents who want to move in place
 function oldHomesGen(env::environment)
@@ -21,14 +25,14 @@ function oldHomesGen(env::environment)
             push!(canMove,haus)
         end
     end
-    maxMove=min(env.inplace,length(canMove))
+    maxMove=min(env.inPlace,length(canMove))
     
-    oldHomes==sample(canMove,maxMove,replace=false)
+    oldHomes=sample(canMove,maxMove,replace=false)
     return oldHomes
 end
 # function to build new homes
 function newConstruction(env::environment)
-    newList::array{newHouse}=newHouse[]
+    newList::Array{newHouse}=newHouse[]
     for i in env.construction
         push!(newList,houseGen(env))
     end
@@ -39,7 +43,7 @@ end
 function marketEntry(env::environment)
     hotelList::Array{hotel}=hotel[]
     for i in env.inFlow
-        push!(hotelList,hotelGen())
+        push!(hotelList,hotelGen(env))
     end
     return hotelList
 end
@@ -75,19 +79,19 @@ function transactionGraphGen(env::environment,
     for hot in hotels
         kdx=kdx+1
         env.nodeDict[hot]=kdx
-        env.IntDict[kdx]=hot
+        env.intDict[kdx]=hot
     end
     for haus in vcat(newHouses,oldHouses,exitHouses)
         kdx=kdx+1
         env.nodeDict[haus]=kdx
-        env.IntDict[kdx]=haus
+        env.intDict[kdx]=haus
     end
 
     env.transactionGraph=MetaDiGraph(length(keys(nodeDict)))
     # now build the transaction graph by linking homes where agents would like to move
-    for haus1 in vcat(hotelList,oldHouses)
+    for haus1 in vcat(hotels,oldHouses)
         for haus2 in vcat(newHouses,oldHouses,exitHouses)
-            preferenceLink(env,haus1,haus2)
+            preferenceLink(env,haus1,haus2,qualityError)
         end
     end
     return env.transactionGraph
@@ -300,18 +304,7 @@ function modelTick(env::environment)
     saleGraph=modelStep(env,hotels,oldHouses,newHouses,exitHouses)
 
     # now track payments
-    # We need a function that iterates on the graph. 
-    # first, it gives us all the nodes with no inNeighbors, then their outNeighbors, etc
-    funcArg=nothing
-    allEdges=[]
-    while isnothing(funcArg) || length(funcArg) > 0
-        funcArg=cleanUp(funcArg,oldSaleGraph)
-        allEdges=vcat(allEdges,funcArg)
-
-    end
-
-    # handle cycles separately
-    allEdges=vcat(allEdges,simplecycles(oldSaleGraph))
+    allEdges=edges(saleGraph)
 
     # now, we need a dictionary to store all payments
     paymentDict=Dict{dwelling,Int64}()
@@ -320,10 +313,6 @@ function modelTick(env::environment)
     end
 
     for edge in allEdges
-        haus1=nodeDict[src(edge)]
-        haus2=nodeDict[dst[edge]]
-        agt1=haus1.owner
-        agt2=haus2.owner
         bestBid=get_prop(env.transactionGraph,edge,:bid)
         paymentDict[dst(edge)]=bestBid
 

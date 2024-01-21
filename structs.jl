@@ -43,6 +43,7 @@ end
 
 mutable struct hotel <: dwelling
     index::Int64
+    quality::Float64
     owner::agent
     preferenceOrdering::Union{Nothing,DataFrame}
 end
