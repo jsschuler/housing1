@@ -60,7 +60,7 @@ function preferenceLink(env::environment,dwelling1::dwelling,dwelling2::dwelling
         add_edge!(env.transactionGraph,env.nodeDict[dwelling1],env.nodeDict[dwelling2])
         # now, add the  utility each agent gets from owning the house as an edge property
         #set_prop!(env.transactionGraph,,:qual,qual2)
-        env.qualDict[Edge(nodeDict[dwelling1],nodeDict[dwelling2])]=qual2
+        env.qualDict[Edge(env.nodeDict[dwelling1],env.nodeDict[dwelling2])]=qual2
     end
 end
 
@@ -74,8 +74,8 @@ function transactionGraphGen(env::environment,
                             
 
     # now, set up dictionaries to relate the nodes to dwellings
-    nodeDict=Dict{dwelling,Int64}()
-    agtDict=Dict{Int64,dwelling}()
+    
+    
     kdx=0
     for hot in hotels
         kdx=kdx+1
@@ -88,7 +88,7 @@ function transactionGraphGen(env::environment,
         env.intDict[kdx]=haus
     end
 
-    env.transactionGraph=SimpleDiGraph(length(keys(nodeDict)))
+    env.transactionGraph=SimpleDiGraph(length(keys(env.nodeDict)))
     # now build the transaction graph by linking homes where agents would like to move
     for haus1 in vcat(hotels,oldHouses)
         for haus2 in vcat(newHouses,oldHouses,exitHouses)
@@ -124,14 +124,15 @@ function mostPreferredGraph(env::environment,
         pointingOut=outneighbors(mutableGraph,env.nodeDict[haus1])
         for hausDex in pointingOut
             haus2=env.intDict[hausDex]
-            curQual=quality(haus2,haus1)
+            #curQual=quality(haus2,haus1)
+            currQual=env.qualDict[Edge(env.intDict[haus1],hausDex)]
             if curQual >= hiQual
                 hiHaus=haus2
             end
         end
         add_edge!(mostPreferredGraph,env.nodeDict[hiHaus],env.nodeDict[haus1])
     end
-    graphLog(env,mostPreferredGraph,"mostPreferred")
+    #graphLog(env,mostPreferredGraph,"mostPreferred")
     return mostPreferredGraph
 end
 # note that the highest bidder must be able to cover the outstanding mortgage of an exit house
