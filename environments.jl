@@ -28,9 +28,10 @@ function environGen(qualityDistribution::Distribution,
                        house[],
                        hotel[],
                        loan[],
-                       MetaDiGraph(0),
+                       SimpleDiGraph(0),
                        Dict{dwelling,Int64}(),
-                       Dict{Int64,dwelling}())
+                       Dict{Int64,dwelling}(),
+                       Dict{Int64,Int64}())
 
 end
 

@@ -8,7 +8,6 @@
 
 # load libraries
 using LightGraphs
-using MetaGraphs
 using Distributions
 using StatsBase
 using DataFrames

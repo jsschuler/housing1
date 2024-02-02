@@ -93,7 +93,9 @@ mutable struct environment
     allHouses::Array{house}
     allHotels::Array{hotel}
     loanList::Array{loan}
-    transactionGraph::MetaDiGraph
+    transactionGraph::SimpleDiGraph
     nodeDict::Dict{dwelling,Int64}
     intDict::Dict{Int64,dwelling}
+    bidDict::Dict{LightGraphs.SimpleGraphs.SimpleEdge{Int64},Int64}
+    qualDict::Dict{LightGraphs.SimpleGraphs.SimpleEdge{Int64},Float64}
 end

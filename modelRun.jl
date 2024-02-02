@@ -59,7 +59,8 @@ function preferenceLink(env::environment,dwelling1::dwelling,dwelling2::dwelling
      if qual2 > qual2
         add_edge!(env.transactionGraph,env.nodeDict[dwelling1],env.nodeDict[dwelling2])
         # now, add the  utility each agent gets from owning the house as an edge property
-        set_prop!(env.transactionGraph,Edge(nodeDict[dwelling1],nodeDict[dwelling2]),:qual,qual2)
+        #set_prop!(env.transactionGraph,,:qual,qual2)
+        env.qualDict[Edge(nodeDict[dwelling1],nodeDict[dwelling2])]=qual2
     end
 end
 
@@ -87,7 +88,7 @@ function transactionGraphGen(env::environment,
         env.intDict[kdx]=haus
     end
 
-    env.transactionGraph=MetaDiGraph(length(keys(nodeDict)))
+    env.transactionGraph=SimpleDiGraph(length(keys(nodeDict)))
     # now build the transaction graph by linking homes where agents would like to move
     for haus1 in vcat(hotels,oldHouses)
         for haus2 in vcat(newHouses,oldHouses,exitHouses)
@@ -162,14 +163,16 @@ function highestBidderGraph(env::environment,
             if secondHiBudget >= outstandingAmt
                 add_edge!(highBidGraph,env.nodeDict[hiHaus],env.nodeDict[haus])
                 # log the second highest bid to the transaction network
-                set_prop!(env.transactionGraph,Edge(nodeDict[hiHaus],nodeDict[haus]),:bid,secondHiBudget)
+                #set_prop!(env.transactionGraph,Edge(nodeDict[hiHaus],nodeDict[haus]),:bid,secondHiBudget)
+                env.bidDict[Edge(nodeDict[hiHaus],nodeDict[haus])]=secondHiBudget
                 # have the offered house record the second best offer
                 haus.bestOffer=secondHiBudget
             end
         else
             add_edge!(highBidGraph,env.nodeDict[hiHaus],env.nodeDict[haus])
             # log the second highest bid to the transaction network
-            set_prop!(env.transactionGraph,Edge(nodeDict[hiHaus],nodeDict[haus]),:bid,secondHiBudget)
+            #set_prop!(env.transactionGraph,Edge(nodeDict[hiHaus],nodeDict[haus]),:bid,secondHiBudget)
+            env.bidDict[Edge(nodeDict[hiHaus],nodeDict[haus])]=secondHiBudget
             # have the offered house record the second best offer
             haus.bestOffer=secondHiBudget
         end
@@ -247,7 +250,7 @@ end
 # now, we need the functions for the outer loop
 function offerUpdate(env::environment,saleGraph::SimpleDiGraph)
     for edge in edges(saleGraph)
-        env.nodeDict[dst(edge)].bestOffer=get_prop(transactionGraph,edge,:bid)
+        env.nodeDict[dst(edge)].bestOffer=env.bidDict[edge]
     end
 end
 
@@ -323,7 +326,7 @@ function modelTick(env::environment)
     end
 
     for edge in allEdges
-        bestBid=get_prop(env.transactionGraph,edge,:bid)
+        bestBid=env.bidDict[edge]
         paymentDict[dst(edge)]=bestBid
 
     end
@@ -342,7 +345,7 @@ function modelTick(env::environment)
         # pay down loans on sold homes
         payFull(haus2)
         # generate mortgages on new homes
-        bestBid=get_prop(env.transactionGraph,edge,:bid)
+        bestBid=env.bidDict[edge]
         # now, what is the difference between what the agent is paying and what the agent was paid?
         delta=bedBid-paid
         # generate the loan
