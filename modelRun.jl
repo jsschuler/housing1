@@ -33,7 +33,7 @@ end
 # function to build new homes
 function newConstruction(env::environment)
     newList::Array{newHouse}=newHouse[]
-    for i in env.construction
+    for i in 1:env.construction
         push!(newList,houseGen(env))
     end
     return newList
@@ -42,7 +42,7 @@ end
 
 function marketEntry(env::environment)
     hotelList::Array{hotel}=hotel[]
-    for i in env.inFlow
+    for i in 1:env.inFlow
         push!(hotelList,hotelGen(env))
     end
     return hotelList
@@ -56,7 +56,7 @@ function preferenceLink(env::environment,dwelling1::dwelling,dwelling2::dwelling
     qual2=dwelling2.quality+rand(qualityError,1)[1]
     qual1=dwelling1.quality+rand(qualityError,1)[1]
 
-     if qual2 > qual2
+     if qual2 > qual1
         add_edge!(env.transactionGraph,env.nodeDict[dwelling1],env.nodeDict[dwelling2])
         # now, add the  utility each agent gets from owning the house as an edge property
         #set_prop!(env.transactionGraph,,:qual,qual2)
