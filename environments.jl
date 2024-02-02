@@ -31,7 +31,8 @@ function environGen(qualityDistribution::Distribution,
                        SimpleDiGraph(0),
                        Dict{dwelling,Int64}(),
                        Dict{Int64,dwelling}(),
-                       Dict{Int64,Int64}())
+                       Dict{LightGraphs.SimpleGraphs.SimpleEdge{Int64},Int64}(),
+                       Dict{LightGraphs.SimpleGraphs.SimpleEdge{Int64},Float64}())
 
 end
 

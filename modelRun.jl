@@ -96,7 +96,7 @@ function transactionGraphGen(env::environment,
         end
     end
     # now log the transaction graph
-    graphLog(env,env.transactionGraph,"transaction")
+    #graphLog(env,env.transactionGraph,"transaction")
 
     return env.transactionGraph
 end

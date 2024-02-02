@@ -16,7 +16,7 @@ using TikzGraphs, TikzPictures
 include("structs.jl")
 include("functions.jl")
 include("environments.jl")
-include("reportingFunctions.jl")
+#include("reportingFunctions.jl")
 # initialize environment with parameters
 
 # the interest rate (mutable)
