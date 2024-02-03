@@ -114,13 +114,13 @@ function mostPreferredGraph(env::environment,
         for hausDex in pointingOut
             haus2=env.intDict[hausDex]
             #curQual=quality(haus2,haus1)
-            println("Debug")
+            #println("Debug")
             #println(haus1)
             #println(countmap(keys(env.intDict)))
             #println(any(keys(env.intDict).==haus1.index))
             currQual=env.qualDict[Edge(env.nodeDict[haus1],hausDex)]
-            println(currQual)
-            println(hiQual)
+            #println(currQual)
+            #println(hiQual)
             if currQual >= hiQual
                 hiHaus=haus2
                 hiQual=currQual
