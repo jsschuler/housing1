@@ -1,6 +1,13 @@
-function graphLog(env::environment,graph::SimpleDiGraph,label::string)
-    # this function both produces a png and generates a table of the graph
+function graphLog(env::environment,graph::SimpleDiGraph,label::String)
+    # this function dumps a sparse adjacency matrix
+    A=adjacency_matrix(graph)
+    rows, cols, vals = findnz(A)
+    # get dwelling quality
 
+    edgeDF = DataFrame(row=rows, col=cols)
+    nodeDF=DataFrame(edges=1:length(vertices(graph)))
+    #CSV.write("../housingData/"*label*"_nodes.csv",nodeDF)
+    CSV.write("../housingData/"*label*"_edges"*string(env.tick)*".csv",edgeDF,header=false)
 end
 
 # We need a function that logs housing construction

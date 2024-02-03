@@ -86,7 +86,8 @@ function transactionGraphGen(env::environment,
     end
     # now log the transaction graph
     #graphLog(env,env.transactionGraph,"transaction")
-
+    graphLog(env,env.transactionGraph,"transactionGraph")
+    checkPoint("transaction Graph Generated")
     return env.transactionGraph
 end
 
@@ -127,9 +128,11 @@ function mostPreferredGraph(env::environment,
             end
         end
         if !isnothing(hiHaus)
-            add_edge!(mostPreferredGraph,env.nodeDict[hiHaus],env.nodeDict[haus1])
+            add_edge!(mostPreferredGraph,env.nodeDict[haus1],env.nodeDict[hiHaus])
         end
     end
+    graphLog(env,mostPreferredGraph,"mostPreferred")
+    checkPoint("Most Preferred Graph Generated")
     #graphLog(env,mostPreferredGraph,"mostPreferred")
     return mostPreferredGraph
 end
@@ -178,6 +181,8 @@ function highestBidderGraph(env::environment,
         end
     end
     #graphLog(env,highBidGraph,"highestBid")
+    graphLog(env,highBidGraph,"hiBid")
+    checkPoint("Highest Bidder Graph Generated")
     return highBidGraph
 end
 
@@ -185,6 +190,8 @@ end
 function graphIntersect(mostPreferredGraph::SimpleDiGraph,highBidGraph::SimpleDiGraph)
     interSect=intersect(highBidGraph,mostPreferredGraph)
     #graphLog(env,interSect,"intersection")
+    graphLog(env,interSect,"intersection")
+    checkPoint("Graph Intersection")
     return interSect
 end
 
@@ -219,6 +226,8 @@ function tempTransactionPare(env::environment,saleGraph::SimpleDiGraph,mutableGr
         end
     end
     #graphLog(env,mutableGraph,"mutableGraph")
+    graphLog(env,mutableGraph,"tempTrans")
+    checkPoint("Temporary Transaction Graph")
     return mutableGraph
 end
 
@@ -247,6 +256,9 @@ function innerGraphIterate(env::environment,
     saleGraph=join(saleGraph,interGraph)
     #graphLog(env,saleGraph,"saleGraphIter")
     #graphLog(env,mutableGraph,"mutableGraphIter")
+    graphLog(env,saleGraph,"saleGraphInner")
+    graphLog(env,mutableGraph,"tempTransInner")
+    checkPoint("Inner Iteration")
     return (saleGraph,mutableGraph)
 end
 
@@ -273,6 +285,9 @@ function outerGraphIterator(env::environment,
             haltCond=true
         end
     end
+    graphLog(env,graphPair[1],"pair1Outer")
+    graphLog(env,graphPair[2],"pair2Outer")
+    checkPoint("Outer Iteration")
     return graphPair[1]
 end
 
@@ -299,6 +314,8 @@ function modelStep(env::environment,
             haltCond=true
         end
     end 
+    graphLog(env,newSaleGraph,"newSaleGraph")
+    checkPoint("Model Step")
     return newSaleGraph
 end
 

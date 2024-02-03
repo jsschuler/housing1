@@ -13,11 +13,24 @@ using StatsBase
 using DataFrames
 using Random
 using TikzGraphs, TikzPictures
+using SparseArrays
+using CSV
 include("structs.jl")
 include("functions.jl")
 include("environments.jl")
-#include("reportingFunctions.jl")
+include("reportingFunctions.jl")
 # initialize environment with parameters
+
+# we need a global variable which is a switch to pause 
+pauseBool::Bool=true
+
+function checkPoint(message)
+    global pauseBool
+    if pauseBool
+        println(message)
+        readline()
+    end
+end
 
 # the interest rate (mutable)
 interestRate::Float64=.04
@@ -26,15 +39,15 @@ paymentDistribution=Truncated(Levy(500,100),0,5*10^9)
 # distribution of house qualities 
 qualityDistribution=Truncated(Levy(0,10),0,63658)
 # initial agent count
-agtCnt::Int64=5000
+agtCnt::Int64=100
 # population inflow (agents who can buy without selling)
-inFlow::Int64=200
+inFlow::Int64=10
 # population outflow (agents who can sell without buying)
-outFlow::Int64=100
+outFlow::Int64=10
 # new housing construction 
-construction::Int64=100
+construction::Int64=10
 # how many agents simply want to move within the market?
-inPlace::Int64=100
+inPlace::Int64=20
 # what 
 # how many ticks to run the model ?
 allTicks=1
