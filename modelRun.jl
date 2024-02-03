@@ -2,20 +2,7 @@
 # a function that randomly selects homes for agents who want to exit
 
 function exitHomesGen(env::environment)
-    canExit::Array{oldHouse}=oldHouse[]
-    for haus in env.allHouses
-        if typeof(haus)==oldHouse
-            push!(canExit,haus)
-        end
-    end
-    # how many can exit?
-    maxExit=min(env.outFlow,length(canExit))
-    exitHomes=sample(canExit,maxExit,replace=false)
-    retHomes=exitHouse[]
-    for exit in exitHomes
-        push!(retHomes,exitList(env,exit))
-    end
-    return retHomes
+    return exitList(env)
 end
 # a function that randomly selects agents who want to move in place
 function oldHomesGen(env::environment)
@@ -74,16 +61,18 @@ function transactionGraphGen(env::environment,
                             
 
     # now, set up dictionaries to relate the nodes to dwellings
-    
+    hashes=[]
     
     kdx=0
     for hot in hotels
         kdx=kdx+1
+        push!(hashes,hash(hot))
         env.nodeDict[hot]=kdx
         env.intDict[kdx]=hot
     end
     for haus in vcat(newHouses,oldHouses,exitHouses)
         kdx=kdx+1
+        push!(hashes,hash(haus))
         env.nodeDict[haus]=kdx
         env.intDict[kdx]=haus
     end
@@ -125,12 +114,21 @@ function mostPreferredGraph(env::environment,
         for hausDex in pointingOut
             haus2=env.intDict[hausDex]
             #curQual=quality(haus2,haus1)
-            currQual=env.qualDict[Edge(env.intDict[haus1],hausDex)]
-            if curQual >= hiQual
+            println("Debug")
+            #println(haus1)
+            #println(countmap(keys(env.intDict)))
+            #println(any(keys(env.intDict).==haus1.index))
+            currQual=env.qualDict[Edge(env.nodeDict[haus1],hausDex)]
+            println(currQual)
+            println(hiQual)
+            if currQual >= hiQual
                 hiHaus=haus2
+                hiQual=currQual
             end
         end
-        add_edge!(mostPreferredGraph,env.nodeDict[hiHaus],env.nodeDict[haus1])
+        if !isnothing(hiHaus)
+            add_edge!(mostPreferredGraph,env.nodeDict[hiHaus],env.nodeDict[haus1])
+        end
     end
     #graphLog(env,mostPreferredGraph,"mostPreferred")
     return mostPreferredGraph
@@ -141,18 +139,19 @@ function highestBidderGraph(env::environment,
                             newHouses::Array{newHouse},
                             oldHouses::Array{oldHouse},
                             exitHouses::Array{exitHouse})
-    highBidGraph=SimpleDiGraph(length(hotelList)+length(onMarket))
+   
     # go in random order so we can assign randomly in the case of tie
     onMarket=vcat(newHouses,oldHouses,exitHouses)
-    for haus in sample(onMarket,length(onMarket),false)
+    highBidGraph=SimpleDiGraph(length(env.allHotels)+length(onMarket))
+    for haus in sample(onMarket,length(onMarket),replace=false)
         hiBudget=0
         secondHiBudget=0
         hiHaus=nothing
         # find all arrows pointing to this house
         pointingIn=inneighbors(mutableGraph,env.nodeDict[haus])
         for dwellDex in pointingIn
-            dwell=env.nodeDict[dwellDex]
-            budg=budgetCalc(env,dwell.owner)
+            dwell=env.intDict[dwellDex]
+            budg=budgetCalc(env,dwell)
             if budg >= hiBudget
                 secondHiBudget=hiBudget
                 hiBudget=budg
@@ -173,25 +172,28 @@ function highestBidderGraph(env::environment,
             add_edge!(highBidGraph,env.nodeDict[hiHaus],env.nodeDict[haus])
             # log the second highest bid to the transaction network
             #set_prop!(env.transactionGraph,Edge(nodeDict[hiHaus],nodeDict[haus]),:bid,secondHiBudget)
-            env.bidDict[Edge(nodeDict[hiHaus],nodeDict[haus])]=secondHiBudget
+            env.bidDict[Edge(env.nodeDict[hiHaus],env.nodeDict[haus])]=secondHiBudget
             # have the offered house record the second best offer
             haus.bestOffer=secondHiBudget
         end
     end
-    graphLog(env,highBidGraph,"highestBid")
+    #graphLog(env,highBidGraph,"highestBid")
     return highBidGraph
 end
 
 # now, we need the function that performs the intersection
 function graphIntersect(mostPreferredGraph::SimpleDiGraph,highBidGraph::SimpleDiGraph)
     interSect=intersect(highBidGraph,mostPreferredGraph)
-    graphLog(env,interSect,"intersection")
+    #graphLog(env,interSect,"intersection")
     return interSect
 end
 
 # now a function to pair back links to exit houses where the best offer won't
 # cover the mortgage and deletes the entire chain / cycle
-
+# ignore for now
+function pairbackGraph(env::environment,interGraph::SimpleDiGraph,mutableGraph::SimpleDiGraph)
+    return (interGraph,mutableGraph)
+end
 
 
 # now we need a function that takes the sale graph and alters the mutable graph
@@ -216,7 +218,7 @@ function tempTransactionPare(env::environment,saleGraph::SimpleDiGraph,mutableGr
             end
         end
     end
-    graphLog(env,mutableGraph,"mutableGraph")
+    #graphLog(env,mutableGraph,"mutableGraph")
     return mutableGraph
 end
 
@@ -243,8 +245,8 @@ function innerGraphIterate(env::environment,
     # now, pair back mutable transaction Graph
     mutableGraph=tempTransactionPare(env,interGraph,mutableGraph)
     saleGraph=join(saleGraph,interGraph)
-    graphLog(env,saleGraph,"saleGraphIter")
-    graphLog(env,mutableGraph,"mutableGraphIter")
+    #graphLog(env,saleGraph,"saleGraphIter")
+    #graphLog(env,mutableGraph,"mutableGraphIter")
     return (saleGraph,mutableGraph)
 end
 
@@ -263,7 +265,7 @@ function outerGraphIterator(env::environment,
                             exitHouses::Array{exitHouse},
                             saleGraph::SimpleDiGraph)
 
-    haltCond::bool=false
+    haltCond::Bool=false
 
     while !haltCond
         graphPair=innerGraphIterate(env,hotels,oldHouses,newHouses,exitHouses,saleGraph)
@@ -285,9 +287,9 @@ function modelStep(env::environment,
     oldSaleGraph::SimpleDiGraph=SimpleDiGraph(0)
     newSaleGraph::SimpleDiGraph=SimpleDiGraph(0)
 
-    while haltCond
+    while !haltCond
         # iterate model and generate the current sales graph
-        saleGraph=outerGraphIterator(env,hotels,oldHouses,newHouses,exitHouses)
+        saleGraph=outerGraphIterator(env,hotels,oldHouses,newHouses,exitHouses,newSaleGraph)
         # update the budget of the agents
         offerUpdate(env,saleGraph)
         # halt when the sale graph stabilizes

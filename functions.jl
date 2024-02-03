@@ -1,3 +1,4 @@
+
 # basic functions
 function aSort(arr::Array)
     return sample(arr,length(arr),replace=false)
@@ -35,6 +36,14 @@ function maxMortgage(env::environment,haus::oldHouse)
     payment=haus.owner.budget
     return floor(Int64,payment*(((1+monthlyRate)^(12*30)) -1)/(monthlyRate*(1+monthlyRate)^(12*30)))+1
 end
+
+function maxMortgage(env::environment,haus::hotel)
+    monthlyRate::Float64=env.interestRate/12 
+    # apply interest rate calculation
+    payment=haus.owner.budget
+    return floor(Int64,payment*(((1+monthlyRate)^(12*30)) -1)/(monthlyRate*(1+monthlyRate)^(12*30)))+1
+end
+
 
 # we need a function that calculates the monthly payment
 
@@ -107,19 +116,26 @@ function moveIn(env::environment,haus::oldHouse,agt::agent)
 end
 
 # a function to list for agents who wish to exit
-
-function exitList(env::environment,haus::oldHouse)
-    for i in 1:length(env.allHouses)
-        idx=0
-        if env.allHouses==haus
-            idx=i
-        end
-    end
-    currHaus=env.allHouses[idx]
-    exitHome=exitHouse(currHaus.index,currHaus.quality,currHaus.owner,currHaus.bestOffer)
-    env.allHouses[idx]=exitHome
-    return exitHome
+function makeExit(haus::oldHouse)
+    return exitHouse(haus.index,haus.quality,haus.owner,haus.bestOffer)
 end
+
+
+function exitList(env::environment)
+    # get all old house indices
+    oldIdx=filter(i-> typeof(env.allHouses[i])==oldHouse,1:length(env.allHouses))
+    # now select some of them to exit 
+    maxExit=min(length(oldIdx),env.outFlow)
+    exitIdx=sample(oldIdx,maxExit,replace=false)
+    allExits=exitHouse[]
+    for i in exitIdx
+        exitHaus=makeExit(env.allHouses[i])
+        env.allHouses[i]=exitHaus
+        push!(allExits,exitHaus)
+    end
+    return allExits
+end
+
 
 
 # initialization functions
@@ -251,15 +267,18 @@ end
 
 
 function budgetCalc(env::environment,hotel::hotel)
-    homeBudget=maxMortgage(env,hotel.owner.budget)
-    return mortgageCalc(homeBudget)
+    homeBudget=maxMortgage(env,hotel)
+    return homeBudget
 end
 
 function budgetCalc(env::environment,haus::oldHouse)
-    balance=outstandingLoan(haus)
+    balance=outstandingLoan(env,haus)
     bestOffer=haus.bestOffer
+    if isnothing(bestOffer)
+        bestOffer=0
+    end
     # what is the maximum mortgage the agent can take out?
-    maxMort=mortgageCalc(env,haus.owner.budget)
+    maxMort=maxMortgage(env,haus)
     return maxMort+bestOffer-balance
 end
 
@@ -300,4 +319,11 @@ function cleanUp(arg::Array{Int64},graph::SimpleDiGraph)
         end
     end
     return outNbhs
+end
+
+
+# debug functions
+
+function fIndex(dwell::dwelling)
+    return dwell.index
 end

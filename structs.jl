@@ -50,9 +50,10 @@ end
 
 # define hash and equality operators for dwellings so we can use them as dictionary keys
 
-Base.hash(m::dwelling, h::UInt) = hash(m.index, hash(m.index, h))
-
-Base.:(==)(m1::dwelling, m2::dwelling) = m1.index == m2.index
+#Base.hash(m::dwelling, h::UInt) = hash(m.index, hash(m.index, h))
+Base.hash(m::hotel) = hash(-m.index)
+Base.hash(m::house) = hash(m.index)
+Base.:(==)(m1::dwelling, m2::dwelling) = ((m1.index == m2.index) & (m1.quality==m2.quality))
 
 
 
