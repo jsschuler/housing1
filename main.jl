@@ -23,7 +23,7 @@ include("reportingFunctions.jl")
 
 # we need a global variable which is a switch to pause 
 pauseBool::Bool=true
-
+Random.seed!(43884)
 function checkPoint(message)
     global pauseBool
     if pauseBool

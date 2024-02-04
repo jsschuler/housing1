@@ -132,7 +132,7 @@ function mostPreferredGraph(env::environment,
         end
     end
     graphLog(env,mostPreferredGraph,"mostPreferred")
-    checkPoint("Most Preferred Graph Generated")
+    #checkPoint("Most Preferred Graph Generated")
     #graphLog(env,mostPreferredGraph,"mostPreferred")
     return mostPreferredGraph
 end
@@ -151,38 +151,51 @@ function highestBidderGraph(env::environment,
         secondHiBudget=0
         hiHaus=nothing
         # find all arrows pointing to this house
-        pointingIn=inneighbors(mutableGraph,env.nodeDict[haus])
+        pointingIn=collect(inneighbors(mutableGraph,env.nodeDict[haus]))
+        #println(pointingIn)
         for dwellDex in pointingIn
             dwell=env.intDict[dwellDex]
             budg=budgetCalc(env,dwell)
+            #println("Budget")
+            #println(budg)
+            #println(hiBudget)
+            #println(budg >= hiBudget)
             if budg >= hiBudget
                 secondHiBudget=hiBudget
                 hiBudget=budg
                 hiHaus=dwell
             end
         end
-        if typeof(hiHaus)==exitHouse
-            outstandingAmt=outstandingLoan(hiHaus)
-            if secondHiBudget >= outstandingAmt
+        #println("Budget")
+        #println(hiBudget)
+        #println(hiHaus)
+        # now, add an edge if there is a bidder
+        if !isnothing(hiHaus)
+            if typeof(hiHaus)==exitHouse
+                outstandingAmt=outstandingLoan(hiHaus)
+                if secondHiBudget >= outstandingAmt
+                    add_edge!(highBidGraph,env.nodeDict[hiHaus],env.nodeDict[haus])
+                    # log the second highest bid to the transaction network
+                    #set_prop!(env.transactionGraph,Edge(nodeDict[hiHaus],nodeDict[haus]),:bid,secondHiBudget)
+                    env.bidDict[Edge(nodeDict[hiHaus],nodeDict[haus])]=secondHiBudget
+                    # have the offered house record the second best offer
+                    haus.bestOffer=secondHiBudget
+                end
+            else
+                #println("HiHaus")
+                #println(hiHaus)
                 add_edge!(highBidGraph,env.nodeDict[hiHaus],env.nodeDict[haus])
                 # log the second highest bid to the transaction network
                 #set_prop!(env.transactionGraph,Edge(nodeDict[hiHaus],nodeDict[haus]),:bid,secondHiBudget)
-                env.bidDict[Edge(nodeDict[hiHaus],nodeDict[haus])]=secondHiBudget
+                env.bidDict[Edge(env.nodeDict[hiHaus],env.nodeDict[haus])]=secondHiBudget
                 # have the offered house record the second best offer
                 haus.bestOffer=secondHiBudget
             end
-        else
-            add_edge!(highBidGraph,env.nodeDict[hiHaus],env.nodeDict[haus])
-            # log the second highest bid to the transaction network
-            #set_prop!(env.transactionGraph,Edge(nodeDict[hiHaus],nodeDict[haus]),:bid,secondHiBudget)
-            env.bidDict[Edge(env.nodeDict[hiHaus],env.nodeDict[haus])]=secondHiBudget
-            # have the offered house record the second best offer
-            haus.bestOffer=secondHiBudget
         end
     end
     #graphLog(env,highBidGraph,"highestBid")
     graphLog(env,highBidGraph,"hiBid")
-    checkPoint("Highest Bidder Graph Generated")
+    #checkPoint("Highest Bidder Graph Generated")
     return highBidGraph
 end
 
@@ -191,7 +204,7 @@ function graphIntersect(mostPreferredGraph::SimpleDiGraph,highBidGraph::SimpleDi
     interSect=intersect(highBidGraph,mostPreferredGraph)
     #graphLog(env,interSect,"intersection")
     graphLog(env,interSect,"intersection")
-    checkPoint("Graph Intersection")
+    #checkPoint("Graph Intersection")
     return interSect
 end
 
@@ -208,39 +221,57 @@ end
 # and all links pointing from the buying dwelling
 
 function tempTransactionPare(env::environment,saleGraph::SimpleDiGraph,mutableGraph::SimpleDiGraph)
+    println("Sales")
+    println(length(collect(edges(saleGraph))))
     for edge in collect(edges(saleGraph))
         destNode=dst(edge)
         srcNode=src(edge)
+        #println("Graph Sale")
+        #println(srcNode)
+        #println(destNode)
         # get all edges pointing to the destination node
-        for inNbh in inneighbors(mutableGraph,destNode)
+        #println("Neighbors Now")
+        #println(inneighbors(mutableGraph,destNode))
+        #println(outneighbors(mutableGraph,srcNode))
+
+        inNbhList=collect(inneighbors(mutableGraph,destNode))
+        for inNbh in inNbhList
             # if the inNeighbor is not the same as the source node, delete
+            #println((inNbh,destNode))
             if inNbh!=srcNode
-                rem_edge!(mutableGraph, Edge(inNbh,destNode))
+                #println((inNbh,destNode))
+                rem_edge!(mutableGraph,inNbh,destNode)
             end
         end
-        for outNbh in outneighbors(mutableGraph,srcNode)
+        outNbhList=collect(outneighbors(mutableGraph,srcNode))
+        for outNbh in outNbhList
             # if the outNeighbor is not the same as the destination node, delete
+            #println((srcNode,outNbh))
             if outNbh!=destNode
-                rem_edge!(mutableGraph, Edge(srcNode,outNbh))
+                #println((srcNode,outNbh))
+                rem_edge!(mutableGraph, srcNode,outNbh)
             end
         end
+        #println("Neighbors Later")
+        #println(inneighbors(mutableGraph,destNode))
+        #println(outneighbors(mutableGraph,srcNode))
     end
     #graphLog(env,mutableGraph,"mutableGraph")
     graphLog(env,mutableGraph,"tempTrans")
-    checkPoint("Temporary Transaction Graph")
+    #checkPoint("Temporary Transaction Graph")
     return mutableGraph
 end
 
 # now finally, the function that runs the inner loop step
 
 function innerGraphIterate(env::environment,
+                           mutableGraph::SimpleDiGraph,
                            hotels::Array{hotel},
                            oldHouses::Array{oldHouse},
                            newHouses::Array{newHouse},
                            exitHouses::Array{exitHouse},
                            saleGraph::SimpleDiGraph)
-    # generate the mutable version of the transaction graph
-    mutableGraph=env.transactionGraph
+    
     # form the most preferred graph
     mostPreferred=mostPreferredGraph(env,mutableGraph,hotels,oldHouses)
     # form the highest bidder graph
@@ -248,9 +279,9 @@ function innerGraphIterate(env::environment,
     # intersect them
     interGraph::SimpleDiGraph=graphIntersect(mostPreferred,highestBidders)
     # now, remove any chains that end in an exit house where the offer won't cover the mortgage
-    graphPair=pairbackGraph(env,interGraph,mutableGraph)
-    interGraph=graphPair[1]
-    mutableGraph=graphPair[2]
+    #graphPair=pairbackGraph(env,interGraph,mutableGraph)
+    #interGraph=graphPair[1]
+    #mutableGraph=graphPair[2]
     # now, pair back mutable transaction Graph
     mutableGraph=tempTransactionPare(env,interGraph,mutableGraph)
     saleGraph=join(saleGraph,interGraph)
@@ -265,12 +296,14 @@ end
 # now, we need the functions for the outer loop
 function offerUpdate(env::environment,saleGraph::SimpleDiGraph)
     for edge in edges(saleGraph)
-        env.nodeDict[dst(edge)].bestOffer=env.bidDict[edge]
+        #println(keys(env.nodeDict))
+        env.intDict[dst(edge)].bestOffer=env.bidDict[edge]
     end
 end
 
 # now finally, the outer loop iterator
 function outerGraphIterator(env::environment,
+                            mutableGraph::SimpleDiGraph,
                             hotels::Array{hotel},
                             oldHouses::Array{oldHouse},
                             newHouses::Array{newHouse},
@@ -278,9 +311,12 @@ function outerGraphIterator(env::environment,
                             saleGraph::SimpleDiGraph)
 
     haltCond::Bool=false
-
+    graphPair=nothing
     while !haltCond
-        graphPair=innerGraphIterate(env,hotels,oldHouses,newHouses,exitHouses,saleGraph)
+        graphPair=innerGraphIterate(env,mutableGraph,hotels,oldHouses,newHouses,exitHouses,saleGraph)
+        println("Bool Check")
+        
+        println(graphPair[1]==graphPair[2])
         if graphPair[1]==graphPair[2]
             haltCond=true
         end
@@ -299,12 +335,13 @@ function modelStep(env::environment,
                    newHouses::Array{newHouse},
                    exitHouses::Array{exitHouse})
     haltCond::Bool=false
+    mutableGraph=env.transactionGraph
     oldSaleGraph::SimpleDiGraph=SimpleDiGraph(0)
     newSaleGraph::SimpleDiGraph=SimpleDiGraph(0)
 
     while !haltCond
         # iterate model and generate the current sales graph
-        saleGraph=outerGraphIterator(env,hotels,oldHouses,newHouses,exitHouses,newSaleGraph)
+        saleGraph=outerGraphIterator(env,mutableGraph,hotels,oldHouses,newHouses,exitHouses,newSaleGraph)
         # update the budget of the agents
         offerUpdate(env,saleGraph)
         # halt when the sale graph stabilizes
