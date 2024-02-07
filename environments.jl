@@ -11,7 +11,8 @@ function environGen(qualityDistribution::Distribution,
                     construction::Int64,
                     inPlace::Int64,
                     interestRate::Float64,
-                    allTicks::Int64
+                    allTicks::Int64,
+                    mortgageFlag::Bool
 )
 
     return environment(qualityDistribution,
@@ -32,7 +33,8 @@ function environGen(qualityDistribution::Distribution,
                        Dict{dwelling,Int64}(),
                        Dict{Int64,dwelling}(),
                        Dict{LightGraphs.SimpleGraphs.SimpleEdge{Int64},Int64}(),
-                       Dict{LightGraphs.SimpleGraphs.SimpleEdge{Int64},Float64}())
+                       Dict{LightGraphs.SimpleGraphs.SimpleEdge{Int64},Float64}(),
+                       mortgageFlag)
 
 end
 

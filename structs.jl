@@ -99,4 +99,5 @@ mutable struct environment
     intDict::Dict{Int64,dwelling}
     bidDict::Dict{LightGraphs.SimpleGraphs.SimpleEdge{Int64},Int64}
     qualDict::Dict{LightGraphs.SimpleGraphs.SimpleEdge{Int64},Float64}
+    mortgageFlag::Bool
 end

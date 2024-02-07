@@ -278,19 +278,26 @@ function innerGraphIterate(env::environment,
     highestBidders=highestBidderGraph(env,mutableGraph,newHouses,oldHouses,exitHouses)
     # intersect them
     interGraph::SimpleDiGraph=graphIntersect(mostPreferred,highestBidders)
-    # now, remove any chains that end in an exit house where the offer won't cover the mortgage
+    # now, if an edge is associated with an offer that will not cover the mortgage of an exit house, delete it so long as we have this setting
+    if env.mortgageFlag
+        allEdge=collect(edges(interGraph))
+        for edg in allEdge
+            
+        end
+    end
     #graphPair=pairbackGraph(env,interGraph,mutableGraph)
     #interGraph=graphPair[1]
     #mutableGraph=graphPair[2]
-    # now, pair back mutable transaction Graph
+    # now, for each edge corresponding to a sale, remove from the mutable graph all other arrows coming out of the source, and other arrows pointing in to the destination
     mutableGraph=tempTransactionPare(env,interGraph,mutableGraph)
-    saleGraph=join(saleGraph,interGraph)
-    #graphLog(env,saleGraph,"saleGraphIter")
-    #graphLog(env,mutableGraph,"mutableGraphIter")
-    graphLog(env,saleGraph,"saleGraphInner")
-    graphLog(env,mutableGraph,"tempTransInner")
-    checkPoint("Inner Iteration")
-    return (saleGraph,mutableGraph)
+
+    
+    #graphLog(env,mutableGraph,"tempTransInner")
+    #checkPoint("Inner Iteration")
+
+    # return just the mutable graph
+
+    return mutableGraph
 end
 
 # now, we need the functions for the outer loop
@@ -310,8 +317,12 @@ function outerGraphIterator(env::environment,
                             exitHouses::Array{exitHouse},
                             saleGraph::SimpleDiGraph)
 
+    
+    # for the outer iterator, we halt when there are no more nodes pointing to more than one other node
+    
     haltCond::Bool=false
     graphPair=nothing
+    saleGraph=SimpleDiGraph(0)
     while !haltCond
         graphPair=innerGraphIterate(env,mutableGraph,hotels,oldHouses,newHouses,exitHouses,saleGraph)
         println("Bool Check")
@@ -339,21 +350,9 @@ function modelStep(env::environment,
     oldSaleGraph::SimpleDiGraph=SimpleDiGraph(0)
     newSaleGraph::SimpleDiGraph=SimpleDiGraph(0)
 
-    while !haltCond
-        # iterate model and generate the current sales graph
-        saleGraph=outerGraphIterator(env,mutableGraph,hotels,oldHouses,newHouses,exitHouses,newSaleGraph)
-        # update the budget of the agents
-        offerUpdate(env,saleGraph)
-        # halt when the sale graph stabilizes
-        oldSaleGraph=newSaleGraph
-        newSaleGraph=saleGraph
-        if oldSaleGraph==newSaleGraph
-            haltCond=true
-        end
-    end 
-    graphLog(env,newSaleGraph,"newSaleGraph")
-    checkPoint("Model Step")
-    return newSaleGraph
+    # now, for each model step, we update offers each time 
+    # once the transaction graph has stabilized across two steps,
+    # we halt
 end
 
 function modelTick(env::environment)
@@ -384,7 +383,7 @@ function modelTick(env::environment)
 
     for edge in allEdges
         bestBid=env.bidDict[edge]
-        paymentDict[dst(edge)]=bestBid
+        paymentDict[env.nodeDict[dst(edge)]]=bestBid
 
     end
 
