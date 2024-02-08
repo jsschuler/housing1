@@ -60,7 +60,8 @@ env=environGen(qualityDistribution,
                construction,
                inPlace,
                interestRate,
-               allTicks)
+               allTicks,
+               false)
 
 env=initialize(env)
 
