@@ -395,16 +395,16 @@ function modelStep(env::environment,
     return newGraph
 end
 
-function modelTick(env::environment,exitHouses::Union{Nothing,Array{exitHouse}},oldHouses::Union{Nothing,Array{oldHouse}},newHouses::Union{Nothing,Array{newHouse}})
+function modelTick(env::environment,exitHouses::Array{exitHouse},oldHouses::Array{oldHouse},newHouses::Array{newHouse},hotels::Array{hotel})
     env.tick=env.tick+1
     println("Debug 0")
     println(countmap(typeof.(keys(env.nodeDict))))
     # agents departing the market list homes 
-    exitHouses=exitHomesGen(env)
+    exitHouses=vcat(exitHouses,exitHomesGen(env))
     # agents moving within the market list homes
-    oldHouses=oldHomesGen(env)
+    oldHouses=vcat(oldHouses,oldHomesGen(env))
     # new construction
-    newHouses=newConstruction(env)
+    newHouses=vcat(newHouses,newConstruction(env))
     # people looking to buy move into the market
     hotels=marketEntry(env)
 
@@ -458,7 +458,7 @@ function modelTick(env::environment,exitHouses::Union{Nothing,Array{exitHouse}},
         end
     end
 
-    # remove 
+    # remove failed chains from the sale network
 
 
     for edge in edges(saleGraph)
@@ -486,13 +486,22 @@ function modelTick(env::environment,exitHouses::Union{Nothing,Array{exitHouse}},
         # now remove sales from dictionaries
     end
     # return the unsold houses
-    return ()
+    return (exitHouses,oldHouses,newHouses,hotels)
 
 end
 
 function modelRun(env::environment)
+    oldHouses=oldHouse[]
+    exitHouses=exitHouse[]
+    newHouses=newHouse[]
+    hotels=hotel[]
     while env.tick <= env.allTicks
         println(env.tick)
-        modelTick(env)
+        remaining=modelTick(env,exitHouses,oldHouses,newHouses)
+        exitHouses=remaining[1]
+        oldHouses=remaining[2]
+        newHouses=remaining[3]
+        hotels=remaining[4]
+
     end
 end
