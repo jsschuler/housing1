@@ -107,7 +107,7 @@ function moveIn(env::environment,haus::newHouse,agt::agent)
     currHaus=oldHouse(haus.index,haus.quality,agt,nothing)
     env.allHouses[hIndex]=currHaus
     # change dictionaries
-    println(countmap(typeof.(keys(env.nodeDict))))
+    #println(countmap(typeof.(keys(env.nodeDict))))
     intArg=env.nodeDict[haus]
     env.nodeDict[currHaus]=intArg
     delete!(env.nodeDict,haus)
@@ -324,6 +324,34 @@ end
 
 # graph searching functions
 
+function allPaths(env,saleGraph)
+    # find all vertices with no in-neighbors
+    # they must be hotels 
+    noHotels=Int64[]
+    for vert in vertices(saleGraph)
+        if inneighbors(vert)==0
+            if typeof(env.nodeDict[vert])!=hotel
+                push!(noHotels,vert)
+            end
+        end
+    end
+    # find all vertices with no out-neighbors
+    # they must be exit houses
+    noExit=Int64[]
+    for vert in vertices(saleGraph)
+        if outneighbors(vert)==0
+            if typeof(env.nodeDict[vert])!=exitHouse
+                push!(noExit,vert)
+            end
+        end
+    end
+    # remove any paths where this is untrue
+    for vert in vcat(noHotels,noExit)
+        
+    end
+end
+
+
 # we need the final step processing functions
 # implemented as an iteration
 
@@ -357,3 +385,4 @@ end
 function fIndex(dwell::dwelling)
     return dwell.index
 end
+

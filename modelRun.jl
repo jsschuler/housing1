@@ -420,7 +420,9 @@ function modelTick(env::environment)
     println("Debug 2")
     println(countmap(typeof.(keys(env.nodeDict))))
 
-    # now track payments
+    # now make sure the sale chains are valid 
+
+    
     allEdges=edges(saleGraph)
 
     # now, we need a dictionary to store all payments
@@ -436,9 +438,10 @@ function modelTick(env::environment)
     end
 
     println("Debug 4")
-    println(keys(env.nodeDict))
-    println(length(keys(env.nodeDict)))
-    println(countmap(typeof.(keys(env.nodeDict))))
+    #println(keys(env.nodeDict))
+    #println(length(keys(env.nodeDict)))
+    println(countmap(keys(env.nodeDict)))
+    
 
 
     for edge in edges(saleGraph)
@@ -462,11 +465,14 @@ function modelTick(env::environment)
 
         # Now, 
         # log all sales and prices 
+
+        # now remove sales from dictionaries
     end
 end
 
 function modelRun(env::environment)
     while env.tick <= env.allTicks
+        println(env.tick)
         modelTick(env)
     end
 end
