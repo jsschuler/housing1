@@ -395,7 +395,7 @@ function modelStep(env::environment,
     return newGraph
 end
 
-function modelTick(env::environment)
+function modelTick(env::environment,exitHouses::Union{Nothing,Array{exitHouse}},oldHouses::Union{Nothing,Array{oldHouse}},newHouses::Union{Nothing,Array{newHouse}})
     env.tick=env.tick+1
     println("Debug 0")
     println(countmap(typeof.(keys(env.nodeDict))))
@@ -422,7 +422,7 @@ function modelTick(env::environment)
 
     # now make sure the sale chains are valid 
 
-    
+
     allEdges=edges(saleGraph)
 
     # now, we need a dictionary to store all payments
@@ -442,6 +442,23 @@ function modelTick(env::environment)
     #println(length(keys(env.nodeDict)))
     println(countmap(keys(env.nodeDict)))
     
+    println("All Paths")
+    println(saleGraph)
+    allSalePaths=allPaths(saleGraph)
+    println(allSalePaths)
+    # check if the paths begin with hotels and end with exit houses
+    for vert in keys(allSalePaths)
+        path=allSalePaths[vert]
+        if typeof(env.intDict[src(path[1])])==hotel && typeof(env.intDict[dst(path[length(path)])])==exitHouse
+            println("Good!")
+            println(length(path))
+        else
+            println("Bad")
+            println(length(path))
+        end
+    end
+
+    # remove 
 
 
     for edge in edges(saleGraph)
@@ -468,6 +485,9 @@ function modelTick(env::environment)
 
         # now remove sales from dictionaries
     end
+    # return the unsold houses
+    return ()
+
 end
 
 function modelRun(env::environment)

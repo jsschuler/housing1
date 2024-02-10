@@ -324,31 +324,43 @@ end
 
 # graph searching functions
 
-function allPaths(env,saleGraph)
-    # find all vertices with no in-neighbors
-    # they must be hotels 
-    noHotels=Int64[]
+
+function pathGenBack(graph,vertex)
+    node1=nothing
+    node2=nothing
+    haltCond=true
+    while !haltCond
+        haltCond=
+            nbh=inneighbors(graph,vertex)[1]
+            node1=node2
+            node2=nbh
+    end
+
+end
+
+function allPaths(saleGraph)
+    # we need a dictionary with the vertex beginning the path as they key 
+    pathDict=Dict{Int64,Array}()
     for vert in vertices(saleGraph)
-        if inneighbors(vert)==0
-            if typeof(env.nodeDict[vert])!=hotel
-                push!(noHotels,vert)
+        if length(inneighbors(saleGraph,vert))==0 && length(outneighbors(saleGraph,vert)) > 0
+            pathDict[vert]=[]
+        end
+    end
+    for vert in keys(pathDict)
+        srcNode=vert
+        while true 
+            #println("SRC")
+            #println(srcNode)
+            destNode=outneighbors(saleGraph,srcNode)[1]
+            push!(pathDict[vert],Edge(srcNode,destNode))
+            if length(outneighbors(saleGraph,destNode))==0
+                break
+            else
+                srcNode=destNode
             end
         end
     end
-    # find all vertices with no out-neighbors
-    # they must be exit houses
-    noExit=Int64[]
-    for vert in vertices(saleGraph)
-        if outneighbors(vert)==0
-            if typeof(env.nodeDict[vert])!=exitHouse
-                push!(noExit,vert)
-            end
-        end
-    end
-    # remove any paths where this is untrue
-    for vert in vcat(noHotels,noExit)
-        
-    end
+    return pathDict
 end
 
 
