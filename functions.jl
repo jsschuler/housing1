@@ -69,14 +69,31 @@ end
 function loanGen(env::environment,collat::oldHouse)
     initialBalance=maxMortgage(env,collat)
     push!(env.loanList,loan(env.interestRate,initialBalance,collat.owner.budget,initialBalance,0,collat,false))
+    return env
 end
 
 # the function generating a loan with a given quantity works differently
 function loanGen(env::environment,collat::oldHouse,amount::Int64)
-    push!(env.loanList,loan(env.interestRate,initialBalance,collat.owner.budget,initialBalance,0,collat,false))
+    push!(env.loanList,loan(env.interestRate,amount,collat.owner.budget,amount,0,collat,false))
+    return env
 end
 
 # now we need the house conversion functions
+
+# populating the house does not assume we have populated dictionaries yet but otherwise, works like moveIn
+function populate(env::environment,haus::newHouse,agt::agent)
+    hIndex=0
+    for i in 1:length(env.allHouses)
+        if env.allHouses[i]==haus
+            hIndex=i
+        end
+    end
+    currHaus=oldHouse(haus.index,haus.quality,agt,nothing)
+    env.allHouses[hIndex]=currHaus
+
+    return env
+end
+
 
 # moving into a new house or an exit house converts it to an old house
 
@@ -89,7 +106,14 @@ function moveIn(env::environment,haus::newHouse,agt::agent)
     end
     currHaus=oldHouse(haus.index,haus.quality,agt,nothing)
     env.allHouses[hIndex]=currHaus
-    return haus
+    # change dictionaries
+    println(countmap(typeof.(keys(env.nodeDict))))
+    intArg=env.nodeDict[haus]
+    env.nodeDict[currHaus]=intArg
+    delete!(env.nodeDict,haus)
+    env.intDict[intArg]=currHaus
+
+    return env
 end
 
 function moveIn(env::environment,haus::exitHouse,agt::agent)
@@ -101,7 +125,12 @@ function moveIn(env::environment,haus::exitHouse,agt::agent)
     end
     currHaus=oldHouse(haus.index,haus.quality,agt,nothing)
     env.allHouses[hIndex]=currHaus
-    return haus
+    # change dictionaries
+    intArg=env.nodeDict[haus]
+    env.nodeDict[currHaus]=intArg
+    delete!(env.nodeDict,haus)
+    env.intDict[intArg]=currHaus
+    return env
 end
 
 function moveIn(env::environment,haus::oldHouse,agt::agent)
@@ -111,8 +140,8 @@ function moveIn(env::environment,haus::oldHouse,agt::agent)
             hIndex=i
         end
     end
-    currHaus.owner=agt
-    return haus
+    env.allHouses[hIndex].owner=agt
+    return env
 end
 
 # a function to list for agents who wish to exit
@@ -286,10 +315,11 @@ end
 
 # we need a function to pay loans in full
 function payFull(env::environment,haus::house)
-    loanHeld=filter(env.loanList,x->x.collateral==haus2)
+    loanHeld=filter(x->x.collateral==haus,env.loanList)
     if length(loanHeld) > 0
         filter!(x-> x!=loanHeld[1],env.loanList)
     end
+    return env
 end
 
 # graph searching functions

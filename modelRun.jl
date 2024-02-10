@@ -221,8 +221,8 @@ end
 # and all links pointing from the buying dwelling
 
 function tempTransactionPare(env::environment,saleGraph::SimpleDiGraph,mutableGraph::SimpleDiGraph)
-    println("Sales")
-    println(length(collect(edges(saleGraph))))
+    #println("Sales")
+    #println(length(collect(edges(saleGraph))))
     for edge in collect(edges(saleGraph))
         destNode=dst(edge)
         srcNode=src(edge)
@@ -280,6 +280,7 @@ function innerGraphIterate(env::environment,
     env.bidDict=hiBidData[2]
     # intersect them
     interGraph::SimpleDiGraph=graphIntersect(mostPreferred,highestBidders)
+    graphLog(env,interGraph,"interGraph")
     # now, if an edge is associated with an offer that will not cover the mortgage of an exit house, delete it so long as we have this setting
     #if env.mortgageFlag
     #    allEdge=collect(edges(interGraph))
@@ -297,7 +298,7 @@ function innerGraphIterate(env::environment,
 
     
     graphLog(env,mutableGraph,"tempTransInner")
-    checkPoint("Inner Iteration")
+    #checkPoint("Inner Iteration")
 
     # return just the mutable graph
 
@@ -307,7 +308,10 @@ end
 # now, we need the functions for the outer loop
 function offerUpdate(env::environment,mutableGraph::SimpleDiGraph)
     for edge in edges(mutableGraph)
+        #print("Debug")
         #println(keys(env.nodeDict))
+        #println(keys(env.bidDict))
+        #println(outneighbors(mutableGraph,10))
         env.intDict[dst(edge)].bestOffer=env.bidDict[edge]
     end
     return env
@@ -332,11 +336,23 @@ function outerGraphIterator(env::environment,
         env.bidDict=innerDat[2]
         haltCond=true
         for edg in edges(mutableGraph)
-            if length(outneighbors(mutableGraph,src(edg))) > 1 | length(inneighbors(mutableGraph,dst(edg))) > 1
+            if length(outneighbors(mutableGraph,src(edg))) > 1 || length(inneighbors(mutableGraph,dst(edg))) > 1
+                #println("continue")
                 haltCond=false
             end
         end
     end
+    # check graph
+    outNbhList=[]
+    inNbhList=[]
+    for edg in edges(mutableGraph)
+        push!(outNbhList,length(outneighbors(mutableGraph,src(edg)))) 
+        push!(inNbhList,length(inneighbors(mutableGraph,dst(edg))))
+    end
+    println("Report")
+    println(maximum(outNbhList))
+    println(maximum(inNbhList))
+
     graphLog(env,mutableGraph,"mutableGraphOuter")
     
     checkPoint("Outer Iteration")
@@ -369,19 +385,20 @@ function modelStep(env::environment,
                                     exitHouses
                                     )
         # update budgets given offers
-        env=offerUpdate(env,mutableGraph)
+        env=offerUpdate(env,newGraph)
         # now, if the transaction graph stabilizes after agents re-evaluate
         # halt
         if oldGraph==newGraph
             haltCond=true
         end
     end
-
-
+    return newGraph
 end
 
 function modelTick(env::environment)
     env.tick=env.tick+1
+    println("Debug 0")
+    println(countmap(typeof.(keys(env.nodeDict))))
     # agents departing the market list homes 
     exitHouses=exitHomesGen(env)
     # agents moving within the market list homes
@@ -391,11 +408,17 @@ function modelTick(env::environment)
     # people looking to buy move into the market
     hotels=marketEntry(env)
 
+    println("Debug 1")
+    println(countmap(typeof.(keys(env.nodeDict))))
+
     # generate the transaction graph
     env.transactionGraph=transactionGraphGen(env,hotels,newHouses,oldHouses,exitHouses)
 
     # now generate the sales graph
     saleGraph=modelStep(env,hotels,oldHouses,newHouses,exitHouses)
+    graphLog(env,saleGraph,"saleGraphStep")
+    println("Debug 2")
+    println(countmap(typeof.(keys(env.nodeDict))))
 
     # now track payments
     allEdges=edges(saleGraph)
@@ -405,32 +428,37 @@ function modelTick(env::environment)
     for key in keys(env.nodeDict)
             paymentDict[key]=0
     end
-
+    println("Debug 3")
+    println(countmap(typeof.(keys(env.nodeDict))))
     for edge in allEdges
         bestBid=env.bidDict[edge]
-        paymentDict[env.nodeDict[dst(edge)]]=bestBid
-
+        paymentDict[env.intDict[dst(edge)]]=bestBid
     end
+
+    println("Debug 4")
+    println(keys(env.nodeDict))
+    println(length(keys(env.nodeDict)))
+    println(countmap(typeof.(keys(env.nodeDict))))
 
 
     for edge in edges(saleGraph)
-        haus1=env.nodeDict[src(edge)]
-        haus2=env.nodeDict[dst[edge]]
+        #haus1=env.intDict[src(edge)]
+        #haus2=env.intDict[dst(edge)]
 
-        moveIn(env,haus2,haus1.owner)
+        env=moveIn(env,env.intDict[dst(edge)],env.intDict[src(edge)].owner)
 
         # how much is agt1 paying agt2?
-        paid=paymentDict[src(edge)]
+        paid=paymentDict[env.intDict[src(edge)]]
 
-        haus2.owner=agt1
         # pay down loans on sold homes
-        payFull(haus2)
+        env=payFull(env,env.intDict[dst(edge)])
         # generate mortgages on new homes
         bestBid=env.bidDict[edge]
         # now, what is the difference between what the agent is paying and what the agent was paid?
-        delta=bedBid-paid
+        delta=bestBid-paid
+
         # generate the loan
-        loanGen(env,haus2,delta)
+        env=loanGen(env,env.intDict[dst(edge)],delta)
 
         # Now, 
         # log all sales and prices 

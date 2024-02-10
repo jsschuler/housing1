@@ -52,7 +52,7 @@ function initialize(env::environment)
     houseRand=aSort(env.allHouses)
     agtRand=aSort(env.agtList)
     for i in 1:length(houseRand)
-        moveIn(env,houseRand[i],agtRand[i])
+        populate(env,houseRand[i],agtRand[i])
     end
     # now sort agents
 
