@@ -447,23 +447,46 @@ function modelTick(env::environment,exitHouses::Array{exitHouse},oldHouses::Arra
     allSalePaths=allPaths(saleGraph)
     println(allSalePaths)
     # check if the paths begin with hotels and end with exit houses
+    
+    # removal edges
+    removalEdges=[]
     for vert in keys(allSalePaths)
         path=allSalePaths[vert]
         if typeof(env.intDict[src(path[1])])==hotel && typeof(env.intDict[dst(path[length(path)])])==exitHouse
-            println("Good!")
-            println(length(path))
+            #println("Good!")
+            #println(length(path))
+            10
         else
-            println("Bad")
-            println(length(path))
+            #println("Bad")
+            #println(length(path))
+            for ed in path
+                rem_edge!(saleGraph,ed)
+            end
         end
     end
 
-    # remove failed chains from the sale network
+    println("final sale graph")
+    println(saleGraph)
 
 
     for edge in edges(saleGraph)
         #haus1=env.intDict[src(edge)]
         #haus2=env.intDict[dst(edge)]
+        # remove from lists
+
+        if typeof(env.intDict[src(edge)])==hotel 
+            filter!(x -> x==env.intDict[src(edge)],hotels)
+        elseif typeof(env.intDict[src(edge)])==oldHouse
+            filter!(x -> x==env.intDict[src(edge)],oldHouses)
+        end
+
+        if typeof(env.intDict[dst(edge)])==oldHouse 
+            filter!(x -> x==env.intDict[src(edge)],oldHouses)
+        elseif typeof(env.intDict[src(edge)])==exitHouse
+            filter!(x -> x==env.intDict[src(edge)],exitHouses)
+        elseif typeof(env.intDict[src(edge)])==newHouse
+            filter!(x->x==env.intDict[src(edge)],newHouses)
+        end
 
         env=moveIn(env,env.intDict[dst(edge)],env.intDict[src(edge)].owner)
 
@@ -483,8 +506,10 @@ function modelTick(env::environment,exitHouses::Array{exitHouse},oldHouses::Arra
         # Now, 
         # log all sales and prices 
 
-        # now remove sales from dictionaries
     end
+    # clear dictionaries
+    env.nodeDict=Dict{dwelling,Int64}()
+    env.intDict=Dict{Int64,dwelling}()
     # return the unsold houses
     return (exitHouses,oldHouses,newHouses,hotels)
 
@@ -497,7 +522,7 @@ function modelRun(env::environment)
     hotels=hotel[]
     while env.tick <= env.allTicks
         println(env.tick)
-        remaining=modelTick(env,exitHouses,oldHouses,newHouses)
+        remaining=modelTick(env,exitHouses,oldHouses,newHouses,hotels)
         exitHouses=remaining[1]
         oldHouses=remaining[2]
         newHouses=remaining[3]
