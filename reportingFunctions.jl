@@ -1,12 +1,17 @@
-function graphLog(env::environment,graph::SimpleDiGraph,label::String)
-    # this function dumps a sparse adjacency matrix
-    A=adjacency_matrix(graph)
-    rows, cols, vals = findnz(A)
-    # get dwelling quality
+# we need a function that logs environments
+function envLog(env::environment)
+    
+end
 
-    edgeDF = DataFrame(row=rows, col=cols)
-    nodeDF=DataFrame(edges=1:length(vertices(graph)))
-    #CSV.write("../housingData/"*label*"_nodes.csv",nodeDF)
+
+function graphLog(env::environment,graph::SimpleDiGraph,label::String)
+    srcIndex=[]
+    dstIndex=[]
+    
+    for edge in edges(graph)
+        push!(srcIndex,src(edge))
+        push!(dstIndex,dst(edge))
+    end
     CSV.write("../housingData/"*label*"_edges"*string(env.tick)*".csv",edgeDF,header=false)
 end
 

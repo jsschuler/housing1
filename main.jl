@@ -50,7 +50,7 @@ construction::Int64=10
 inPlace::Int64=20
 # what 
 # how many ticks to run the model ?
-allTicks=10
+allTicks=100
 
 env=environGen(qualityDistribution,
                paymentDistribution,

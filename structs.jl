@@ -73,6 +73,7 @@ end
 ##### ENVIRONMENT STRUCT #######
 
 mutable struct environment
+    key::String
     # global parameters
     # distribution of house qualities 
     qualityDistribution::Distribution
