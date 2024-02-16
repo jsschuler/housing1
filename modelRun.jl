@@ -14,7 +14,7 @@ function exitHomesGen(env::environment,exitHouses::Array{exitHouse},oldHouses::A
     exitIdx=sample(marketableIdx,maxExit,replace=false)
     allExits=exitHouse[]
     for i in exitIdx
-        println(env.allHouses[i])
+        #println(env.allHouses[i])
         exitHaus=makeExit(env.allHouses[i])
         env.allHouses[i]=exitHaus
         push!(allExits,exitHaus)
@@ -53,7 +53,6 @@ function marketEntry(env::environment)
     end
     return hotelList
 end
-
 # now we need to load the code that generates the preferende error term 
 include("qualityDistribution.jl")
 
@@ -115,12 +114,12 @@ function transactionGraphGen(env::environment,
     end
 
     env.transactionGraph=SimpleDiGraph(length(keys(env.nodeDict)))
-    println("Graph Check")
-    println(env.transactionGraph)
-    println("int dict check")
-    println(length(keys(env.intDict)))
-    println("node dict check")
-    println(length(keys(env.nodeDict)))
+    #println("Graph Check")
+    #println(env.transactionGraph)
+    #println("int dict check")
+    #println(length(keys(env.intDict)))
+    #println("node dict check")
+    #println(length(keys(env.nodeDict)))
     # now build the transaction graph by linking homes where agents would like to move
     for haus1 in vcat(hotels,oldHouses)
         for haus2 in vcat(newHouses,oldHouses,exitHouses)
@@ -129,8 +128,8 @@ function transactionGraphGen(env::environment,
     end
     # now log the transaction graph
     #graphLog(env,env.transactionGraph,"transaction")
-    graphLog(env,env.transactionGraph,"transactionGraph")
-    checkPoint("transaction Graph Generated")
+    #graphLog(env,env.transactionGraph,"transactionGraph")
+    #checkPoint("transaction Graph Generated")
     return env.transactionGraph
 end
 
@@ -395,13 +394,13 @@ function outerGraphIterator(env::environment,
         push!(outNbhList,length(outneighbors(mutableGraph,src(edg)))) 
         push!(inNbhList,length(inneighbors(mutableGraph,dst(edg))))
     end
-    println("Report")
-    println(maximum(outNbhList))
-    println(maximum(inNbhList))
+    #println("Report")
+    #println(maximum(outNbhList))
+    #println(maximum(inNbhList))
 
-    graphLog(env,mutableGraph,"mutableGraphOuter")
+    #graphLog(env,mutableGraph,"mutableGraphOuter")
     
-    checkPoint("Outer Iteration")
+    #checkPoint("Outer Iteration")
     return mutableGraph
 end
 
@@ -443,8 +442,8 @@ end
 
 function modelTick(env::environment,exitHouses::Array{exitHouse},oldHouses::Array{oldHouse},newHouses::Array{newHouse},hotels::Array{hotel})
     env.tick=env.tick+1
-    println("Debug 0")
-    println(countmap(typeof.(keys(env.nodeDict))))
+    #println("Debug 0")
+    #println(countmap(typeof.(keys(env.nodeDict))))
     # agents departing the market list homes 
     exitHouses=vcat(exitHouses,exitHomesGen(env,exitHouses,oldHouses,newHouses))
     # agents moving within the market list homes
@@ -454,10 +453,10 @@ function modelTick(env::environment,exitHouses::Array{exitHouse},oldHouses::Arra
     # people looking to buy move into the market
     hotels=marketEntry(env)
 
-    println("Debug 1")
-    println(countmap(typeof.(keys(env.nodeDict))))
-    println(length(keys(env.nodeDict)))
-    println(length(oldHouses)+length(newHouses)+length(exitHouses)+length(hotels))
+    #println("Debug 1")
+    #println(countmap(typeof.(keys(env.nodeDict))))
+    #println(length(keys(env.nodeDict)))
+    #println(length(oldHouses)+length(newHouses)+length(exitHouses)+length(hotels))
 
 
     # generate the transaction graph
@@ -465,9 +464,9 @@ function modelTick(env::environment,exitHouses::Array{exitHouse},oldHouses::Arra
 
     # now generate the sales graph
     saleGraph=modelStep(env,hotels,oldHouses,newHouses,exitHouses)
-    graphLog(env,saleGraph,"saleGraphStep")
-    println("Debug 2")
-    println(countmap(typeof.(keys(env.nodeDict))))
+    #graphLog(env,saleGraph,"saleGraphStep")
+    #println("Debug 2")
+    #println(countmap(typeof.(keys(env.nodeDict))))
 
     # now make sure the sale chains are valid 
 
@@ -479,22 +478,22 @@ function modelTick(env::environment,exitHouses::Array{exitHouse},oldHouses::Arra
     for key in keys(env.nodeDict)
             paymentDict[key]=0
     end
-    println("Debug 3")
-    println(countmap(typeof.(keys(env.nodeDict))))
+    #println("Debug 3")
+    #println(countmap(typeof.(keys(env.nodeDict))))
     for edge in allEdges
         bestBid=env.bidDict[edge]
         paymentDict[env.intDict[dst(edge)]]=bestBid
     end
 
-    println("Debug 4")
+    #println("Debug 4")
     #println(keys(env.nodeDict))
     #println(length(keys(env.nodeDict)))
-    println(countmap(keys(env.nodeDict)))
+    #println(countmap(keys(env.nodeDict)))
     
-    println("All Paths")
-    println(saleGraph)
+    #println("All Paths")
+    #println(saleGraph)
     allSalePaths=allPaths(saleGraph)
-    println(allSalePaths)
+    #println(allSalePaths)
     # check if the paths begin with hotels and end with exit houses
     
     # removal edges
@@ -514,19 +513,19 @@ function modelTick(env::environment,exitHouses::Array{exitHouse},oldHouses::Arra
         end
     end
 
-    println("final sale graph")
-    println(saleGraph)
-    println("Lengths Before")
-    println(length(oldHouses))
-    println(length(newHouses))
-    println(length(exitHouses))
-    println(length(hotels))
-
-    println("Indices Before")
-    println(fIndex.(oldHouses))
-    println(fIndex.(newHouses))
-    println(fIndex.(exitHouses))
-    println(fIndex.(hotels))
+    #println("final sale graph")
+    #println(saleGraph)
+    #println("Lengths Before")
+    #println(length(oldHouses))
+    #println(length(newHouses))
+    #println(length(exitHouses))
+    #println(length(hotels))
+#
+    #println("Indices Before")
+    #println(fIndex.(oldHouses))
+    #println(fIndex.(newHouses))
+    #println(fIndex.(exitHouses))
+    #println(fIndex.(hotels))
 
 
     for edge in edges(saleGraph)
@@ -577,17 +576,17 @@ function modelTick(env::environment,exitHouses::Array{exitHouse},oldHouses::Arra
 
     end
 
-    println("Lengths After")
-    println(length(oldHouses))
-    println(length(newHouses))
-    println(length(exitHouses))
-    println(length(hotels))
+    #println("Lengths After")
+    #println(length(oldHouses))
+    #println(length(newHouses))
+    #println(length(exitHouses))
+    #println(length(hotels))
 
-    println("Indices After")
-    println(fIndex.(oldHouses))
-    println(fIndex.(newHouses))
-    println(fIndex.(exitHouses))
-    println(fIndex.(hotels))
+    #println("Indices After")
+    #println(fIndex.(oldHouses))
+    #println(fIndex.(newHouses))
+    #println(fIndex.(exitHouses))
+    #println(fIndex.(hotels))
 
     # clear dictionaries
     env.nodeDict=Dict{dwelling,Int64}()
