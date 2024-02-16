@@ -55,6 +55,7 @@ function agtMove(env::environment,origin::dwelling,dest::dwelling,agt::agent)
     CSV.write("../housingData/agtMove"*env.key*".csv",dArray,header=false,append=true)
 end
 
+# finally functions to track graphs and dictionaries
 
 
 

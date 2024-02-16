@@ -124,6 +124,8 @@ function moveIn(env::environment,haus::newHouse,agt::agent)
 end
 
 function moveIn(env::environment,haus::exitHouse,agt::agent)
+    # record the old owner leaving
+    agtLeave(env,haus,haus.owner)
     hIndex=0
     for i in 1:length(env.allHouses)
         if env.allHouses[i]==haus
@@ -131,6 +133,7 @@ function moveIn(env::environment,haus::exitHouse,agt::agent)
         end
     end
     currHaus=oldHouse(haus.index,haus.quality,agt,nothing)
+    # and the new owner moving in
     agtMoveIn(env,currHaus,agt)
     env.allHouses[hIndex]=currHaus
     # change dictionaries
