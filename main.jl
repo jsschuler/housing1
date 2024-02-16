@@ -16,14 +16,16 @@ using TikzGraphs, TikzPictures
 using SparseArrays
 using CSV
 include("structs.jl")
+include("reportingFunctions.jl")
 include("functions.jl")
 include("environments.jl")
-include("reportingFunctions.jl")
+
 # initialize environment with parameters
 
 # we need a global variable which is a switch to pause 
 pauseBool::Bool=true
-Random.seed!(43884)
+seed=43884
+Random.seed!(seed)
 function checkPoint(message)
     global pauseBool
     if pauseBool
@@ -52,7 +54,8 @@ inPlace::Int64=20
 # how many ticks to run the model ?
 allTicks=100
 
-env=environGen(qualityDistribution,
+env=environGen(string(seed)*sHash(paymentDistribution)*sHash(qualityDistribution)*sHash(agtCnt)*sHash(inFlow)*sHash(outFlow)*sHash(construction)*sHash(inPlace)*sHash(allTicks),
+               qualityDistribution,
                paymentDistribution,
                agtCnt,
                inFlow,

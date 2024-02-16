@@ -398,3 +398,8 @@ function fIndex(dwell::dwelling)
     return dwell.index
 end
 
+# string hash function for keys 
+
+function sHash(obj)
+    return string(hash(obj))
+end

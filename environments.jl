@@ -3,7 +3,8 @@
 
 
 
-function environGen(qualityDistribution::Distribution,
+function environGen(key::String,
+                    qualityDistribution::Distribution,
                     paymentDistribution::Distribution,
                     agtCnt::Int64,
                     inFlow::Int64,
@@ -14,8 +15,8 @@ function environGen(qualityDistribution::Distribution,
                     allTicks::Int64,
                     mortgageFlag::Bool
 )
-
-    return environment(qualityDistribution,
+    retVal=environment(key,
+                       qualityDistribution,
                        paymentDistribution,
                        agtCnt,
                        inFlow,
@@ -35,6 +36,8 @@ function environGen(qualityDistribution::Distribution,
                        Dict{LightGraphs.SimpleGraphs.SimpleEdge{Int64},Int64}(),
                        Dict{LightGraphs.SimpleGraphs.SimpleEdge{Int64},Float64}(),
                        mortgageFlag)
+    envLog(retVal)
+    return retVal
 
 end
 
