@@ -1,13 +1,32 @@
 
 # a function that randomly selects homes for agents who want to exit
 
-function exitHomesGen(env::environment)
-    return exitList(env)
+function exitHomesGen(env::environment,exitHouses::Array{exitHouse},oldHouses::Array{oldHouse},newHouses::Array{newHouse})
+    # find homes that can be exit homes 
+    stillOnMarket=vcat(exitHouses,oldHouses,newHouses)
+    marketable=setdiff(env.allHouses,stillOnMarket)
+    marketableIdx=[]
+    # now, get indexes for both the list of all houses and the marketable list 
+    for mark in marketable
+        push!(marketableIdx,filter(i -> env.allHouses[i]==mark,1:length(env.allHouses))[1])
+    end
+    maxExit=min(length(marketableIdx),env.outFlow)
+    exitIdx=sample(marketableIdx,maxExit,replace=false)
+    allExits=exitHouse[]
+    for i in exitIdx
+        println(env.allHouses[i])
+        exitHaus=makeExit(env.allHouses[i])
+        env.allHouses[i]=exitHaus
+        push!(allExits,exitHaus)
+    end
+    return allExits
 end
 # a function that randomly selects agents who want to move in place
-function oldHomesGen(env::environment)
+function oldHomesGen(env::environment,exitHouses::Array{exitHouse},oldHouses::Array{oldHouse},newHouses::Array{newHouse})
+    stillOnMarket=vcat(exitHouses,oldHouses,newHouses)
+    marketable=setdiff(env.allHouses,stillOnMarket)
     canMove::Array{oldHouse}=oldHouse[]
-    for haus in env.allHouses
+    for haus in marketable
         if typeof(haus)==oldHouse
             push!(canMove,haus)
         end
@@ -61,6 +80,8 @@ function transactionGraphGen(env::environment,
                             
 
     # now, set up dictionaries to relate the nodes to dwellings
+    env.intDict=Dict{Int64,dwelling}()
+    env.nodeDict=Dict{dwelling,Int64}()
     hashes=[]
     
     kdx=0
@@ -69,15 +90,37 @@ function transactionGraphGen(env::environment,
         push!(hashes,hash(hot))
         env.nodeDict[hot]=kdx
         env.intDict[kdx]=hot
+        if length(keys(env.nodeDict))!=length(keys(env.intDict))
+            println("Error")
+            println(hot)
+        end
     end
     for haus in vcat(newHouses,oldHouses,exitHouses)
         kdx=kdx+1
         push!(hashes,hash(haus))
         env.nodeDict[haus]=kdx
         env.intDict[kdx]=haus
+        if length(keys(env.nodeDict))!=length(keys(env.intDict))
+            println("Error")
+            println(haus)
+            # is there also an exit house with this index?
+            println("exit houses")
+            println(filter(x->x.index==haus.index,exitHouses))
+            println(filter(x->hash(x)==hash(haus),exitHouses))
+            println("new houses")
+            println(filter(x->hash(x)==hash(haus),newHouses))
+            println(filter(x->hash(x)==hash(haus),newHouses))      
+                  
+        end
     end
 
     env.transactionGraph=SimpleDiGraph(length(keys(env.nodeDict)))
+    println("Graph Check")
+    println(env.transactionGraph)
+    println("int dict check")
+    println(length(keys(env.intDict)))
+    println("node dict check")
+    println(length(keys(env.nodeDict)))
     # now build the transaction graph by linking homes where agents would like to move
     for haus1 in vcat(hotels,oldHouses)
         for haus2 in vcat(newHouses,oldHouses,exitHouses)
@@ -111,6 +154,9 @@ function mostPreferredGraph(env::environment,
         hiQual=-Inf
         hiHaus=nothing
         # find all arrows pointing out
+        #println(env.nodeDict[haus1])
+        #println(mutableGraph)
+        #println(keys(env.nodeDict))
         pointingOut=outneighbors(mutableGraph,env.nodeDict[haus1])
         for hausDex in pointingOut
             haus2=env.intDict[hausDex]
@@ -400,9 +446,9 @@ function modelTick(env::environment,exitHouses::Array{exitHouse},oldHouses::Arra
     println("Debug 0")
     println(countmap(typeof.(keys(env.nodeDict))))
     # agents departing the market list homes 
-    exitHouses=vcat(exitHouses,exitHomesGen(env))
+    exitHouses=vcat(exitHouses,exitHomesGen(env,exitHouses,oldHouses,newHouses))
     # agents moving within the market list homes
-    oldHouses=vcat(oldHouses,oldHomesGen(env))
+    oldHouses=vcat(oldHouses,oldHomesGen(env,exitHouses,oldHouses,newHouses))
     # new construction
     newHouses=vcat(newHouses,newConstruction(env))
     # people looking to buy move into the market
@@ -410,6 +456,9 @@ function modelTick(env::environment,exitHouses::Array{exitHouse},oldHouses::Arra
 
     println("Debug 1")
     println(countmap(typeof.(keys(env.nodeDict))))
+    println(length(keys(env.nodeDict)))
+    println(length(oldHouses)+length(newHouses)+length(exitHouses)+length(hotels))
+
 
     # generate the transaction graph
     env.transactionGraph=transactionGraphGen(env,hotels,newHouses,oldHouses,exitHouses)
@@ -467,6 +516,17 @@ function modelTick(env::environment,exitHouses::Array{exitHouse},oldHouses::Arra
 
     println("final sale graph")
     println(saleGraph)
+    println("Lengths Before")
+    println(length(oldHouses))
+    println(length(newHouses))
+    println(length(exitHouses))
+    println(length(hotels))
+
+    println("Indices Before")
+    println(fIndex.(oldHouses))
+    println(fIndex.(newHouses))
+    println(fIndex.(exitHouses))
+    println(fIndex.(hotels))
 
 
     for edge in edges(saleGraph)
@@ -474,19 +534,28 @@ function modelTick(env::environment,exitHouses::Array{exitHouse},oldHouses::Arra
         #haus2=env.intDict[dst(edge)]
         # remove from lists
 
-        if typeof(env.intDict[src(edge)])==hotel 
-            filter!(x -> x==env.intDict[src(edge)],hotels)
-        elseif typeof(env.intDict[src(edge)])==oldHouse
-            filter!(x -> x==env.intDict[src(edge)],oldHouses)
-        end
+        filter!(x-> x!=env.intDict[src(edge)],hotels)
+        filter!(x-> x!=env.intDict[src(edge)],oldHouses)
+        
 
-        if typeof(env.intDict[dst(edge)])==oldHouse 
-            filter!(x -> x==env.intDict[src(edge)],oldHouses)
-        elseif typeof(env.intDict[src(edge)])==exitHouse
-            filter!(x -> x==env.intDict[src(edge)],exitHouses)
-        elseif typeof(env.intDict[src(edge)])==newHouse
-            filter!(x->x==env.intDict[src(edge)],newHouses)
-        end
+        
+        filter!(x-> x!=env.intDict[dst(edge)],oldHouses)
+        filter!(x-> x!=env.intDict[dst(edge)],exitHouses)
+        filter!(x-> x!=env.intDict[dst(edge)],newHouses)
+
+        #if typeof(env.intDict[src(edge)])==hotel 
+        #    filter!(x -> x==env.intDict[src(edge)],hotels)
+        #elseif typeof(env.intDict[src(edge)])==oldHouse
+        #    filter!(x -> x==env.intDict[src(edge)],oldHouses)
+        #end
+#
+        #if typeof(env.intDict[dst(edge)])==oldHouse 
+        #    filter!(x -> x==env.intDict[dst(edge)],oldHouses)
+        #elseif typeof(env.intDict[dst(edge)])==exitHouse
+        #    filter!(x -> x==env.intDict[dst(edge)],exitHouses)
+        #elseif typeof(env.intDict[dst(edge)])==newHouse
+        #    filter!(x->x==env.intDict[dst(edge)],newHouses)
+        #end
 
         env=moveIn(env,env.intDict[dst(edge)],env.intDict[src(edge)].owner)
 
@@ -507,6 +576,19 @@ function modelTick(env::environment,exitHouses::Array{exitHouse},oldHouses::Arra
         # log all sales and prices 
 
     end
+
+    println("Lengths After")
+    println(length(oldHouses))
+    println(length(newHouses))
+    println(length(exitHouses))
+    println(length(hotels))
+
+    println("Indices After")
+    println(fIndex.(oldHouses))
+    println(fIndex.(newHouses))
+    println(fIndex.(exitHouses))
+    println(fIndex.(hotels))
+
     # clear dictionaries
     env.nodeDict=Dict{dwelling,Int64}()
     env.intDict=Dict{Int64,dwelling}()
