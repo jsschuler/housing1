@@ -56,7 +56,9 @@ function agtMove(env::environment,origin::dwelling,dest::dwelling,agt::agent)
 end
 
 # finally functions to track graphs and dictionaries
-
+function graphLog(env::environment)
+    
+end
 
 
 
