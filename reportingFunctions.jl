@@ -56,8 +56,31 @@ function agtMove(env::environment,origin::dwelling,dest::dwelling,agt::agent)
 end
 
 # finally functions to track graphs and dictionaries
-function graphLog(env::environment)
+function graphLog(env::environment,tarGraph::SimpleDiGraph)
+    hausDex=[]
+    netDex=[]
+    for ky in keys(env.nodeDict)
+        push!(hausDex,ky)
+        push!(netDex,env.nodeDict[ky])
+    end
+    dataDict=Dict(:key => env.key, :tick => env.tick, :house=> hausDex,:node => netDex)
+    CSV.write("../housingData/dictionaries"*env.key*".csv",DataFrame(dataDict),header=false,append=true)
+
+    # now log network
+    srcVec=[]
+    dstVec=[]
+    for ed in edges(tarGraph)
+        push!(srcVec,src(ed))
+        push!(dstVec,dst(ed))
+    end
+    dataDict2=Dict(:key => env.key,:tick=>env.tick,:src=>srcVec,:dst => dstVec)
+    CSV.write("../housingData/networks"*env.key*".csv",DataFrame(dataDict2),header=false,append=true)
+end
+
     
+
+
+
 end
 
 
