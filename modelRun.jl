@@ -40,7 +40,9 @@ end
 function newConstruction(env::environment)
     newList::Array{newHouse}=newHouse[]
     for i in 1:env.construction
-        push!(newList,houseGen(env))
+        newHaus=houseGen(env)
+        houseLog(env,newHaus)
+        push!(newList,newHaus)
     end
     return newList
 end

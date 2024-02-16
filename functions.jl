@@ -8,6 +8,7 @@ end
 
 function agtGen(env::environment)
     outAgt=agent(length(env.agtList),floor(Int64,rand(env.paymentDistribution,1)[1]))
+    agtLog(env,outAgt)
     push!(env.agtList,outAgt)
     return outAgt
 end
@@ -15,8 +16,8 @@ end
 
 function houseGen(env::environment)
     houseCounter=length(env.allHouses)+1
-    
     haus=newHouse(houseCounter,rand(env.qualityDistribution,1)[1],nothing,nothing)
+    houseLog(env,haus)
     push!(env.allHouses,haus)
     return haus
 end
@@ -24,6 +25,7 @@ end
 function hotelGen(env::environment)
     hotelCounter=length(env.allHotels)+1
     hot=hotel(hotelCounter,-Inf,agtGen(env),nothing)
+    hotelGenLog(env,hot)
     push!(env.allHotels,hot)
     return hot
 end
@@ -68,13 +70,16 @@ end
 # the function generating a loan from just a house assumes agents are borrowing as much as they can
 function loanGen(env::environment,collat::oldHouse)
     initialBalance=maxMortgage(env,collat)
-    push!(env.loanList,loan(env.interestRate,initialBalance,collat.owner.budget,initialBalance,0,collat,false))
+    newLoan=loan(env.interestRate,initialBalance,collat.owner.budget,initialBalance,0,collat,false)
+    loanLog(env,newLoan)
+    push!(env.loanList,newLoan)
     return env
 end
 
 # the function generating a loan with a given quantity works differently
 function loanGen(env::environment,collat::oldHouse,amount::Int64)
-    push!(env.loanList,loan(env.interestRate,amount,collat.owner.budget,amount,0,collat,false))
+    newLoan=loan(env.interestRate,amount,collat.owner.budget,amount,0,collat,false)
+    push!(env.loanList,newLoan)
     return env
 end
 
@@ -89,6 +94,7 @@ function populate(env::environment,haus::newHouse,agt::agent)
         end
     end
     currHaus=oldHouse(haus.index,haus.quality,agt,nothing)
+    agtMoveIn(env,currHaus,agt)
     env.allHouses[hIndex]=currHaus
 
     return env
@@ -105,6 +111,7 @@ function moveIn(env::environment,haus::newHouse,agt::agent)
         end
     end
     currHaus=oldHouse(haus.index,haus.quality,agt,nothing)
+    agtMoveIn(env,currHaus,agt)
     env.allHouses[hIndex]=currHaus
     # change dictionaries
     #println(countmap(typeof.(keys(env.nodeDict))))
@@ -124,6 +131,7 @@ function moveIn(env::environment,haus::exitHouse,agt::agent)
         end
     end
     currHaus=oldHouse(haus.index,haus.quality,agt,nothing)
+    agtMoveIn(env,currHaus,agt)
     env.allHouses[hIndex]=currHaus
     # change dictionaries
     intArg=env.nodeDict[haus]
@@ -141,6 +149,7 @@ function moveIn(env::environment,haus::oldHouse,agt::agent)
         end
     end
     env.allHouses[hIndex].owner=agt
+    agtMoveIn(env,env.allHouses[hIndex],agt)
     return env
 end
 

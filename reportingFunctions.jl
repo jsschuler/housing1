@@ -37,6 +37,13 @@ function loanFullLog(env::environment,ln::loan)
     dArray=[env.key,env.tick,ln.interestRate,ln.collateral.index]
     CSV.write("../housingData/loanFull"*env.key*".csv",dArray,header=false,append=true)
 end
+# and agents moving into the market
+function agtMoveIn(env::environment,dwell::dwelling,agt::agent)
+    dArray=[env.key,env.tick,dwell.index,agt.index]
+    CSV.write("../housingData/moveIn"*env.key*".csv",dArray,header=false,append=true)
+end
+
+
 # and agents moving out of the market
 function agtLeave(env::environment,origin::dwelling,agt::agent)
     dArray=[env.key,env.tick,origin.index,agt.index]
