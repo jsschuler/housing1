@@ -77,12 +77,5 @@ function graphLog(env::environment,tarGraph::SimpleDiGraph)
     CSV.write("../housingData/networks"*env.key*".csv",DataFrame(dataDict2),header=false,append=true)
 end
 
-    
-
-
-
-end
-
-
 
 
