@@ -330,6 +330,9 @@ function innerGraphIterate(env::environment,
     env.bidDict=hiBidData[2]
     # intersect them
     interGraph::SimpleDiGraph=graphIntersect(mostPreferred,highestBidders)
+
+    # Here we define the bid dictionary since we only want it on this intersection
+
     graphLog(env,interGraph,"interGraph")
     # now, if an edge is associated with an offer that will not cover the mortgage of an exit house, delete it so long as we have this setting
     #if env.mortgageFlag
@@ -425,8 +428,17 @@ function modelStep(env::environment,
     # once the transaction graph has stabilized across two steps,
     # we halt
     haldCond::Bool=false
+    ticker::Int64=0
     while !haltCond
+        ticker=ticker+1
         oldGraph=newGraph
+
+        # update budgets given offers
+        if ticker > 1
+            println(oldGraph)
+            println(outneighbors(oldGraph,17))
+            env=offerUpdate(env,oldGraph)
+        end
         newGraph=outerGraphIterator(env,
                                     mutableGraph,
                                     hotels,
@@ -434,8 +446,9 @@ function modelStep(env::environment,
                                     newHouses,
                                     exitHouses
                                     )
-        # update budgets given offers
-        env=offerUpdate(env,newGraph)
+        
+        
+        
         # now, if the transaction graph stabilizes after agents re-evaluate
         # halt
         if oldGraph==newGraph
