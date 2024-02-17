@@ -370,7 +370,7 @@ function offerUpdate(env::environment,saleGraph::SimpleDiGraph)
         #println(keys(env.nodeDict))
         #println(keys(env.bidDict))
         #println(outneighbors(mutableGraph,10))
-        env.intDict[dst(edge)].bestOffer=env.bidDict[edge]
+        env.intDict[dst(edge)].bestOffer=env.bidDict[dst(edge)]
     end
     return env
 end
@@ -512,7 +512,7 @@ function modelTick(env::environment,exitHouses::Array{exitHouse},oldHouses::Arra
     #println("Debug 3")
     #println(countmap(typeof.(keys(env.nodeDict))))
     for edge in allEdges
-        bestBid=env.bidDict[edge]
+        bestBid=env.bidDict[dst(edge)]
         paymentDict[env.intDict[dst(edge)]]=bestBid
     end
 
@@ -567,7 +567,7 @@ function modelTick(env::environment,exitHouses::Array{exitHouse},oldHouses::Arra
         # pay down loans on sold homes
         env=payFull(env,env.intDict[dst(edge)])
         # generate mortgages on new homes
-        bestBid=env.bidDict[edge]
+        bestBid=env.bidDict[dst(edge)]
         # now, what is the difference between what the agent is paying and what the agent was paid?
         delta=bestBid-paid
 
