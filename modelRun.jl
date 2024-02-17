@@ -213,6 +213,9 @@ function highestBidderGraph(env::environment,
                 hiHaus=dwell
             end
         end
+        #if Edge(env.nodeDict[hiHaus],env.nodeDict[haus])==Edge(17,589)
+        #    print("Here!")
+        #end
         #println("Budget")
         #println(hiBudget)
         #println(hiHaus)
@@ -515,24 +518,9 @@ function modelTick(env::environment,exitHouses::Array{exitHouse},oldHouses::Arra
         end
     end
 
-    #println("final sale graph")
-    #println(saleGraph)
-    #println("Lengths Before")
-    #println(length(oldHouses))
-    #println(length(newHouses))
-    #println(length(exitHouses))
-    #println(length(hotels))
-#
-    #println("Indices Before")
-    #println(fIndex.(oldHouses))
-    #println(fIndex.(newHouses))
-    #println(fIndex.(exitHouses))
-    #println(fIndex.(hotels))
-
 
     for edge in edges(saleGraph)
-        #haus1=env.intDict[src(edge)]
-        #haus2=env.intDict[dst(edge)]
+
         # remove from lists
 
         filter!(x-> x!=env.intDict[src(edge)],hotels)
@@ -543,20 +531,6 @@ function modelTick(env::environment,exitHouses::Array{exitHouse},oldHouses::Arra
         filter!(x-> x!=env.intDict[dst(edge)],oldHouses)
         filter!(x-> x!=env.intDict[dst(edge)],exitHouses)
         filter!(x-> x!=env.intDict[dst(edge)],newHouses)
-
-        #if typeof(env.intDict[src(edge)])==hotel 
-        #    filter!(x -> x==env.intDict[src(edge)],hotels)
-        #elseif typeof(env.intDict[src(edge)])==oldHouse
-        #    filter!(x -> x==env.intDict[src(edge)],oldHouses)
-        #end
-#
-        #if typeof(env.intDict[dst(edge)])==oldHouse 
-        #    filter!(x -> x==env.intDict[dst(edge)],oldHouses)
-        #elseif typeof(env.intDict[dst(edge)])==exitHouse
-        #    filter!(x -> x==env.intDict[dst(edge)],exitHouses)
-        #elseif typeof(env.intDict[dst(edge)])==newHouse
-        #    filter!(x->x==env.intDict[dst(edge)],newHouses)
-        #end
 
         env=moveIn(env,env.intDict[dst(edge)],env.intDict[src(edge)].owner)
 
