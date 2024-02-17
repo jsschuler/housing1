@@ -77,5 +77,8 @@ function graphLog(env::environment,tarGraph::SimpleDiGraph,label::String)
     CSV.write("../housingData/networks"*label*"-"*env.key*".csv",DataFrame(dataDict2),header=false,append=true)
 end
 
-
+function saleLog(env::environment,haus::dwelling,price::Int64)
+    dArray=DataFrame([[env.key],[env.tick],[haus.index],[price]],:auto)
+    CSV.write("../housingData/sales"*env.key*".csv",dArray,header=false,append=true)
+end
 

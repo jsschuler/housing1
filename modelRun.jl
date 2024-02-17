@@ -562,6 +562,7 @@ function modelTick(env::environment,exitHouses::Array{exitHouse},oldHouses::Arra
 
         # how much is agt1 paying agt2?
         paid=paymentDict[env.intDict[src(edge)]]
+        saleLog(env,env.intDict[dst(edge)],paid)
 
         # pay down loans on sold homes
         env=payFull(env,env.intDict[dst(edge)])

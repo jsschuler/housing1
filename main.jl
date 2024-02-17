@@ -41,11 +41,11 @@ paymentDistribution=Truncated(Levy(500,100),0,5*10^9)
 # distribution of house qualities 
 qualityDistribution=Truncated(Levy(0,10),0,63658)
 # initial agent count
-agtCnt::Int64=10000
+agtCnt::Int64=5000
 # population inflow (agents who can buy without selling)
-inFlow::Int64=100
+inFlow::Int64=250
 # population outflow (agents who can sell without buying)
-outFlow::Int64=100
+outFlow::Int64=150
 # new housing construction 
 construction::Int64=100
 # how many agents simply want to move within the market?
