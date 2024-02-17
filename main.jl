@@ -54,7 +54,7 @@ inPlace::Int64=100
 # how many ticks to run the model ?
 allTicks=100
 
-env=environGen(string(seed)*sHash(paymentDistribution)*sHash(qualityDistribution)*sHash(agtCnt)*sHash(inFlow)*sHash(outFlow)*sHash(construction)*sHash(inPlace)*sHash(allTicks),
+env=environGen((string(seed,base=16)*sHash(paymentDistribution)*sHash(qualityDistribution)*sHash(agtCnt)*sHash(inFlow)*sHash(outFlow)*sHash(construction)*sHash(inPlace)*sHash(allTicks)),
                qualityDistribution,
                paymentDistribution,
                agtCnt,

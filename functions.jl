@@ -414,5 +414,5 @@ end
 # string hash function for keys 
 
 function sHash(obj)
-    return string(hash(obj))
+    return string(hash(obj),base=16)
 end
