@@ -101,4 +101,6 @@ mutable struct environment
     bidDict::Dict{LightGraphs.SimpleGraphs.SimpleEdge{Int64},Int64}
     qualDict::Dict{LightGraphs.SimpleGraphs.SimpleEdge{Int64},Float64}
     mortgageFlag::Bool
+    # agent Ticker
+    agtTicker::Int64
 end

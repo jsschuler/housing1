@@ -7,7 +7,8 @@ end
 # basic object generation functions
 
 function agtGen(env::environment)
-    outAgt=agent(length(env.agtList),floor(Int64,rand(env.paymentDistribution,1)[1]))
+    env.agtTicker=env.agtTicker+1
+    outAgt=agent(env.agtTicker,floor(Int64,rand(env.paymentDistribution,1)[1]))
     agtLog(env,outAgt)
     push!(env.agtList,outAgt)
     return outAgt

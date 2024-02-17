@@ -35,7 +35,7 @@ function environGen(key::String,
                        Dict{Int64,dwelling}(),
                        Dict{LightGraphs.SimpleGraphs.SimpleEdge{Int64},Int64}(),
                        Dict{LightGraphs.SimpleGraphs.SimpleEdge{Int64},Float64}(),
-                       mortgageFlag)
+                       mortgageFlag,0)
     envLog(retVal)
     return retVal
 
