@@ -335,6 +335,7 @@ function innerGraphIterate(env::environment,
     for edg in edges(interGraph)
         if !(dst(edg) in keys(bidDict))
             delete!(bidDict,edg)
+        end
     end
 
     graphLog(env,interGraph,"interGraph")
