@@ -227,7 +227,7 @@ function highestBidderGraph(env::environment,
                     add_edge!(highBidGraph,env.nodeDict[hiHaus],env.nodeDict[haus])
                     # log the second highest bid to the transaction network
                     #set_prop!(env.transactionGraph,Edge(nodeDict[hiHaus],nodeDict[haus]),:bid,secondHiBudget)
-                    env.bidDict[Edge(nodeDict[hiHaus],nodeDict[haus])]=secondHiBudget
+                    env.bidDict[nodeDict[haus]]=secondHiBudget
                     # have the offered house record the second best offer
                     haus.bestOffer=secondHiBudget
                 end
@@ -237,14 +237,14 @@ function highestBidderGraph(env::environment,
                 add_edge!(highBidGraph,env.nodeDict[hiHaus],env.nodeDict[haus])
                 # log the second highest bid to the transaction network
                 #set_prop!(env.transactionGraph,Edge(nodeDict[hiHaus],nodeDict[haus]),:bid,secondHiBudget)
-                env.bidDict[Edge(env.nodeDict[hiHaus],env.nodeDict[haus])]=secondHiBudget
+                env.bidDict[env.nodeDict[haus]]=secondHiBudget
                 # have the offered house record the second best offer
                 haus.bestOffer=secondHiBudget
             end
         end
     end
     #graphLog(env,highBidGraph,"highestBid")
-    graphLog(env,highBidGraph,"hiBid")
+    #graphLog(env,highBidGraph,"hiBid")
     #checkPoint("Highest Bidder Graph Generated")
     return (highBidGraph,env.bidDict)
 end
@@ -327,11 +327,15 @@ function innerGraphIterate(env::environment,
     hiBidData=highestBidderGraph(env,mutableGraph,newHouses,oldHouses,exitHouses)
     highestBidders=hiBidData[1]    
     # and set high bid dictionry 
-    env.bidDict=hiBidData[2]
+    bidDict=hiBidData[2]
     # intersect them
     interGraph::SimpleDiGraph=graphIntersect(mostPreferred,highestBidders)
 
-    # Here we define the bid dictionary since we only want it on this intersection
+    # now remove from the bid dictionary any bids that don't intersect with the most preferred
+    for edg in edges(interGraph)
+        if !(dst(edg) in keys(bidDict))
+            delete!(bidDict,edg)
+    end
 
     graphLog(env,interGraph,"interGraph")
     # now, if an edge is associated with an offer that will not cover the mortgage of an exit house, delete it so long as we have this setting
@@ -355,12 +359,12 @@ function innerGraphIterate(env::environment,
 
     # return just the mutable graph
 
-    return (mutableGraph,env.bidDict)
+    return (mutableGraph,bidDict)
 end
 
 # now, we need the functions for the outer loop
-function offerUpdate(env::environment,mutableGraph::SimpleDiGraph)
-    for edge in edges(mutableGraph)
+function offerUpdate(env::environment,saleGraph::SimpleDiGraph)
+    for edge in edges(saleGraph)
         #print("Debug")
         #println(keys(env.nodeDict))
         #println(keys(env.bidDict))
@@ -384,9 +388,6 @@ function outerGraphIterator(env::environment,
     
     haltCond::Bool=false
     while !haltCond
-        innerDat=innerGraphIterate(env,mutableGraph,hotels,oldHouses,newHouses,exitHouses)
-        mutableGraph=innerDat[1]
-        env.bidDict=innerDat[2]
         haltCond=true
         for edg in edges(mutableGraph)
             if length(outneighbors(mutableGraph,src(edg))) > 1 || length(inneighbors(mutableGraph,dst(edg))) > 1
@@ -394,6 +395,15 @@ function outerGraphIterator(env::environment,
                 haltCond=false
             end
         end
+        
+        innerDat=innerGraphIterate(env,mutableGraph,hotels,oldHouses,newHouses,exitHouses)
+        mutableGraph=innerDat[1]
+        currBidDict=innerDat[2]
+        # now update overall bid dictionary
+        for ky in keys(currBidDict)
+            env.bidDict[ky]=currBidDict[ky]
+        end
+
     end
     # check graph
     outNbhList=[]
@@ -437,8 +447,10 @@ function modelStep(env::environment,
         if ticker > 1
             println(oldGraph)
             println(outneighbors(oldGraph,17))
+            println(length(keys(env.bidDict)))
             env=offerUpdate(env,oldGraph)
         end
+        # the outer graph iterator needs to define the bid dictionary
         newGraph=outerGraphIterator(env,
                                     mutableGraph,
                                     hotels,
