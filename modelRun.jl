@@ -253,7 +253,7 @@ end
 function graphIntersect(mostPreferredGraph::SimpleDiGraph,highBidGraph::SimpleDiGraph)
     interSect=intersect(highBidGraph,mostPreferredGraph)
     #graphLog(env,interSect,"intersection")
-    graphLog(env,interSect,"intersection")
+    #graphLog(env,interSect,"intersection")
     #checkPoint("Graph Intersection")
     return interSect
 end
@@ -307,7 +307,7 @@ function tempTransactionPare(env::environment,saleGraph::SimpleDiGraph,mutableGr
         #println(outneighbors(mutableGraph,srcNode))
     end
     #graphLog(env,mutableGraph,"mutableGraph")
-    graphLog(env,mutableGraph,"tempTrans")
+    #graphLog(env,mutableGraph,"tempTrans")
     #checkPoint("Temporary Transaction Graph")
     return mutableGraph
 end
@@ -355,7 +355,7 @@ function innerGraphIterate(env::environment,
     mutableGraph=tempTransactionPare(env,interGraph,mutableGraph)
 
     
-    graphLog(env,mutableGraph,"tempTransInner")
+    #graphLog(env,mutableGraph,"tempTransInner")
     #checkPoint("Inner Iteration")
 
     # return just the mutable graph
@@ -611,6 +611,5 @@ function modelRun(env::environment)
         oldHouses=remaining[2]
         newHouses=remaining[3]
         hotels=remaining[4]
-
     end
 end
