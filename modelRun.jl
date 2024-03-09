@@ -178,7 +178,7 @@ function mostPreferredGraph(env::environment,
             add_edge!(mostPreferredGraph,env.nodeDict[haus1],env.nodeDict[hiHaus])
         end
     end
-    graphLog(env,mostPreferredGraph,"mostPreferred")
+    #graphLog(env,mostPreferredGraph,"mostPreferred")
     #checkPoint("Most Preferred Graph Generated")
     #graphLog(env,mostPreferredGraph,"mostPreferred")
     return mostPreferredGraph
@@ -472,9 +472,10 @@ function modelStep(env::environment,
 end
 
 function modelTick(env::environment,exitHouses::Array{exitHouse},oldHouses::Array{oldHouse},newHouses::Array{newHouse},hotels::Array{hotel})
+    checkPoint("Tick")
     env.tick=env.tick+1
-    #println("Debug 0")
-    #println(countmap(typeof.(keys(env.nodeDict))))
+    println("Debug 0")
+    println(countmap(typeof.(keys(env.nodeDict))))
     # agents departing the market list homes 
     exitHouses=vcat(exitHouses,exitHomesGen(env,exitHouses,oldHouses,newHouses))
     # agents moving within the market list homes
@@ -525,19 +526,34 @@ function modelTick(env::environment,exitHouses::Array{exitHouse},oldHouses::Arra
     #println(saleGraph)
     allSalePaths=allPaths(saleGraph)
     #println(allSalePaths)
+    
+    # What is the distribution of best offers?
+    bestOffers=[]
+    for dwell in vcat(oldHouses,newHouses,exitHouses)
+        push!(bestOffers,dwell.bestOffer)
+    end
+    println(countmap(bestOffers))
+    checkPoint("Offers")
+    
     # check if the paths begin with hotels and end with exit houses
     
     # removal edges
     removalEdges=[]
     for vert in keys(allSalePaths)
         path=allSalePaths[vert]
-        if typeof(env.intDict[src(path[1])])==hotel && typeof(env.intDict[dst(path[length(path)])])==exitHouse
-            #println("Good!")
-            #println(length(path))
-            10
+        if typeof(env.intDict[src(path[1])])==hotel && (typeof(env.intDict[dst(path[length(path)])])==exitHouse || typeof(env.intDict[dst(path[length(path)])])==newHouse)
+            println("Good Path")
+            println(length(path))
+            println(env.intDict[src(path[1])])
+            println(env.intDict[dst(path[length(path)])])
+            checkPoint("Good Path")
         else
-            #println("Bad")
-            #println(length(path))
+            println("Bad Path")
+            println(length(path))
+            println(env.intDict[src(path[1])])
+            println(env.intDict[dst(path[length(path)])])
+            checkPoint("Bad Path")
+
             for ed in path
                 rem_edge!(saleGraph,ed)
             end

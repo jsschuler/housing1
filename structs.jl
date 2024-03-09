@@ -2,6 +2,7 @@ abstract type object end
 
 # basic agent object 
 
+
 struct agent <: object
     init::Int64
     budget::Int64
