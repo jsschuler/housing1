@@ -193,6 +193,8 @@ function highestBidderGraph(env::environment,
     # go in random order so we can assign randomly in the case of tie
     onMarket=vcat(newHouses,oldHouses,exitHouses)
     highBidGraph=SimpleDiGraph(length(env.allHotels)+length(onMarket))
+    # get a dictionary to keep bid
+    bidDict::Dict{Int64}{Int64}=Dict{Int64}{Int64}()
     for haus in sample(onMarket,length(onMarket),replace=false)
         hiBudget=0
         secondHiBudget=0
@@ -206,6 +208,7 @@ function highestBidderGraph(env::environment,
             #println("Budget")
             #println(budg)
             #println(hiBudget)
+            #println(secondHiBudget)
             #println(budg >= hiBudget)
             if budg >= hiBudget
                 secondHiBudget=hiBudget
@@ -220,16 +223,23 @@ function highestBidderGraph(env::environment,
         #println(hiBudget)
         #println(hiHaus)
         # now, add an edge if there is a bidder
+        
+        
+
         if !isnothing(hiHaus)
             if typeof(hiHaus)==exitHouse
+                println("outstanding")
+                println(outstandingAmt)
                 outstandingAmt=outstandingLoan(hiHaus)
                 if secondHiBudget >= outstandingAmt
                     add_edge!(highBidGraph,env.nodeDict[hiHaus],env.nodeDict[haus])
                     # log the second highest bid to the transaction network
                     #set_prop!(env.transactionGraph,Edge(nodeDict[hiHaus],nodeDict[haus]),:bid,secondHiBudget)
-                    env.bidDict[nodeDict[haus]]=secondHiBudget
+                    bidDict[nodeDict[haus]]=secondHiBudget
                     # have the offered house record the second best offer
-                    haus.bestOffer=secondHiBudget
+                    #println("second offer")
+                    #println(secondHiBudget)
+                    #haus.bestOffer=secondHiBudget
                 end
             else
                 #println("HiHaus")
@@ -237,25 +247,40 @@ function highestBidderGraph(env::environment,
                 add_edge!(highBidGraph,env.nodeDict[hiHaus],env.nodeDict[haus])
                 # log the second highest bid to the transaction network
                 #set_prop!(env.transactionGraph,Edge(nodeDict[hiHaus],nodeDict[haus]),:bid,secondHiBudget)
-                env.bidDict[env.nodeDict[haus]]=secondHiBudget
+                bidDict[env.nodeDict[haus]]=secondHiBudget
                 # have the offered house record the second best offer
-                haus.bestOffer=secondHiBudget
+                #println("second offer")
+                #println(secondHiBudget)
+                #haus.bestOffer=secondHiBudget
             end
         end
     end
     #graphLog(env,highBidGraph,"highestBid")
     #graphLog(env,highBidGraph,"hiBid")
-    #checkPoint("Highest Bidder Graph Generated")
-    return (highBidGraph,env.bidDict)
+    #bestOfferVec=[]
+    #for haus in vcat(newHouses,oldHouses,exitHouses)
+    #    push!(bestOfferVec,haus.bestOffer)
+    #end
+    #println(countmap(bestOfferVec))
+    checkPoint("Highest Bidder Graph Generated")
+    return (highBidGraph,bidDict)
 end
 
 # now, we need the function that performs the intersection
-function graphIntersect(mostPreferredGraph::SimpleDiGraph,highBidGraph::SimpleDiGraph)
+function graphIntersect(env::environment,mostPreferredGraph::SimpleDiGraph,highBidGraph::SimpleDiGraph,bidDict::Dict{Int64}{Int64})
     interSect=intersect(highBidGraph,mostPreferredGraph)
     #graphLog(env,interSect,"intersection")
     #graphLog(env,interSect,"intersection")
     #checkPoint("Graph Intersection")
-    return interSect
+
+    # now, get only the bids that are actually both highest and most preferred
+    smallBidDict::Dict{dwelling}{Int64}=Dict{dwelling}{Int64}()
+    
+    for edg in edges(interSect)
+        smallBidDict[src(edg)]=bidDict[src(edg)]
+    end
+
+    return (interSect,smallBidDict)
 end
 
 # now a function to pair back links to exit houses where the best offer won't
@@ -329,13 +354,12 @@ function innerGraphIterate(env::environment,
     # and set high bid dictionry 
     bidDict=hiBidData[2]
     # intersect them
-    interGraph::SimpleDiGraph=graphIntersect(mostPreferred,highestBidders)
-
-    # now remove from the bid dictionary any bids that don't intersect with the most preferred
-    for edg in edges(interGraph)
-        if !(dst(edg) in keys(bidDict))
-            delete!(bidDict,edg)
-        end
+    interVec=graphIntersect(env,mostPreferred,highestBidders,bidDict)
+    interGraph::SimpleDiGraph=interVec[1]
+    newDict=interVec[2]
+    # now overwrite the environment bid dictionary with the new high bids
+    for ky in keys(newDict)
+        env.bidDict[ky]=newDict[ky]
     end
 
     graphLog(env,interGraph,"interGraph")
