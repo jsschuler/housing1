@@ -274,10 +274,10 @@ function graphIntersect(env::environment,mostPreferredGraph::SimpleDiGraph,highB
     #checkPoint("Graph Intersection")
 
     # now, get only the bids that are actually both highest and most preferred
-    smallBidDict::Dict{dwelling}{Int64}=Dict{dwelling}{Int64}()
+    smallBidDict::Dict{Int64}{Int64}=Dict{Int64}{Int64}()
     
-    for edg in edges(interSect)
-        smallBidDict[src(edg)]=bidDict[src(edg)]
+    for ky in keys(bidDict)
+        smallBidDict[ky]=bidDict[ky]
     end
 
     return (interSect,smallBidDict)
