@@ -104,4 +104,5 @@ mutable struct environment
     mortgageFlag::Bool
     # agent Ticker
     agtTicker::Int64
+    qualBound::Float64s
 end

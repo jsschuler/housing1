@@ -13,7 +13,8 @@ function environGen(key::String,
                     inPlace::Int64,
                     interestRate::Float64,
                     allTicks::Int64,
-                    mortgageFlag::Bool
+                    mortgageFlag::Bool,
+                    qualBound::Float64
 )
     retVal=environment(key,
                        qualityDistribution,
@@ -35,7 +36,7 @@ function environGen(key::String,
                        Dict{Int64,dwelling}(),
                        Dict{LightGraphs.SimpleGraphs.SimpleEdge{Int64},Int64}(),
                        Dict{LightGraphs.SimpleGraphs.SimpleEdge{Int64},Float64}(),
-                       mortgageFlag,0)
+                       mortgageFlag,0,.5)
     envLog(retVal)
     return retVal
 

@@ -63,7 +63,7 @@ function preferenceLink(env::environment,dwelling1::dwelling,dwelling2::dwelling
     qual2=dwelling2.quality+rand(qualityError,1)[1]
     qual1=dwelling1.quality+rand(qualityError,1)[1]
 
-     if qual2 > qual1
+     if qual2/qual1 > 1 & qual2/qual1 < 1+ env.qualBound
         add_edge!(env.transactionGraph,env.nodeDict[dwelling1],env.nodeDict[dwelling2])
         # now, add the  utility each agent gets from owning the house as an edge property
         #set_prop!(env.transactionGraph,,:qual,qual2)
