@@ -6,6 +6,13 @@
 #                                                                                                                       #
 #########################################################################################################################
 
+# Key needed fix: agents observe the quality and price of houses sold. If the agent believes it can
+# buy a house it prefers at a price it can afford, it sells its current house 
+# and then enters a hotel to wait for the next round of sales.
+# but this data only becomes available after the model runs 
+# so for the first k ticks, agents will sell at random 
+# we can turn off this feature to see what difference it makes 
+
 # load libraries
 using Graphs
 using Distributions
@@ -29,8 +36,9 @@ Random.seed!(seed)
 function checkPoint(message)
     global pauseBool
     if pauseBool
-        println(message)
-        readline()
+        #println(message)
+        #readline()
+        true
     end
 end
 

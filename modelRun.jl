@@ -55,8 +55,12 @@ function marketEntry(env::environment)
     end
     return hotelList
 end
-# now we need to load the code that generates the preferende error term 
+# now we need to load the code that generates the preference error term 
 include("qualityDistribution.jl")
+
+
+
+
 
 
 function preferenceLink(env::environment,dwelling1::dwelling,dwelling2::dwelling,error::Distribution)

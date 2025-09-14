@@ -15,38 +15,25 @@ abstract type dwelling <: object end
 
 abstract type house <: dwelling end
 
-mutable struct newHouse <: house
+mutable struct emptyHouse <: house
     index::Int64
     quality::Float64
-    owner::Nothing
-    bestOffer::Union{Nothing,Int64}
 end
 
-mutable struct exitHouse <: house
-    index::Int64
-    quality::Float64
-    owner::agent
-    bestOffer::Union{Nothing,Int64}
-end
-
-mutable struct oldHouse <: house
+mutable struct popHouse <: house
     index::Int64
     quality::Float64
     owner::agent
-    bestOffer::Union{Nothing,Int64}
-    
 end
 
 
 
-
-# we need a temporary "dwelling" new agents 
-
+# we need a temporary "dwelling" for agents looking to buy
+# the hotel budget is the additional budget the agent has from a previous sale if any.
 mutable struct hotel <: dwelling
     index::Int64
-    quality::Float64
+    budget::Float64
     owner::agent
-    preferenceOrdering::Union{Nothing,DataFrame}
 end
 
 # define hash and equality operators for dwellings so we can use them as dictionary keys

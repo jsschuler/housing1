@@ -87,103 +87,32 @@ end
 # now we need the house conversion functions
 
 # populating the house does not assume we have populated dictionaries yet but otherwise, works like moveIn
-function populate(env::environment,haus::newHouse,agt::agent)
+function populate(env::environment,haus::emptyHouse,agt::agent)
     hIndex=0
     for i in 1:length(env.allHouses)
         if env.allHouses[i]==haus
             hIndex=i
         end
     end
-    currHaus=oldHouse(haus.index,haus.quality,agt,nothing)
-    agtMoveIn(env,currHaus,agt)
+    currHaus=popHouse(haus.index,haus.quality,agt,agt)
     env.allHouses[hIndex]=currHaus
-
     return env
 end
 
 
-# moving into a new house or an exit house converts it to an old house
-
-function moveIn(env::environment,haus::newHouse,agt::agent)
-    hIndex=0
-    for i in 1:length(env.allHouses)
-        if env.allHouses[i]==haus
-            hIndex=i
-        end
-    end
-    currHaus=oldHouse(haus.index,haus.quality,agt,nothing)
-    agtMoveIn(env,currHaus,agt)
-    env.allHouses[hIndex]=currHaus
-    # change dictionaries
-    #println(countmap(typeof.(keys(env.nodeDict))))
-    intArg=env.nodeDict[haus]
-    env.nodeDict[currHaus]=intArg
-    delete!(env.nodeDict,haus)
-    env.intDict[intArg]=currHaus
-
-    return env
-end
-
-function moveIn(env::environment,haus::exitHouse,agt::agent)
-    # record the old owner leaving
-    agtLeave(env,haus,haus.owner)
-    hIndex=0
-    for i in 1:length(env.allHouses)
-        if env.allHouses[i]==haus
-            hIndex=i
-        end
-    end
-    currHaus=oldHouse(haus.index,haus.quality,agt,nothing)
-    # and the new owner moving in
-    agtMoveIn(env,currHaus,agt)
-    env.allHouses[hIndex]=currHaus
-    # change dictionaries
-    intArg=env.nodeDict[haus]
-    env.nodeDict[currHaus]=intArg
-    delete!(env.nodeDict,haus)
-    env.intDict[intArg]=currHaus
-    return env
-end
-
-function moveIn(env::environment,haus::oldHouse,agt::agent)
-    hIndex=0
-    for i in 1:length(env.allHouses)
-        if env.allHouses[i]==haus
-            hIndex=i
-        end
-    end
-    env.allHouses[hIndex].owner=agt
-    agtMoveIn(env,env.allHouses[hIndex],agt)
-    return env
-end
 
 # a function to list for agents who wish to exit
-function makeExit(haus::oldHouse)
-    return exitHouse(haus.index,haus.quality,haus.owner,haus.bestOffer)
+function makeEmpty(haus::popHouse)
+    return emptyHouse(haus.index,haus.quality)
 end
 
-
-function exitList(env::environment)
-    # get all old house indices
-    oldIdx=filter(i-> typeof(env.allHouses[i])==oldHouse,1:length(env.allHouses))
-    # now select some of them to exit 
-    maxExit=min(length(oldIdx),env.outFlow)
-    exitIdx=sample(oldIdx,maxExit,replace=false)
-    allExits=exitHouse[]
-    for i in exitIdx
-        exitHaus=makeExit(env.allHouses[i])
-        env.allHouses[i]=exitHaus
-        push!(allExits,exitHaus)
-    end
-    return allExits
-end
 
 
 
 # initialization functions
 # now we need the function that randomly assigns agents and houses 
 
-function housingSwap(house1::dwelling,house2::dwelling)
+function housingSwap(house1::popHouse,house2::popHouse)
     #println("Debug")
     #println(house1.quality)
     #println(house2.quality)
@@ -249,12 +178,10 @@ function hausQuality(haus::house)
     return haus.quality+rand(qualityError,1)[1]
 end
 
-function hausQuality(haus::hotel)
-    return -Inf
-end
+
 
 ## Graph manipulation functions
-function inNeighbors(env::environment,dwell::dwelling)
+function inNeighbors(env::environment,dwell::emptyHouse)
     global agtDict
     global transactionGraph
     global nodeDict
@@ -269,7 +196,7 @@ end
 
 
 
-function outNeighbors(dwell::dwelling)
+function outNeighbors(dwell::hotel)
     global agtDict
     global transactionGraph
     global nodeDict
@@ -284,11 +211,8 @@ end
 
 #### some budget functions #####
 
-function outstandingLoan(env::environment,haus::newHouse)
-    return 0
-end
 
-function outstandingLoan(env::environment,haus::oldHouse)
+function outstandingLoan(env::environment,haus::popHouse)
     loanHeld=filter(x->x.collateral==haus,env.loanList)
     if length(loanHeld)==0
         return 0
@@ -296,16 +220,6 @@ function outstandingLoan(env::environment,haus::oldHouse)
         return loanHeld[1].outstandingBalance
     end
 end
-
-function outstandingLoan(env::environment,haus::exitHouse)
-    loanHeld=filter(x->x.collateral==haus,env.loanList)
-    if length(loanHeld)==0
-        return 0
-    else
-        return loanHeld[1].outstandingBalance
-    end
-end
-
 
 
 function budgetCalc(env::environment,hotel::hotel)
