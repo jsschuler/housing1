@@ -100,9 +100,10 @@ mutable struct environment
     nodeDict::Dict{dwelling,Int64}
     intDict::Dict{Int64,dwelling}
     bidDict::Dict{Int64,Int64}
-    qualDict::Dict{LightGraphs.SimpleGraphs.SimpleEdge{Int64},Float64}
+    qualDict::Dict{Graphs.SimpleGraphs.SimpleEdge{Int64},Float64}
     mortgageFlag::Bool
     # agent Ticker
     agtTicker::Int64
-    qualBound::Float64s
+    qualBound::Float64
 end
+# 23

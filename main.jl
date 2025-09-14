@@ -7,12 +7,12 @@
 #########################################################################################################################
 
 # load libraries
-using LightGraphs
+using Graphs
 using Distributions
 using StatsBase
 using DataFrames
 using Random
-using TikzGraphs, TikzPictures
+#using TikzGraphs, TikzPictures
 using SparseArrays
 using CSV
 include("structs.jl")
@@ -64,7 +64,8 @@ env=environGen((string(seed,base=16)*sHash(paymentDistribution)*sHash(qualityDis
                inPlace,
                interestRate,
                allTicks,
-               false)
+               false,
+               .25)
 
 env=initialize(env)
 

@@ -34,10 +34,14 @@ function environGen(key::String,
                        SimpleDiGraph(0),
                        Dict{dwelling,Int64}(),
                        Dict{Int64,dwelling}(),
-                       Dict{LightGraphs.SimpleGraphs.SimpleEdge{Int64},Int64}(),
-                       Dict{LightGraphs.SimpleGraphs.SimpleEdge{Int64},Float64}(),
-                       mortgageFlag,0,.5)
-    envLog(retVal)
+                       Dict{Graphs.SimpleGraphs.SimpleEdge{Int64},Int64}(),
+                       Dict{Graphs.SimpleGraphs.SimpleEdge{Int64},Float64}(),
+                       mortgageFlag,
+                       0,
+                       qualBound)
+        # 22
+        envLog(retVal)
+    
     return retVal
 
 end
