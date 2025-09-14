@@ -183,13 +183,12 @@ end
 ## Graph manipulation functions
 function inNeighbors(env::environment,dwell::emptyHouse)
     global agtDict
-    global transactionGraph
     global nodeDict
 
-    nbhs=inneighbors(transactionGraph,nodeDict[dwell])
+    nbhs=inneighbors(envtransactionGraph,env.nodeDict[dwell])
     structNbh=[]
     for nb in nbhs
-        push!(structNbh,agtDict[nb])
+        push!(structNbh,intDict[nb])
     end
     return structNbh
 end
@@ -223,7 +222,7 @@ end
 
 
 function budgetCalc(env::environment,hotel::hotel)
-    homeBudget=maxMortgage(env,hotel)
+    homeBudget=maxMortgage(env,hotel)+hotel.budget
     return homeBudget
 end
 

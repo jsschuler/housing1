@@ -89,12 +89,45 @@ function preferenceGraphGen(env::environment)
             env.qualDict[Graphs.SimpleGraphs.SimpleEdge{Int64}(nv(env.transactionGraph),nv(env.transactionGraph))]=haus.quality
         end
     end
-    # now add edges from hotels to houses within the quality bound
+    # now add edges from hotels to the most preferred empty houses
     for hot in env.allHotels
-        for haus in env.allHouses
-            if typeof(haus)==emptyHouse
-                
-
+        bestHaus::Union{nothing,emptyHouse}=nothing
+        bestQual=-Inf
+        for haus in filter!(h -> typeof(h)==emptyHouse, env.allHouses)
+            # calculate house quality with error
+            currQual=hausQuality(haus)+rand(qualityError,1)[1]
+            if currQual > bestQual
+                bestHaus=haus
+            end
+        end
+        # now add an edge from the hotel to the most preferred house
+        add_edge!(env.transactionGraph,env.nodeDict[hot],env.nodeDict[bestHaus]) 
+    end
+    return env.transactionGraph
 end
 
+# now we need a function that process the preference graph 
+# each house is sold to the highest bidding arrow in
 
+function processPreferenceGraph(env::environment)
+    # loop over all houses on the market
+    for haus in filter!(h -> typeof(h)==emptyHouse, env.allHouses)
+        inBidders=inNeighbors(env,haus)
+        if length(inBidders)>0
+            # if there are any bidders, sell to the highest bidder
+            maxBid=-Inf
+            bestBidder=nothing
+            for bidder in inBidders
+                bidAmt=budgetCalc(env,bidder)
+                if bidAmt > maxBid
+                    maxBid=bidAmt
+                    bestBidder=bidder
+            end
+            if !isnothing(bestBidder)
+                # sell the house to the highest bidder
+                haus.owner=bestBidder.owner
+                bestBidder.houses=push!(bestBidder.houses,haus)
+            end
+        end
+    end
+end
