@@ -1,9 +1,9 @@
 
 # a function that randomly selects homes for agents who want to exit
 
-function exitHomesGen(env::environment,exitHouses::Array{exitHouse},oldHouses::Array{oldHouse},newHouses::Array{newHouse})
+function exitHomesGen(env::environment,popHouses::Array{oldHouse})
     # find homes that can be exit homes 
-    stillOnMarket=vcat(exitHouses,oldHouses,newHouses)
+    stillOnMarket=vcat(env.emptyHouses)
     marketable=setdiff(env.allHouses,stillOnMarket)
     marketableIdx=[]
     # now, get indexes for both the list of all houses and the marketable list 

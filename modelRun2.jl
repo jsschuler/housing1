@@ -8,51 +8,31 @@
         # in this case, they sell their house to the highest bidder and enter a hotel
     # Critically, this step happens last so agents can't buy their own house. 
 
-function exitHomesGen(env::environment,exitHouses::Array{exitHouse},oldHouses::Array{oldHouse},newHouses::Array{newHouse})
-    # find homes that can be exit homes 
-    stillOnMarket=vcat(exitHouses,oldHouses,newHouses)
-    marketable=setdiff(env.allHouses,stillOnMarket)
-    marketableIdx=[]
-    # now, get indexes for both the list of all houses and the marketable list 
-    for mark in marketable
-        push!(marketableIdx,filter(i -> env.allHouses[i]==mark,1:length(env.allHouses))[1])
-    end
-    maxExit=min(length(marketableIdx),env.outFlow)
-    exitIdx=sample(marketableIdx,maxExit,replace=false)
-    allExits=exitHouse[]
-    for i in exitIdx
-        #println(env.allHouses[i])
-        exitHaus=makeExit(env.allHouses[i])
-        env.allHouses[i]=exitHaus
-        push!(allExits,exitHaus)
-    end
-    return allExits
-end
-# a function that randomly selects agents who want to move in place
-function oldHomesGen(env::environment,exitHouses::Array{exitHouse},oldHouses::Array{oldHouse},newHouses::Array{newHouse})
-    stillOnMarket=vcat(exitHouses,oldHouses,newHouses)
-    marketable=setdiff(env.allHouses,stillOnMarket)
-    canMove::Array{oldHouse}=oldHouse[]
-    for haus in marketable
-        if typeof(haus)==oldHouse
-            push!(canMove,haus)
-        end
-    end
-    maxMove=min(env.inPlace,length(canMove))
+
+
+function upForSale(env::environment)
+
+    popHouses=filter(x-> typeof(x)==popHouse ,env.allHouses)
+    popHouses=sample(popHouses,length(popHouses),replace=false)
     
-    oldHomes=sample(canMove,maxMove,replace=false)
-    return oldHomes
-end
-# function to build new homes
-function newConstruction(env::environment)
-    newList::Array{newHouse}=newHouse[]
-    for i in 1:env.construction
-        newHaus=houseGen(env)
-        houseLog(env,newHaus)
-        push!(newList,newHaus)
+    # how many agents will sell regardless
+    global outFlow
+    unCondSales=popHouses[1:outFlow]
+    # now select random potential sellers
+    global inPlace
+    potentialSales=popHouses[(outFlow+1):(outFlow+1+inPlace)]
+    # now remove any houses where the agent had not seen an affordable house
+    # at greater quality in the past k steps
+    for potSale in potentialSales
+        # first calculate agent's mortgage budget
+        currBalance=outstandingLoan(env,potSale)
+        # How much can the agent borrow less the outstanding loan?
+        netMortgage(env,)
+
     end
-    return newList
+
 end
+
 # and the function whereby new agents enter the market
 
 function marketEntry(env::environment)
