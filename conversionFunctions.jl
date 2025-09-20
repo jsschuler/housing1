@@ -63,10 +63,30 @@ end
 
 # finally, a function to convert an empty house to a sold empty
 
-function emptyToSoldEmpty!(env::environment,haus::emptyHouse)
+function emptyToSoldEmpty!(env::environment,haus::emptyHouse,salePrice::Float64,buyer::agent)
+    # first, remove the house from the empty house list
+    deleteat!(env.emptyHouses,findfirst(x->x==haus,env.emptyHouses))
+    # then, create a new for sale house object      
+    soldEmpty=soldEmptyHouse(haus.index,haus.quality,haus.owner,salePrice,buyer)
+    # then, add the new for sale house to the for sale house list
+    push!(env.soldEmptyHouse,soldEmpty)
+    # finally update its place in the all houses list
+    idx=findfirst(x->x.index==haus.index,env.allHouses)
+    # then, replace it with a populated house
+    env.allHouses[idx]=soldEmpty
 end
 
 # and a function to convert a sold empty house to a populated house
 function soldEmptyToPop!(env::environment,haus::soldEmptyHouse)
+    # first, remove the house from the sold empty house list
+    deleteat!(env.soldEmptyHouses,findfirst(x->x==haus,env.soldEmptyHouse))
+    # then, create a new for sale house object      
+    popHaus=popHouse(haus.index,haus.quality,haus.buyer)
+    # then, add the new for sale house to the for sale house list
+    push!(env.popHouses,popHaus)
+    # finally update its place in the all houses list
+    idx=findfirst(x->x.index==haus.index,env.allHouses)
+    # then, replace it with a populated house
+    env.allHouses[idx]=popHaus
 
 end
