@@ -33,6 +33,15 @@ mutable struct emptyHouse <: house
     index::Int64
     quality::Float64
 end
+
+# we need a sold empty house also, no owner but a sale price and a buyer
+mutable struct emptyHouse <: house
+    index::Int64
+    quality::Float64
+    salePrice::Float64
+    buyer::agent
+end
+
 # a currently occupied home has an owner also
 mutable struct popHouse <: house
     index::Int64
@@ -58,7 +67,7 @@ mutable struct soldHouse <: house
     index::Int64
     quality::Float64
     owner::agent
-    salePrice::Int64
+    salePrice::Float64
     buyer::agent
 end
 # a sold exit house has the same parameters but the owner will leave the market
@@ -66,7 +75,7 @@ mutable struct soldExitHouse <: house
     index::Int64
     quality::Float64
     owner::agent
-    salePrice::Int64
+    salePrice::Float64
     buyer::agent
 end 
 

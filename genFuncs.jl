@@ -1,3 +1,5 @@
+# this code contains all the functions needed to generate initial objects in the environment
+# one this runs, the model is fully initialized
 function agtGen!(env::environment)
     env.agtTicker=env.agtTicker+1
     outAgt=agent(env.agtTicker,floor(Int64,rand(env.paymentDistribution,1)[1]),nothing)

@@ -1,12 +1,4 @@
-# This code provides functions that controls the environment. 
-# This way, the main code can run different versions in parallel
-
-
-
-# the initialize function generates houses and agents
-# randomly assigns them
-# then allows agents to trade so that house quality is correlated with agent budget
-# finally, randomly age mortgages
+# this code contains all the funtions needed to initialize the environment
 
 function initEnv()
     return environment(repeat([nothing],25)... )
