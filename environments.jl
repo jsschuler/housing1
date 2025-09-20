@@ -1,7 +1,7 @@
 # this code contains all the funtions needed to initialize the environment
 
 function initEnv()
-    return environment(repeat([nothing],25)... )
+    return environment(repeat([nothing],26)... )
 end
 
 # now we need functions to initialize every parameter in the environment
@@ -55,7 +55,10 @@ function initDwellings!(env::environment)
     env.exitHouses=exitHouse[]
     env.soldHouses=soldHouse[]
     env.soldExitHouses=soldExitHouse[]
+    env.emptyHouses=emptyHouse[]
+    env.soldEmptyHouses=soldEmptyHouse[]
     env.allHotels=hotel[]
+
     return env
 end
 

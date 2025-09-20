@@ -35,7 +35,7 @@ mutable struct emptyHouse <: house
 end
 
 # we need a sold empty house also, no owner but a sale price and a buyer
-mutable struct emptyHouse <: house
+mutable struct soldEmptyHouse <: house
     index::Int64
     quality::Float64
     salePrice::Float64
@@ -132,11 +132,12 @@ mutable struct environment
     soldHouses::Union{Nothing,Array{soldHouse}} # 18
     soldExitHouses::Union{Nothing,Array{soldExitHouse}} # 19
     emptyHouses::Union{Nothing,Array{emptyHouse}} # 20
-    loanList::Union{Nothing,Array{loan}} # 21
-    transactionGraph::Union{Nothing,SimpleDiGraph} # 22
-    nodeDict::Union{Nothing,Dict{dwelling,Int64}} # 23
-    intDict::Union{Nothing,Dict{Int64,dwelling}} # 24
+    soldEmptyHouses::Union{Nothing,Array{soldEmptyHouse}} # 21
+    loanList::Union{Nothing,Array{loan}} # 22
+    transactionGraph::Union{Nothing,SimpleDiGraph} # 23
+    nodeDict::Union{Nothing,Dict{dwelling,Int64}} # 24
+    intDict::Union{Nothing,Dict{Int64,dwelling}} # 25
     # agent Ticker
-    agtTicker::Union{Nothing,Int64} # 25
+    agtTicker::Union{Nothing,Int64} # 26
 end
 

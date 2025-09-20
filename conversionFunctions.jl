@@ -61,4 +61,12 @@ function popToForSale!(env::environment,haus::popHouse)
     env.allHouses[idx]=forSaleHaus
 end
 
-# finally, a function to convert a new house to a populated house
+# finally, a function to convert an empty house to a sold empty
+
+function emptyToSoldEmpty!(env::environment,haus::emptyHouse)
+end
+
+# and a function to convert a sold empty house to a populated house
+function soldEmptyToPop!(env::environment,haus::soldEmptyHouse)
+
+end
