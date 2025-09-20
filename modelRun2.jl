@@ -1,113 +1,88 @@
 # now the way the model will work is as follows:
 # at each tick:
-    #1. a number of new agents enter the market and dwell in hotels
-    #2. a number of agents decide to leave the market. They will sell at any price. 
-    #3. a number of new houses are built 
-    #4. a number of agents decide to move within the market. 
-        # They will sell if they have sell if they have seen a preferable house sold at a price they can afford
-        # in this case, they sell their house to the highest bidder and enter a hotel
-    # Critically, this step happens last so agents can't buy their own house. 
+    #1 Sold houses become populated houses and their owners move to hotels
+    #2 Sold Exit houses become populated houses and their owners leave the market
+    #3. a number of new agents enter the market and dwell in hotels
+    #4. a number of agents decide to leave the market and list their houses as exit houses
+    #5. a number of new houses are built 
+    #6. a number of agents decide to move within the market and list their houses as for sale houses
+    # 7 now, the inner loop starts and runs for a set number of rounds
+        # a preference graph is generated connecting hotels to empty houses, exit houses, or for sale houses
+        # in this preference graph, each hotel is connected to the house it prefers most
+        # each house is sold to the highest bidding hotel for the price of the second highest bidding hotel 
+        # the exit or for sale houses become sold exit houses
+        # this means that agents which successfully, do not re-enter the market until the next tick
 
+# we need a function that converts a sold house to a populated house
 
-
-function upForSale(env::environment)
-
-    popHouses=filter(x-> typeof(x)==popHouse ,env.allHouses)
-    popHouses=sample(popHouses,length(popHouses),replace=false)
-    
-    # how many agents will sell regardless
-    global outFlow
-    unCondSales=popHouses[1:outFlow]
-    # now select random potential sellers
-    global inPlace
-    potentialSales=popHouses[(outFlow+1):(outFlow+1+inPlace)]
-    # now remove any houses where the agent had not seen an affordable house
-    # at greater quality in the past k steps
-    for potSale in potentialSales
-        # first calculate agent's mortgage budget
-        currBalance=outstandingLoan(env,potSale)
-        # How much can the agent borrow less the outstanding loan?
-        netMortgage(env,)
-
-    end
-
+function soldToPop!(env::environment,haus::soldHouse,salePrice::Float64)
+    # first, find the index of the house in the environment
+    idx=findfirst(x->x.index==haus.index,env.allHouses)
+    # then, replace it with a populated house
+    env.allHouses[idx]=popHouse(haus.index,haus.quality,haus.buyer)
+    # finally, add the owner to the list of agents in hotels
+    push!(env.hotelList,hotelGen(env,haus.owner,salePrice))
 end
 
-# and the function whereby new agents enter the market
+# we need a function that converts a sold exit house to a populated house
+# the sale price is only for records
+function soldExitToPop!(env::environment,haus::soldExitHouse,salePrice::Float64)
+    # first, find the index of the house in the environment
+    idx=findfirst(x->x.index==haus.index,env.allHouses)
+    # then, replace it with a populated house
+    env.allHouses[idx]=popHouse(haus.index,haus.quality,haus.buyer)
+    # finally, do not add the owner to the list of agents in hotels
+end
 
-function marketEntry(env::environment)
-    hotelList::Array{hotel}=hotel[]
+# we need a function to generate new hotels for agents entering the market
+function newHotelGen!(env::environment)
     for i in 1:env.inFlow
-        push!(hotelList,hotelGen(env))
+        hotelGen(env)
     end
-    return hotelList
-end
-# now we need to load the code that generates the preference error term 
-include("qualityDistribution.jl")
-
-# now we need a function to generate the perference graph 
-# it connects hotels to houses the occupant prefers within the quality bound 
-
-function preferenceGraphGen(env::environment)
-    # first clear the existing graph
-    env.transactionGraph=SimpleDiGraph(0)
-    empty!(env.nodeDict)
-    empty!(env.intDict) 
-    empty!(env.qualDict)
-    # now add all hotels and houses on the market to the graph
-    for hot in env.allHotels
-        add_vertex!(env.transactionGraph)
-        env.nodeDict[hot]=nv(env.transactionGraph)
-        env.intDict[nv(env.transactionGraph)]=hot
-        env.qualDict[Graphs.SimpleGraphs.SimpleEdge{Int64}(nv(env.transactionGraph),nv(env.transactionGraph))]=hot.quality
-    end
-    for haus in env.allHouses
-        if typeof(haus)==emptyHouse
-            add_vertex!(env.transactionGraph)
-            env.nodeDict[haus]=nv(env.transactionGraph)
-            env.intDict[nv(env.transactionGraph)]=haus
-            env.qualDict[Graphs.SimpleGraphs.SimpleEdge{Int64}(nv(env.transactionGraph),nv(env.transactionGraph))]=haus.quality
-        end
-    end
-    # now add edges from hotels to the most preferred empty houses
-    for hot in env.allHotels
-        bestHaus::Union{nothing,emptyHouse}=nothing
-        bestQual=-Inf
-        for haus in filter!(h -> typeof(h)==emptyHouse, env.allHouses)
-            # calculate house quality with error
-            currQual=hausQuality(haus)+rand(qualityError,1)[1]
-            if currQual > bestQual
-                bestHaus=haus
-            end
-        end
-        # now add an edge from the hotel to the most preferred house
-        add_edge!(env.transactionGraph,env.nodeDict[hot],env.nodeDict[bestHaus]) 
-    end
-    return env.transactionGraph
 end
 
-# now we need a function that process the preference graph 
-# each house is sold to the highest bidding arrow in
-
-function processPreferenceGraph(env::environment)
-    # loop over all houses on the market
-    for haus in filter!(h -> typeof(h)==emptyHouse, env.allHouses)
-        inBidders=inNeighbors(env,haus)
-        if length(inBidders)>0
-            # if there are any bidders, sell to the highest bidder
-            maxBid=-Inf
-            bestBidder=nothing
-            for bidder in inBidders
-                bidAmt=budgetCalc(env,bidder)
-                if bidAmt > maxBid
-                    maxBid=bidAmt
-                    bestBidder=bidder
-            end
-            if !isnothing(bestBidder)
-                # sell the house to the highest bidder
-                haus.owner=bestBidder.owner
-                bestBidder.houses=push!(bestBidder.houses,haus)
-            end
+# we need a function for agents exiting to list their houses as exit houses
+function exitHouseGen!(env::environment)
+    for i in 1:max(env.outFlow)
+        # select a random house from the list of populated houses
+        if length(env.popHouses)>0
+            idx=rand(1:length(env.popHouses))
+            haus=env.popHouses[idx]
+            # convert it to an exit house
+            exit=exitHouse(haus.index,haus.quality,haus.owner)
+            # log the event
+            exitHouseGenLog(env,exit)
+            # replace the house in the environment
+            env.allHouses[findfirst(x->x.index==haus.index,env.allHouses)]=exit
+            # remove it from the list of populated houses
+            deleteat!(env.popHouses,idx)
         end
     end
 end
+# we need a function to generate new houses
+function newHouseGen!(env::environment)
+    for i in 1:env.construction
+        houseGen(env)
+    end
+end
+# we need a function for agents moving within the market to list their houses as for sale houses
+function forSaleHouseGen!(env::environment)
+    for i in 1:max(env.inPlace)
+        # select a random house from the list of populated houses
+        if length(env.popHouses)>0
+            idx=rand(1:length(env.popHouses))
+            haus=env.popHouses[idx]
+            # convert it to a for sale house
+            forsale=forSaleHouse(haus.index,haus.quality,haus.owner)
+            # log the event
+            forSaleHouseGenLog(env,forsale)
+            # replace the house in the environment
+            env.allHouses[findfirst(x->x.index==haus.index,env.allHouses)]=forsale
+            # remove it from the list of populated houses
+            deleteat!(env.popHouses,idx)
+        end
+    end
+end
+
+
+

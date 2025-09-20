@@ -4,12 +4,13 @@ function aSort(arr::Array)
     return sample(arr,length(arr),replace=false)
 end
 
+
 # basic object generation functions
 
 function agtGen(env::environment)
     env.agtTicker=env.agtTicker+1
     outAgt=agent(env.agtTicker,floor(Int64,rand(env.paymentDistribution,1)[1]))
-    agtLog(env,outAgt)
+    #agtLog(env,outAgt)
     push!(env.agtList,outAgt)
     return outAgt
 end
@@ -25,21 +26,18 @@ end
 
 function hotelGen(env::environment)
     hotelCounter=length(env.allHotels)+1
-    hot=hotel(hotelCounter,-Inf,agtGen(env),nothing)
+    hot=hotel(hotelCounter,0,agtGen(env))
     hotelGenLog(env,hot)
     push!(env.allHotels,hot)
     return hot
 end
 
+
+
 ### LOAN FUNCTIONS ####
 
-function maxMortgage(env::environment,haus::oldHouse)
-    monthlyRate::Float64=env.interestRate/12 
-    # apply interest rate calculation
-    payment=haus.owner.budget
-    return floor(Int64,payment*(((1+monthlyRate)^(12*30)) -1)/(monthlyRate*(1+monthlyRate)^(12*30)))+1
-end
 
+# the basic mortgage function assumes the agent borrowing as much as they can
 function maxMortgage(env::environment,haus::hotel)
     monthlyRate::Float64=env.interestRate/12 
     # apply interest rate calculation
@@ -67,94 +65,14 @@ function outstandingBalance(ln::loan,k::Int64)
     return floor(Int64,ln.initialBalance*ratio)
 end
 
-
-# the function generating a loan from just a house assumes agents are borrowing as much as they can
-function loanGen(env::environment,collat::oldHouse)
-    initialBalance=maxMortgage(env,collat)
-    newLoan=loan(env.interestRate,initialBalance,collat.owner.budget,initialBalance,0,collat,false)
-    loanLog(env,newLoan)
-    push!(env.loanList,newLoan)
-    return env
-end
-
 # the function generating a loan with a given quantity works differently
-function loanGen(env::environment,collat::oldHouse,amount::Int64)
+function loanGen(env::environment,collat::popHouse,amount::Int64)
     newLoan=loan(env.interestRate,amount,collat.owner.budget,amount,0,collat,false)
     push!(env.loanList,newLoan)
     return env
 end
 
-# now we need the house conversion functions
 
-# populating the house does not assume we have populated dictionaries yet but otherwise, works like moveIn
-function populate(env::environment,haus::emptyHouse,agt::agent)
-    hIndex=0
-    for i in 1:length(env.allHouses)
-        if env.allHouses[i]==haus
-            hIndex=i
-        end
-    end
-    currHaus=popHouse(haus.index,haus.quality,agt,agt)
-    env.allHouses[hIndex]=currHaus
-    return env
-end
-
-
-
-# a function to list for agents who wish to exit
-function makeEmpty(haus::popHouse)
-    return emptyHouse(haus.index,haus.quality)
-end
-
-
-
-
-# initialization functions
-# now we need the function that randomly assigns agents and houses 
-
-function housingSwap(house1::popHouse,house2::popHouse)
-    #println("Debug")
-    #println(house1.quality)
-    #println(house2.quality)
-    #println(house1.owner.budget)
-    #println(house2.owner.budget)
-    #println((house1.quality > house2.quality) & (house1.owner.budget < house2.owner.budget))
-    #println((house2.quality > house1.quality) & (house2.owner.budget < house1.owner.budget))
-    if (house1.quality > house2.quality) & (house1.owner.budget < house2.owner.budget)
-        #println("swapped")
-        richOwner=house2.owner
-        house2.owner=house1.owner
-        house1.owner=richOwner
-
-        swap=true
-    elseif (house2.quality > house1.quality) & (house2.owner.budget < house1.owner.budget)
-        #println("swapped")
-        richOwner=house1.owner
-        house1.owner=house2.owner
-        house2.owner=richOwner
-        swap=true
-    else
-        #println("Flag3")
-        swap=false
-    end
-    return swap
-end
-
-function initialSwapping(env::environment)
-    tick::Int64=0
-    while true
-        # select two random houses 
-        twoHouses=sample(env.allHouses,2,replace=false)
-        tick=tick+1
-        #println(tick)
-        if housingSwap(twoHouses[1],twoHouses[2])
-            tick=0
-        end
-        if tick==1000
-            break
-        end
-    end
-end
 
 ##### LOAN PAYING FUNCTIONS #####
 # the function that pays down a loan

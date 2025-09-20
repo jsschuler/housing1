@@ -3,82 +3,97 @@
 
 
 
-function environGen(key::String,
-                    qualityDistribution::Distribution,
-                    paymentDistribution::Distribution,
-                    agtCnt::Int64,
-                    inFlow::Int64,
-                    outFlow::Int64,
-                    construction::Int64,
-                    inPlace::Int64,
-                    interestRate::Float64,
-                    allTicks::Int64,
-                    mortgageFlag::Bool,
-                    qualBound::Float64
-)
-    retVal=environment(key,
-                       qualityDistribution,
-                       paymentDistribution,
-                       agtCnt,
-                       inFlow,
-                       outFlow,
-                       construction,
-                       inPlace,
-                       interestRate,
-                       allTicks,
-                       0,
-                       agent[],
-                       house[],
-                       hotel[],
-                       loan[],
-                       SimpleDiGraph(0),
-                       Dict{dwelling,Int64}(),
-                       Dict{Int64,dwelling}(),
-                       Dict{Graphs.SimpleGraphs.SimpleEdge{Int64},Int64}(),
-                       Dict{Graphs.SimpleGraphs.SimpleEdge{Int64},Float64}(),
-                       mortgageFlag,
-                       0,
-                       qualBound)
-        # 22
-        envLog(retVal)
-    
-    return retVal
-
-end
-
 # the initialize function generates houses and agents
 # randomly assigns them
 # then allows agents to trade so that house quality is correlated with agent budget
 # finally, randomly age mortgages
 
+function initEnv()
+    return environment(repeat([nothing],25)... )
+end
 
-function initialize(env::environment)
-    for i in 1:env.agtCnt
-        houseGen(env)
-        agtGen(env)
-    end
-    houseRand=aSort(env.allHouses)
-    agtRand=aSort(env.agtList)
-    for i in 1:length(houseRand)
-        populate(env,houseRand[i],agtRand[i])
-    end
-    # now sort agents
+# now we need functions to initialize every parameter in the environment
+function keyGen!(env::environment)
+    global seed
+    env.key=string(Dates.now())*"-"*string(seed)*"-"*string(rand(1:10^6))
+end
 
-    initialSwapping(env)
+function qualGen!(env::environment)
+    global qualityDistribution
+    env.qualityDistribution=qualityDistribution
+end
+function interestRateGen!(env::environment)
+    global interestRate
+    env.interestRate=interestRate
+end
+function paymentGen!(env::environment)
+    global paymentDistribution
+    env.paymentDistribution=paymentDistribution
+end
+function agtCntGen!(env::environment)
+    global agtCnt
+    env.agtCnt=agtCnt
+end
+function inFlowGen!(env::environment)
+    global inFlow
+    env.inFlow=inFlow
+end
+function outFlowGen!(env::environment)
+    global outFlow
+    env.outFlow=outFlow
+end
+function constructionGen!(env::environment)
+    global construction
+    env.construction=construction
+end
+function inPlaceGen!(env::environment)
+    global inPlace
+    env.inPlace=inPlace
+end
+function allTicksGen!(env::environment)
+    global allTicks
+    env.allTicks=allTicks  
+    env.tick=0
+end
 
-    # now generate the loans for each agent
-    for house in env.allHouses
-        loanGen(env,house)
-    end
-    
-    # then, we randomly age the agents a Uniform number of years so they can pay down their loan balances 
-    payOffs=rand(DiscreteUniform(12*50),length(env.loanList))
-    for i in eachindex(payOffs)
-        currLoan=env.loanList[i]
-        for j in 1:payOffs[i]
-            payLoan(env,currLoan)
-        end 
-    end
+function initDwellings!(env::environment)
+    env.allHouses=house[]
+    env.popHouses=popHouse[]
+    env.forSaleHouses=forSaleHouse[]
+    env.exitHouses=exitHouse[]
+    env.soldHouses=soldHouse[]
+    env.soldExitHouses=soldExitHouse[]
+    env.allHotels=hotel[]
+    return env
+end
 
+function initAgtList!(env::environment)
+    env.agtList=agent[]
+end
+
+function initLoanList!(env::environment)
+    env.loanList=loan[]
+end
+
+function setAgtTicker!(env::environment)
+    env.agtTicker=0
+end
+
+function initAll()
+    env=initEnv()
+    keyGen!(env)
+    qualGen!(env)
+    paymentGen!(env)
+    interestRateGen!(env)
+    agtCntGen!(env)
+    inFlowGen!(env)
+    outFlowGen!(env)
+    constructionGen!(env)
+    inPlaceGen!(env)
+    allTicksGen!(env)
+    initDwellings!(env)
+    initAgtList!(env)
+    initLoanList!(env)
+    setAgtTicker!(env)
     return env
 end

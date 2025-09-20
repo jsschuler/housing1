@@ -22,10 +22,8 @@ using Random
 #using TikzGraphs, TikzPictures
 using SparseArrays
 using CSV
-include("structs.jl")
-include("reportingFunctions.jl")
-include("functions.jl")
-include("environments.jl")
+using Dates
+
 
 # initialize environment with parameters
 
@@ -61,24 +59,13 @@ inPlace::Int64=30
 # what 
 # how many ticks to run the model ?
 allTicks=100
+# also, what is the 
 
-env=environGen((string(seed,base=16)*sHash(paymentDistribution)*sHash(qualityDistribution)*sHash(agtCnt)*sHash(inFlow)*sHash(outFlow)*sHash(construction)*sHash(inPlace)*sHash(allTicks)),
-               qualityDistribution,
-               paymentDistribution,
-               agtCnt,
-               inFlow,
-               outFlow,
-               construction,
-               inPlace,
-               interestRate,
-               allTicks,
-               false,
-               .25)
-
-env=initialize(env)
-
-# now, we can actually run the model
-
-include("modelRun.jl")
-
-modelRun(env)
+include("structs.jl")
+#include("reportingFunctions.jl")
+#include("functions.jl")
+include("environments.jl")
+include("genFuncs.jl")
+include("testFuncs.jl")
+env=initMod!()
+println( testCorrelation(env))

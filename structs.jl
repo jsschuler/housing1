@@ -1,4 +1,17 @@
 abstract type object end
+# we need an abstract dwelling type to make the network work correctly 
+abstract type dwelling <: object end
+abstract type house <: dwelling end
+# basic loan object 
+mutable struct loan
+    interestRate::Float64
+    initialBalance::Int64
+    monthlyPayment::Int64
+    outstandingBalance::Int64
+    paymentsMade::Int64
+    collateral::house
+    paidInFull::Bool
+end
 
 # basic agent object 
 
@@ -6,30 +19,61 @@ abstract type object end
 struct agent <: object
     init::Int64
     budget::Int64
+    loan::Union{loan,Nothing}
 end
 
-# we need an abstract dwelling type to make the network work correctly 
-abstract type dwelling <: object end
+
 
 # basic house objects
 
-abstract type house <: dwelling end
 
+
+# an empty home just has an id and a quality
 mutable struct emptyHouse <: house
     index::Int64
     quality::Float64
 end
-
+# a currently occupied home has an owner also
 mutable struct popHouse <: house
     index::Int64
     quality::Float64
     owner::agent
 end
+# a for sale house has the same parameters but the owner plans to stay in the market
+mutable struct forSaleHouse <: house
+    index::Int64
+    quality::Float64
+    owner::agent
+end
+# an exit house also has the same parameters but the owner plans to leave the market
+mutable struct exitHouse <: house
+    index::Int64
+    quality::Float64
+    owner::agent
+end
 
+# now, need two sold house types
+# a sold house has an owner and a buyer and a sale price. The owner will occupy a hotel for the next round
+mutable struct soldHouse <: house
+    index::Int64
+    quality::Float64
+    owner::agent
+    salePrice::Int64
+    buyer::agent
+end
+# a sold exit house has the same parameters but the owner will leave the market
+mutable struct soldExitHouse <: house
+    index::Int64
+    quality::Float64
+    owner::agent
+    salePrice::Int64
+    buyer::agent
+end 
 
 
 # we need a temporary "dwelling" for agents looking to buy
 # the hotel budget is the additional budget the agent has from a previous sale if any.
+# the budget is either the house to be sold, or the sale price, or zero
 mutable struct hotel <: dwelling
     index::Int64
     budget::Float64
@@ -45,50 +89,45 @@ Base.:(==)(m1::dwelling, m2::dwelling) = ((m1.index == m2.index) & (m1.quality==
 
 
 
-# basic loan object 
-mutable struct loan
-    interestRate::Float64
-    initialBalance::Int64
-    monthlyPayment::Int64
-    outstandingBalance::Int64
-    paymentsMade::Int64
-    collateral::house
-    paidInFull::Bool
-end
+
 
 
 
 ##### ENVIRONMENT STRUCT #######
 
 mutable struct environment
-    key::String
+    key::Union{Nothing,String} # 1
     # global parameters
     # distribution of house qualities 
-    qualityDistribution::Distribution
-    paymentDistribution::Distribution
+    qualityDistribution::Union{Nothing,Distribution} # 2
+    paymentDistribution::Union{Nothing,Distribution} # 3
     # initial agent count
-    agtCnt::Int64
+    agtCnt::Union{Nothing,Int64} # 4
     # population inflow (agents who can buy without selling)
-    inFlow::Int64
+    inFlow::Union{Nothing,Int64} # 5
     # population outflow (agents who can sell without buying)
-    outFlow::Int64
+    outFlow::Union{Nothing,Int64} # 6
     # new housing construction 
-    construction::Int64
+    construction::Union{Nothing,Int64} # 7
     # how many agents simply want to move within the market?
-    inPlace::Int64
-    interestRate::Float64
-    allTicks::Int64
-    tick::Int64
-    agtList::Array{agent}
-    allHouses::Array{house}
-    allHotels::Array{hotel}
-    loanList::Array{loan}
-    transactionGraph::SimpleDiGraph
-    nodeDict::Dict{dwelling,Int64}
-    intDict::Dict{Int64,dwelling}
-    mortgageFlag::Bool
+    inPlace::Union{Nothing,Int64}   # 8
+    interestRate::Union{Nothing,Float64}    # 9
+    allTicks::Union{Nothing,Int64} # 10 
+    tick::Union{Nothing,Int64}  # 11    
+    agtList::Union{Nothing,Array{agent}} # 12
+    allHouses::Union{Nothing,Array{house}} # 13
+    allHotels::Union{Nothing,Array{hotel}} # 14
+    popHouses::Union{Nothing,Array{popHouse}} # 15
+    forSaleHouses::Union{Nothing,Array{forSaleHouse}} # 16
+    exitHouses::Union{Nothing,Array{exitHouse}} # 17
+    soldHouses::Union{Nothing,Array{soldHouse}} # 18
+    soldExitHouses::Union{Nothing,Array{soldExitHouse}} # 19
+    emptyHouses::Union{Nothing,Array{emptyHouse}} # 20
+    loanList::Union{Nothing,Array{loan}} # 21
+    transactionGraph::Union{Nothing,SimpleDiGraph} # 22
+    nodeDict::Union{Nothing,Dict{dwelling,Int64}} # 23
+    intDict::Union{Nothing,Dict{Int64,dwelling}} # 24
     # agent Ticker
-    agtTicker::Int64
-    qualBound::Float64
+    agtTicker::Union{Nothing,Int64} # 25
 end
-# 23
+
