@@ -18,11 +18,14 @@
 # we need a function that processes all sold houses. 
 function allSold!(env::environment)
     for haus in vcat(env.soldHouses,env.soldEmptyHouses,env.soldExitHouses)
-       # populate hotel
-       env.hotelTicker=env.hotelTicker - 1
-       push!(env.allHotels,hotel(env.hotelTicker,haus.salePrice,haus.owner)) 
        # convert 
        populate!(env,haus)
+    end
+end
+# and a function where new agents enter
+function allEnter!(env::environment)
+    for i in 1:env.inFlow
+        newHotelGen!(env)
     end
 end
 
@@ -31,5 +34,17 @@ end
 # thus, we randomize the order 
 
 function upForSale!(env::environment)
-
+    # how many populated houses are there?
+    popCnt::Int64=length(env.popHouses)
+    # now randomize the exiters vs the movers in place
+    typeOrder=sample(vcat(repeat(:inPlace),env.inPlace),repeat(:outFlow,env,outFlow)),env.inPlace+env.outFlow,replace=false)
+    # and randomize the exiting populated houses order
+    hausOrder=sample(env.popHouses,length(env.popHouses),replace=false)
+    for i in 1:length(popOrder)
+        if typeOrder[i]==:inPlace
+            list!(env,hausOrder[i])
+        else
+            exit!(env,hausOrder[i])
+        end
+    end
 end
