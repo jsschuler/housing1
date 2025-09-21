@@ -1,7 +1,7 @@
 # this code contains all the funtions needed to initialize the environment
 
 function initEnv()
-    return environment(repeat([nothing],27)... )
+    return environment(repeat([nothing],28)... )
 end
 
 # now we need functions to initialize every parameter in the environment
@@ -22,6 +22,12 @@ function paymentGen!(env::environment)
     global paymentDistribution
     env.paymentDistribution=paymentDistribution
 end
+
+function errorGen!(env::environment)
+    global qualityError
+    env.qualityError=qualityError
+end
+
 function agtCntGen!(env::environment)
     global agtCnt
     env.agtCnt=agtCnt
@@ -83,6 +89,7 @@ function initAll()
     env=initEnv()
     keyGen!(env)
     qualGen!(env)
+    errorGen!(env)
     paymentGen!(env)
     interestRateGen!(env)
     agtCntGen!(env)

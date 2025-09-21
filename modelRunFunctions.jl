@@ -65,20 +65,55 @@ end
 function dictGen!(env::environment)
     env.intDict=Dict{Int64,dwelling}{}
     env.nodeDict=Dict{dwelling,Int64}{}
+    j::Int64=0
     for haus in env.forSaleHouses
-        env.intDict[haus.idx]=haus
-        env.nodeDict[haus]=haus.idx
+        j=j+1
+        env.intDict[j]=haus
+        env.nodeDict[haus]=j
     end
     for haus in env.emptyHouses
-        env.intDict[haus.idx]=haus
-        env.nodeDict[haus]=haus.idx
+        j=j+1
+        env.intDict[j]=haus
+        env.nodeDict[haus]=j
     end
     for haus in env.exitHouses
-        env.intDict[haus.idx]=haus
-        env.nodeDict[haus]=haus.idx
+        j=j+1
+        env.intDict[j]=haus
+        env.nodeDict[haus]=j
     end
     for hot in env.allHotels
-        env.intDict[hot.idx]=hot
-        env.nodeDict[hot]=hot.idx
+        j=j+1
+        env.intDict[j]=hot
+        env.nodeDict[hot]=j
     end
+end
+
+# we need a function whereby an agent perceives house quality
+function qualGen(haus::house)
+    apparentQual::Float64=haus.quality
+    apparentQual=apparentQual+rand(env.qualityError,1)[1]
+    return apparentQual
+end
+
+# now a function to generate the network
+function graphGen!(env::environment)
+    env.transactionGraph=SimpleDiGraph(0)
+    # now add nodes
+    for key in keys(env.intDict)
+        add_vertex!(env.transactionGraph)
+    end
+    # now, let's generate linkages
+    # there is a link between any hotel and the house the agent in the hotel likes most
+    for hot in env.allHotels
+        bestHaus::Union{Nothing,dwelling}=nothing
+        bestQual=0.0
+        for haus in vcat(env.forSaleHouses,env.emptyHouses,env.exitHouses)
+            currQual=qualGen(haus)
+            if currQual > bestQual
+                bestHaus=haus
+            end
+        end
+        add_edge!(env.transactionGraph,env.nodeDict[hot],env.nodeDict[bestHaus])
+    end
+    return env.transactionGraph
 end
