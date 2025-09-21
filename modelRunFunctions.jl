@@ -138,9 +138,13 @@ function auction!(env::environment)
             # calculate max bid
             bigMort=maxMortgage(env,env.intDict[i]) 
             currBudget=env.intDict[i].budget 
-            if !isnothing(haus.owner.loan)
-                totBudget=bigMort+currBudget-haus.owner.loan.outstandingBalance
-            else
+            if typeof(haus)!=emptyHouse
+                if !isnothing(haus.owner.loan)
+                    totBudget=bigMort+currBudget-haus.owner.loan.outstandingBalance
+                else
+                    totBudget=bigMort+currBudget
+                end
+            else    
                 totBudget=bigMort+currBudget
             end
             println("Total Budget is: "*string(totBudget))

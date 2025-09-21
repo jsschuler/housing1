@@ -31,12 +31,32 @@ function outstandingBalance(ln::loan,k::Int64)
 end
 
 # the function generating a loan with a given quantity works differently
-function loanGen(env::environment,collat::popHouse,amount::Int64)
+function loanGen(env::environment,collat::popHouse,amount::Float64)
     newLoan=loan(env.interestRate,amount,collat.owner.budget,amount,0,collat,false)
     push!(env.loanList,newLoan)
     return env
 end
 
+# the function generating a loan with a given quantity works differently
+function loanGen(env::environment,collat::soldExitHouse,amount::Float64)
+    newLoan=loan(env.interestRate,amount,collat.owner.budget,amount,0,collat,false)
+    push!(env.loanList,newLoan)
+    return env
+end
+
+# the function generating a loan with a given quantity works differently
+function loanGen(env::environment,collat::soldEmptyHouse,amount::Float64)
+    newLoan=loan(env.interestRate,amount,collat.owner.budget,amount,0,collat,false)
+    push!(env.loanList,newLoan)
+    return env
+end
+
+# the function generating a loan with a given quantity works differently
+function loanGen(env::environment,collat::soldHouse,amount::Float64)
+    newLoan=loan(env.interestRate,amount,collat.owner.budget,amount,0,collat,false)
+    push!(env.loanList,newLoan)
+    return env
+end
 
 
 ##### LOAN PAYING FUNCTIONS #####
