@@ -102,6 +102,7 @@ Base.:(==)(m1::dwelling, m2::dwelling) = ((m1.index == m2.index))
 
 
 
+
 ##### ENVIRONMENT STRUCT #######
 
 mutable struct environment

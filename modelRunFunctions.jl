@@ -147,9 +147,9 @@ function auction!(env::environment)
             else    
                 totBudget=bigMort+currBudget
             end
-            println("Total Budget is: "*string(totBudget))
+            #println("Total Budget is: "*string(totBudget))
             if totBudget > ultimateBid
-                println("Outbidded!")
+                #println("Outbidded!")
                 penultimateBid=ultimateBid
                 penultimateBidder=ultimateBidder
                 ultimateBid=totBudget
@@ -189,6 +189,29 @@ function modelTick!(env::environment)
     #println(length(env.emptyHouses))
     #println("Exiting")
     #println(length(env.exitHouses))
+    
+    # every loan is paid
+    for loan in env.loanList
+        payLoan(env,loan)
+    end
+    # now, if the agent has paid the loan in full, delete it
+    tmpList=loan[]
+    for loan in env.loanList
+        if !loan.paidInFull
+            push!(tmpList,loan)
+        end
+    end
+    for agt in env.agtList
+        if !isnothing(agt.loan)
+            if agt.loan.paidInFull
+                agt.loan=nothing
+            end
+        end
+    end
+    env.loanList=tmpList
+
+
+
     # process all sold houses
     allSold!(env)
     
