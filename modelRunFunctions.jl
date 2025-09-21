@@ -24,7 +24,7 @@ function upForSale!(env::environment)
     typeOrder=sample(vcat(repeat([:inPlace],env.inPlace),repeat([:outFlow],env.outFlow)),env.inPlace+env.outFlow,replace=false)
     # and randomize the exiting populated houses order
     hausOrder=sample(env.popHouses,length(env.popHouses),replace=false)
-    for i in 1:length(hausOrder)
+    for i in 1:length(typeOrder)
         if typeOrder[i]==:inPlace
             list!(env,hausOrder[i])
         else
