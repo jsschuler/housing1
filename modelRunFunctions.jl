@@ -117,3 +117,4 @@ function graphGen!(env::environment)
     end
     return env.transactionGraph
 end
+
