@@ -156,6 +156,10 @@ function auction!(env::environment)
                 ultimateBidder=env.intDict[i]
             end
         end
+        # now, if the second highest bid is 0, we use 90% of the highest bid instead
+        if penultimateBid==0.0
+            penultimateBid=.9*ultimateBid
+        end
         # now that we have the highest bidder, we can sell the house
         if !isnothing(ultimateBidder)
             sell!(env,haus,ultimateBidder,penultimateBid)    

@@ -5,9 +5,9 @@ abstract type house <: dwelling end
 # basic loan object 
 mutable struct loan
     interestRate::Float64
-    initialBalance::Int64
-    monthlyPayment::Int64
-    outstandingBalance::Int64
+    initialBalance::Float64
+    monthlyPayment::Float64
+    outstandingBalance::Float64
     paymentsMade::Int64
     collateral::house
     paidInFull::Bool
