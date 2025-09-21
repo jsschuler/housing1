@@ -4,7 +4,7 @@ function envLog(env::environment)
     CSV.write("../housingData/modelRun"*env.key*".csv",dArray,header=false,append=true)
 end
 # We need a function that logs housing construction
-function houseLog(env::environment,haus::newHouse)
+function houseLog(env::environment,haus::emptyHouse)
     dArray=DataFrame([[env.key],[env.tick],[haus.index],[haus.quality]],:auto)
     CSV.write("../housingData/construction"*env.key*".csv",dArray,header=false,append=true)
 end

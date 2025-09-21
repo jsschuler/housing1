@@ -79,5 +79,6 @@ function initMod()
     #println("Before swapping")
     #println(env.allHouses)
     initialSwapping!(env)
+    envLog(env::environment)
     return env
 end
