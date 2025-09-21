@@ -9,7 +9,8 @@ end
 # and a function where new agents enter
 function allEnter!(env::environment)
     for i in 1:env.inFlow
-        newHotelGen!(env)
+        println("Hotel "*string(i)*" generated!")
+        hotelGen!(env)
     end
 end
 
@@ -24,7 +25,7 @@ function upForSale!(env::environment)
     typeOrder=sample(vcat(repeat([:inPlace],env.inPlace),repeat([:outFlow],env.outFlow)),env.inPlace+env.outFlow,replace=false)
     # and randomize the exiting populated houses order
     hausOrder=sample(env.popHouses,length(env.popHouses),replace=false)
-    for i in 1:length(typeOrder)
+    for i in 1:min(length(typeOrder),length(hausOrder))
         if typeOrder[i]==:inPlace
             list!(env,hausOrder[i])
         else
@@ -47,8 +48,8 @@ function allConstruct!(env::environment)
 end
 # now we need functions that build the dictionaries that support the network
 function dictGen!(env::environment)
-    env.intDict=Dict{Int64,dwelling}{}
-    env.nodeDict=Dict{dwelling,Int64}{}
+    env.intDict=Dict{Int64,dwelling}()
+    env.nodeDict=Dict{dwelling,Int64}()
     j::Int64=0
     for haus in env.forSaleHouses
         j=j+1
@@ -95,6 +96,7 @@ function graphGen!(env::environment)
             currQual=qualGen(haus)
             if currQual > bestQual
                 bestHaus=haus
+                #println("better!")
             end
         end
         add_edge!(env.transactionGraph,env.nodeDict[hot],env.nodeDict[bestHaus])
@@ -109,28 +111,50 @@ function auction!(env::environment)
     dictGen!(env)
     # generate most preferred graph
     graphGen!(env)
+    println("Nodes")
+    println(nv(env.transactionGraph))
+    println("Edges")
+    println(ne(env.transactionGraph))
+    println("Hotels")
+    println(length(env.allHotels))
+    println("For Sale")
+    println(length(env.forSaleHouses))
+    println("Empty")
+    println(length(env.emptyHouses))
+    println("Exiting")
+    println(length(env.exitHouses))
     # now, loop over all houses for sale
     for haus in vcat(env.forSaleHouses,env.exitHouses,env.emptyHouses)
         # get all nodes with arrows pointing in to the house
-        saleNode=nodeDict[haus]
+        saleNode=env.nodeDict[haus]
         inNbbh=inneighbors(env.transactionGraph,saleNode)
-        ultimateBidder::Union{Nothing,Float64}=nothing
+        ultimateBidder::Union{Nothing,hotel}=nothing
         ultimateBid::Float64=0.0
-        penultimateBidder::Union{Nothing.Float64}=nothing
+        penultimateBidder::Union{Nothing,hotel}=nothing
         penultimateBid::Float64=0.0
+        #println(haus.index)
         for i in inNbbh
+            #println(intDict[i].index)
             # calculate max bid
-            bigMort=maxMortgage(envt,haus) 
+            bigMort=maxMortgage(env,env.intDict[i]) 
             currBudget=env.intDict[i].budget 
-            totBudget=bigMort+currBudget-haus.owner.outstandingBalance
+            if !isnothing(haus.owner.loan)
+                totBudget=bigMort+currBudget-haus.owner.loan.outstandingBalance
+            else
+                totBudget=bigMort+currBudget
+            end
+            println("Total Budget is: "*string(totBudget))
             if totBudget > ultimateBid
+                println("Outbidded!")
                 penultimateBid=ultimateBid
                 penultimateBidder=ultimateBidder
                 ultimateBid=totBudget
-                ultimateBidder=intDict[i].owner
+                ultimateBidder=env.intDict[i]
             end
+        end
         # now that we have the highest bidder, we can sell the house
-        sell!(env,haus,intDict[i],penultimateBid)
+        if !isnothing(ultimateBidder)
+            sell!(env,haus,ultimateBidder,penultimateBid)    
         end
     end
 end
@@ -151,16 +175,72 @@ end
 function modelTick!(env::environment)
     #increment model tick
     env.tick=env.tick+1
+    println("Initial")
+    println(env.tick)
+    println("Hotels")
+    println(length(env.allHotels))
+    println("For Sale")
+    println(length(env.forSaleHouses))
+    println("Empty")
+    println(length(env.emptyHouses))
+    println("Exiting")
+    println(length(env.exitHouses))
     # process all sold houses
     allSold!(env)
+    
+    println("After All Sold")
+    println(env.tick)
+    println("Hotels")
+    println(length(env.allHotels))
+    println("For Sale")
+    println(length(env.forSaleHouses))
+    println("Empty")
+    println(length(env.emptyHouses))
+    println("Exiting")
+    println(length(env.exitHouses))
     # build new homes
     allConstruct!(env)
+
+    println("After Constructed")
+    println(env.tick)
+    println("Hotels")
+    println(length(env.allHotels))
+    println("For Sale")
+    println(length(env.forSaleHouses))
+    println("Empty")
+    println(length(env.emptyHouses))
+    println("Exiting")
+    println(length(env.exitHouses))
     # new agents enter
     allEnter!(env)
+    
+    println("After Entering")
+    println(env.tick)
+    println("Hotels")
+    println(length(env.allHotels))
+    println("For Sale")
+    println(length(env.forSaleHouses))
+    println("Empty")
+    println(length(env.emptyHouses))
+    println("Exiting")
+    println(length(env.exitHouses))
+
     # put all houses up for sale
     upForSale!(env)
+
+    println("After Up For Sale")
+    println(env.tick)
+    println("Hotels")
+    println(length(env.allHotels))
+    println("For Sale")
+    println(length(env.forSaleHouses))
+    println("Empty")
+    println(length(env.emptyHouses))
+    println("Exiting")
+    println(length(env.exitHouses))
+
     # now we run the auction for 10000 ticks or until there are no remaining houses up for sale
-    aTick::Int64=-
+    aTick::Int64=0
     while length(vcat(env.forSaleHouses,env.exitHouses,env.emptyHouses)) > 0
         aTick=aTick+1
         auction!(env)

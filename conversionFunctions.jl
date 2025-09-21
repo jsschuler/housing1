@@ -3,12 +3,14 @@
 # in the functions mapping houses up for sale to sold houses, we reference hotels rather than buyers
 # since all buyers live in hotels
 function sell!(env::environment,haus::forSaleHouse,buyer::hotel,salePrice::Float64)
-    # first pay off the mortgage
-    deleteat!(env.loanList,findfirst(env.loanList,haus.owner.loan))
+    # first pay off the mortgage if there is one.
+    if !isnothing(haus.owner.loan)
+        deleteat!(env.loanList,findfirst(x->x==haus.owner.loan,env.loanList))
+    end
     # then we need to remove the house from the for sale list
     deleteat!(env.forSaleHouses,findfirst(x->x==haus,env.forSaleHouses))
     # then we need to create a new sold house object
-    soldHaus=soldHouse(haus.id,haus.quality,haus.owner,salePrice,buyer.owner)
+    soldHaus=soldHouse(haus.index,haus.quality,haus.owner,salePrice,buyer.owner)
     # then we need to add the new sold house to the sold house list
     push!(env.soldHouses,soldHaus)
     borrowedBalance::Float64=max(salePrice-buyer.budget,0.0)
@@ -24,12 +26,17 @@ function sell!(env::environment,haus::forSaleHouse,buyer::hotel,salePrice::Float
 end
 
 function sell!(env::environment,haus::exitHouse,buyer::hotel,salePrice::Float64)
-    # first pay off the mortgage
-    deleteat!(env.loanList,findfirst(env.loanList,haus.owner.loan))
+    # first pay off the mortgage if there is one.
+    if !isnothing(haus.owner.loan)
+        deleteat!(env.loanList,findfirst(x->x==haus.owner.loan,env.loanList))
+    end
+    #println(env.exitHouses)
+    #println(haus)
+    #println(findfirst(x->x==haus,env.exitHouses))
     # then we need to remove the house from the exit list
     deleteat!(env.exitHouses,findfirst(x->x==haus,env.exitHouses))
     # then we need to create a new sold exit house object
-    soldHaus=soldExitHouse(haus.id,haus.quality,haus.owner,salePrice,buyer.owner)
+    soldHaus=soldExitHouse(haus.index,haus.quality,haus.owner,salePrice,buyer.owner)
     # then we need to add the new sold exit house to the sold exit house list
     push!(env.soldExitHouses,soldHaus)
     # now generate the loan the agent takes out
@@ -116,7 +123,11 @@ end
 # finally, a function to convert an empty house to a sold empty
 
 function sell!(env::environment,haus::emptyHouse,buyer::hotel,salePrice::Float64)
-    # first, remove the house from the empty house list
+    # first pay off the mortgage if there is one.
+    if !isnothing(haus.owner.loan)
+        deleteat!(env.loanList,findfirst(x->x==haus.owner.loan,env.loanList))
+    end    
+    # then, remove the house from the empty house list
     deleteat!(env.emptyHouses,findfirst(x->x==haus,env.emptyHouses))
     # then, create a new for sale house object      
     soldEmpty=soldEmptyHouse(haus.index,haus.quality,haus.owner,salePrice,buyer.owner)

@@ -16,7 +16,7 @@ end
 # basic agent object 
 
 
-struct agent <: object
+mutable struct agent <: object
     init::Int64
     budget::Int64
     loan::Union{loan,Nothing}
@@ -94,7 +94,7 @@ end
 #Base.hash(m::dwelling, h::UInt) = hash(m.index, hash(m.index, h))
 Base.hash(m::hotel) = hash(-m.index)
 Base.hash(m::house) = hash(m.index)
-Base.:(==)(m1::dwelling, m2::dwelling) = ((m1.index == m2.index) & (m1.quality==m2.quality))
+Base.:(==)(m1::dwelling, m2::dwelling) = ((m1.index == m2.index))
 
 
 
