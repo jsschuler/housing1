@@ -44,21 +44,16 @@ function loanFullLog(env::environment,ln::loan)
     CSV.write("../housingData/loanFull"*env.key*".csv",dArray,header=false,append=true)
 end
 # and agents moving into the market
-function agtMoveIn(env::environment,dwell::dwelling,agt::agent)
-    dArray=DataFrame([[env.key],[env.tick],[dwell.index],[agt.init]],:auto)
+function agtMoveInLog(env::environment,dwell::dwelling,agt::agent)
+    dArray=DataFrame([[env.key],[env.tick],[dwell.index],[agt.index]],:auto)
     CSV.write("../housingData/moveIn"*env.key*".csv",dArray,header=false,append=true)
 end
 
 
 # and agents moving out of the market
-function agtLeave(env::environment,origin::dwelling,agt::agent)
-    dArray=DataFrame([[env.key],[env.tick],[origin.index],[agt.init]],:auto)
+function agtLeaveLog(env::environment,origin::dwelling,agt::agent)
+    dArray=DataFrame([[env.key],[env.tick],[origin.index],[agt.index]],:auto)
     CSV.write("../housingData/agtLeave"*env.key*".csv",dArray,header=false,append=true)
-end
-# and within the market
-function agtMove(env::environment,origin::dwelling,dest::dwelling,agt::agent)
-    dArray=DataFrame([[env.key],[env.tick],[origin.index],[dest.index],[agt.init]],:auto)
-    CSV.write("../housingData/agtMove"*env.key*".csv",dArray,header=false,append=true)
 end
 
 # finally functions to track graphs and dictionaries
@@ -83,7 +78,7 @@ function graphLog(env::environment,tarGraph::SimpleDiGraph,label::String)
     CSV.write("../housingData/networks"*label*"-"*env.key*".csv",DataFrame(dataDict2),header=false,append=true)
 end
 
-function saleLog(env::environment,haus::dwelling,price::Int64)
+function saleLog(env::environment,haus::dwelling,price::Float64)
     dArray=DataFrame([[env.key],[env.tick],[haus.index],[price]],:auto)
     CSV.write("../housingData/sales"*env.key*".csv",dArray,header=false,append=true)
 end

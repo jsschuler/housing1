@@ -204,6 +204,7 @@ function modelTick!(env::environment)
     for agt in env.agtList
         if !isnothing(agt.loan)
             if agt.loan.paidInFull
+                loanFullLog(env,loan)
                 agt.loan=nothing
             end
         end

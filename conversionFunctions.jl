@@ -25,6 +25,8 @@ function sell!(env::environment,haus::forSaleHouse,buyer::hotel,salePrice::Float
     hotelDelLog(env,env.allHotels[findfirst(x->x==buyer,env.allHotels)])
     deleteat!(env.allHotels,findfirst(x->x==buyer,env.allHotels))
     # finally we need to return the new sold house object
+    agtLeaveLog(env,soldHaus,soldHaus.owner)
+    saleLog(env,soldHaus,salePrice)
     return soldHaus
 end
 
@@ -56,6 +58,8 @@ function sell!(env::environment,haus::exitHouse,buyer::hotel,salePrice::Float64)
     hotelDelLog(env,env.allHotels[findfirst(x->x==buyer,env.allHotels)])
     deleteat!(env.allHotels,findfirst(x->x==buyer,env.allHotels))
     # finally we need to return the new sold exit house object
+    agtLeaveLog(env,soldHaus,soldHaus.owner)
+    saleLog(env,soldHaus,salePrice)
     return soldHaus
 end
 
@@ -75,6 +79,7 @@ function populate!(env::environment,haus::soldHouse)
     if !isnothing(popHaus.owner.loan)
         popHaus.owner.loan.collateral=popHaus
     end
+    agtMoveInLog(env,popHaus,popHaus.owner)
     return popHaus
 end
 # now a function that converts a sold exit house to a populated house
@@ -92,6 +97,7 @@ function populate!(env::environment,haus::soldExitHouse)
     if !isnothing(popHaus.owner.loan)
         popHaus.owner.loan.collateral=popHaus
     end    
+    agtMoveInLog(env,popHaus,popHaus.owner)
     return popHaus
 end 
 
@@ -122,6 +128,7 @@ function exit!(env::environment,haus::popHouse)
     idx=findfirst(x->x.index==haus.index,env.allHouses)
     # then, replace it with a populated house
     env.allHouses[idx]=forSaleHaus
+    
     return forSaleHaus
 end
 
@@ -156,6 +163,8 @@ function sell!(env::environment,haus::emptyHouse,buyer::hotel,salePrice::Float64
     # now remove the hotel from the hotels list
     hotelDelLog(env,env.allHotels[findfirst(x->x==buyer,env.allHotels)])
     deleteat!(env.allHotels,findfirst(x->x==buyer,env.allHotels))
+    agtLeaveLog(env,soldEmpty,soldEmpty.owner)
+    saleLog(env,soldHaus,salePrice)
     return soldEmpty
 end
 
@@ -175,5 +184,6 @@ function populate!(env::environment,haus::soldEmptyHouse)
     if !isnothing(popHaus.owner.loan)
         popHaus.owner.loan.collateral=popHaus
     end
+    agtMoveInLog(env,popHaus,popHaus.owner)
     return popHaus
 end
