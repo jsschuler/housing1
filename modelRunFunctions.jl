@@ -237,7 +237,7 @@ function modelTick!(env::environment)
     #println("Empty")
     #println(length(env.emptyHouses))
     #println("Exiting")
-    println(length(env.exitHouses))
+    #println(length(env.exitHouses))
     # new agents enter
     allEnter!(env)
     
