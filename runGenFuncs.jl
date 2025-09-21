@@ -3,8 +3,8 @@
 
 function hotelGen(env::environment)
     env.hotelTicker=env.hotelTicker-1
-    outHotel=hotel(env.hotelTicker,agtGen!(env),0.0)
-    push!(env.hotelList,outHotel)
+    outHotel=hotel(env.hotelTicker,0.0,agtGen!(env))
+    push!(env.allHotels,outHotel)
     #hotelLog(env,outHotel)
     return outHotel
 end

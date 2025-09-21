@@ -102,5 +102,6 @@ function initAll()
     initAgtList!(env)
     initLoanList!(env)
     setAgtTicker!(env)
+    setHotelTicker!(env)
     return env
 end

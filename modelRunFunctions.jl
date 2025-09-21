@@ -21,10 +21,10 @@ function upForSale!(env::environment)
     # how many populated houses are there?
     popCnt::Int64=length(env.popHouses)
     # now randomize the exiters vs the movers in place
-    typeOrder=sample(vcat(repeat(:inPlace),env.inPlace),repeat(:outFlow,env,outFlow),env.inPlace+env.outFlow,replace=false)
+    typeOrder=sample(vcat(repeat([:inPlace],env.inPlace),repeat([:outFlow],env.outFlow)),env.inPlace+env.outFlow,replace=false)
     # and randomize the exiting populated houses order
     hausOrder=sample(env.popHouses,length(env.popHouses),replace=false)
-    for i in 1:length(popOrder)
+    for i in 1:length(hausOrder)
         if typeOrder[i]==:inPlace
             list!(env,hausOrder[i])
         else
@@ -36,7 +36,7 @@ end
 function construct!(env::environment)
     newHaus=emptyHouse(length(env.allHouses)+1,rand(env.qualityDistribution,1)[1])
     push!(env.allHouses,newHaus)
-    push!(env.emptyHouses,newHause)
+    push!(env.emptyHouses,newHaus)
     return newHaus
 end
 

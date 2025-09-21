@@ -104,7 +104,7 @@ function exit!(env::environment,haus::popHouse)
     # then, create a new for sale house object      
     forSaleHaus=exitHouse(haus.index,haus.quality,haus.owner)
     # then, add the new for sale house to the for sale house list
-    push!(env.forSaleHouses,forSaleHaus)
+    push!(env.exitHouses,forSaleHaus)
     # finally update its place in the all houses list
     idx=findfirst(x->x.index==haus.index,env.allHouses)
     # then, replace it with a populated house
