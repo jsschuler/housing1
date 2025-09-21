@@ -10,7 +10,8 @@ end
 
 function initAgents!(env::environment)
     for i in 1:env.agtCnt
-        agtGen!(env)
+        currAgt=agtGen!(env)
+        agtLog(env,currAgt)
     end
     return env
 end
@@ -80,5 +81,8 @@ function initMod()
     #println(env.allHouses)
     initialSwapping!(env)
     envLog(env::environment)
+    for haus in env.allHouses
+        houseLog(env,haus)
+    end
     return env
 end

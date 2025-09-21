@@ -33,6 +33,7 @@ end
 # the function generating initial loans takes the owner as the borrower
 function loanGen(env::environment,collat::popHouse,amount::Float64)
     newLoan=loan(env.interestRate,amount,collat.owner.budget,amount,0,collat,false)
+    loanLog(env,newLoan)
     push!(env.loanList,newLoan)
     return env
 end
@@ -40,6 +41,7 @@ end
 # the function generating a loan with a given quantity works differently
 function loanGen(env::environment,collat::soldExitHouse,amount::Float64)
     newLoan=loan(env.interestRate,amount,collat.buyer.budget,amount,0,collat,false)
+    loanLog(env,newLoan)
     push!(env.loanList,newLoan)
     return env
 end
@@ -47,6 +49,7 @@ end
 # the function generating a loan with a given quantity works differently
 function loanGen(env::environment,collat::soldEmptyHouse,amount::Float64)
     newLoan=loan(env.interestRate,amount,collat.buyer.budget,amount,0,collat,false)
+    loanLog(env,newLoan)
     push!(env.loanList,newLoan)
     return env
 end
@@ -54,6 +57,7 @@ end
 # the function generating a loan with a given quantity works differently
 function loanGen(env::environment,collat::soldHouse,amount::Float64)
     newLoan=loan(env.interestRate,amount,collat.buyer.budget,amount,0,collat,false)
+    loanLog(env,newLoan)
     push!(env.loanList,newLoan)
     return env
 end

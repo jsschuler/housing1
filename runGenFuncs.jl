@@ -4,6 +4,7 @@
 function hotelGen!(env::environment)
     env.hotelTicker=env.hotelTicker-1
     outHotel=hotel(env.hotelTicker,0.0,agtGen!(env))
+    hotelGenLog(env,outHotel)
     push!(env.allHotels,outHotel)
     #hotelLog(env,outHotel)
     return outHotel
@@ -18,5 +19,6 @@ function houseGen!(env::environment)
     #houseLog(env,haus)
     push!(env.allHouses,haus)
     push!(env.emptyHouses,haus)
+    houseLog(env,haus)
     return haus
 end

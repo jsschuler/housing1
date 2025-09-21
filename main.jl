@@ -62,7 +62,7 @@ allTicks=100
 # also, what is the 
 
 include("structs.jl")
-#include("reportingFunctions.jl")
+include("reportingFunctions.jl")
 #include("functions.jl")
 include("environments.jl")
 include("genFuncs.jl")
@@ -72,6 +72,6 @@ include("runGenFuncs.jl")
 include("conversionFunctions.jl")
 include("modelRunFunctions.jl")
 include("qualityDistribution.jl")
-include("reportingFunctions.jl")
+
 env=initMod()
 modelRun!(env)

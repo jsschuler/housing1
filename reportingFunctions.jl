@@ -8,6 +8,12 @@ function houseLog(env::environment,haus::emptyHouse)
     dArray=DataFrame([[env.key],[env.tick],[haus.index],[haus.quality]],:auto)
     CSV.write("../housingData/construction"*env.key*".csv",dArray,header=false,append=true)
 end
+# and houses from model initialization
+function houseLog(env::environment,haus::popHouse)
+    dArray=DataFrame([[env.key],[env.tick],[haus.index],[haus.quality]],:auto)
+    CSV.write("../housingData/construction"*env.key*".csv",dArray,header=false,append=true)
+end
+
 # and agent generation
 function agtLog(env::environment,agt::agent)
     dArray=DataFrame([[env.key],[env.tick],[agt.init],[agt.budget]],:auto)
@@ -17,13 +23,13 @@ end
 # and hotel generation
 
 function hotelGenLog(env::environment,hot::hotel)
-    dArray=DataFrame([[env.key],[env.tick],[hot.index],[hot.quality],[hot.owner.init]],:auto)
+    dArray=DataFrame([[env.key],[env.tick],[hot.index],[hot.owner]],:auto)
     CSV.write("../housingData/hotelCons"*env.key*".csv",dArray,header=false,append=true)
 end
 
 # and hotel deletion
 function hotelDelLog(env::environment,hot::hotel)
-    dArray=DataFrame([[env.key],[env.tick],[hot.index],[hot.quality],[hot.owner.init]],:auto)
+    dArray=DataFrame([[env.key],[env.tick],[hot.index],[hot.owner]],:auto)
     CSV.write("../housingData/hotelsDes"*env.key*".csv",dArray,header=false,append=true)
 end
 # and loan generation

@@ -22,6 +22,7 @@ function sell!(env::environment,haus::forSaleHouse,buyer::hotel,salePrice::Float
         buyer.owner.loan=nothing
     end
     # now remove the hotel from the hotels list
+    hotelDelLog(env,env.allHotels[findfirst(x->x==buyer,env.allHotels)])
     deleteat!(env.allHotels,findfirst(x->x==buyer,env.allHotels))
     # finally we need to return the new sold house object
     return soldHaus
@@ -52,6 +53,7 @@ function sell!(env::environment,haus::exitHouse,buyer::hotel,salePrice::Float64)
         buyer.owner.loan=nothing
     end
     # now remove the hotel from the hotels list
+    hotelDelLog(env,env.allHotels[findfirst(x->x==buyer,env.allHotels)])
     deleteat!(env.allHotels,findfirst(x->x==buyer,env.allHotels))
     # finally we need to return the new sold exit house object
     return soldHaus
@@ -152,6 +154,7 @@ function sell!(env::environment,haus::emptyHouse,buyer::hotel,salePrice::Float64
         buyer.owner.loan=nothing
     end
     # now remove the hotel from the hotels list
+    hotelDelLog(env,env.allHotels[findfirst(x->x==buyer,env.allHotels)])
     deleteat!(env.allHotels,findfirst(x->x==buyer,env.allHotels))
     return soldEmpty
 end
