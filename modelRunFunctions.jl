@@ -118,3 +118,36 @@ function graphGen!(env::environment)
     return env.transactionGraph
 end
 
+# now we need the main function that peforms a single auction
+
+function auction(env::environment)
+    # generate dictionary
+    dictGen!(env)
+    # generate most preferred graph
+    graphGen!(env)
+    # now, loop over all houses for sale
+    for haus in vcat(env.forSaleHouses,env.exitHouses,env.emptyHouses)
+        # get all nodes with arrows pointing in to the house
+        saleNode=nodeDict[haus]
+        inNbbh=inneighbors(env.transactionGraph,saleNode)
+        ultimateBidder::Union{Nothing,Float64}=nothing
+        ultimateBid::Float64=0.0
+        penultimateBidder::Union{Nothing.Float64}=nothing
+        penultimateBid::Float64=0.0
+        for i in inNbbh
+            # calculate max bid
+            bigMort=maxMortgage(envt,haus) 
+            currBudget=env.intDict[i].budget 
+            totBudget=bigMort+currBudget-haus.owner.outstandingBalance
+            if totBudget > ultimateBid
+                penultimateBid=ultimateBid
+                penultimateBidder=ultimateBidder
+                ultimateBid=totBudget
+                ultimateBidder=intDict[i].owner
+            end
+        # now that we have the highest bidder, we can sell the house
+        sell!(env,haus,intDict[i],penultimateBid)
+        end
+    end
+
+end

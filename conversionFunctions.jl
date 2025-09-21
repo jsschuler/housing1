@@ -3,12 +3,20 @@
 # in the functions mapping houses up for sale to sold houses, we reference hotels rather than buyers
 # since all buyers live in hotels
 function sell!(env::environment,haus::forSaleHouse,buyer::hotel,salePrice::Float64)
-    # first we need to remove the house from the for sale list
+    # first pay off the mortgage
+    deleteat!(env.loanList,findfirst(env.loanList,haus.owner.loan)
+    # then we need to remove the house from the for sale list
     deleteat!(env.forSaleHouses,findfirst(x->x==haus,env.forSaleHouses))
     # then we need to create a new sold house object
     soldHaus=soldHouse(haus.id,haus.quality,haus.owner,salePrice,buyer.owner)
     # then we need to add the new sold house to the sold house list
     push!(env.soldHouses,soldHaus)
+    borrowedBalance::Float64=max(salePrice-buyer.budget,0.0)
+    if borrowedBalance > 0.0
+        loanGen(env,soldHaus,borrowedBalance4)
+    else
+        buyer.owner.loan=nothing
+    end
     # now remove the hotel from the hotels list
     deleteat!(env.allHotels,findfirst(x->x==buyer,env.allHotels))
     # finally we need to return the new sold house object
@@ -16,12 +24,22 @@ function sell!(env::environment,haus::forSaleHouse,buyer::hotel,salePrice::Float
 end
 
 function sell!(env::environment,haus::exitHouse,buyer::hotel,salePrice::Float64)
-    # first we need to remove the house from the exit list
+    # first pay off the mortgage
+    deleteat!(env.loanList,findfirst(env.loanList,haus.owner.loan)
+    # then we need to remove the house from the exit list
     deleteat!(env.exitHouses,findfirst(x->x==haus,env.exitHouses))
     # then we need to create a new sold exit house object
     soldHaus=soldExitHouse(haus.id,haus.quality,haus.owner,salePrice,buyer.owner)
     # then we need to add the new sold exit house to the sold exit house list
     push!(env.soldExitHouses,soldHaus)
+    # now generate the loan the agent takes out
+    # if the agent has left over money, we assume it blows it in Vegas
+    borrowedBalance::Float64=max(salePrice-buyer.budget,0.0)
+    if borrowedBalance > 0.0
+        loanGen(env,soldHaus,borrowedBalance)
+    else
+        buyer.owner.loan=nothing
+    end
     # now remove the hotel from the hotels list
     deleteat!(env.allHotels,findfirst(x->x==buyer,env.allHotels))
     # finally we need to return the new sold exit house object
@@ -40,6 +58,10 @@ function populate!(env::environment,haus::soldHouse)
     push!(env.hotelList,hotelGen(env,haus.owner,salePrice))
     # remove the sold house from the sold house list
     deleteat!(env.soldHouses,findfirst(x->x==haus,env.soldHouses))
+    # now update the loan information
+    if !isnothing(popHaus.owner.loan)
+        popHaus.owner.loan.collateral=popHaus
+    end
     return popHaus
 end
 # now a function that converts a sold exit house to a populated house
@@ -53,6 +75,10 @@ function populate!(env::environment,haus::soldExitHouse)
     # finally, do not add the owner to the list of agents in hotels
     # remove the sold exit house from the sold exit house list
     deleteat!(env.soldExitHouses,findfirst(x->x==haus,env.soldExitHouses))
+    # now update the loan information
+    if !isnothing(popHaus.owner.loan)
+        popHaus.owner.loan.collateral=popHaus
+    end    
     return popHaus
 end 
 
@@ -100,6 +126,14 @@ function sell!(env::environment,haus::emptyHouse,salePrice::Float64,buyer::hotel
     idx=findfirst(x->x.index==haus.index,env.allHouses)
     # then, replace it with a populated house
     env.allHouses[idx]=soldEmpty
+    # now generate the loan the agent takes out
+    # if the agent has left over money, we assume it blows it in Vegas
+    borrowedBalance::Float64=max(salePrice-buyer.budget,0.0)
+    if borrowedBalance > 0.0
+        loanGen(env,soldEmpty,borrowedBalance)
+    else
+        buyer.owner.loan=nothing
+    end
     # now remove the hotel from the hotels list
     deleteat!(env.allHotels,findfirst(x->x==buyer,env.allHotels))
     return soldEmpty
@@ -117,5 +151,9 @@ function populate!(env::environment,haus::soldEmptyHouse)
     idx=findfirst(x->x.index==haus.index,env.allHouses)
     # then, replace it with a populated house
     env.allHouses[idx]=popHaus
+    # now update the loan information
+    if !isnothing(popHaus.owner.loan)
+        popHaus.owner.loan.collateral=popHaus
+    end
     return popHaus
 end
