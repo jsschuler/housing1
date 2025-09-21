@@ -33,23 +33,27 @@ end
 function soldToPop!(env::environment,haus::soldHouse)
     # first, find the index of the house in the environment
     idx=findfirst(x->x.index==haus.index,env.allHouses)
+    popHaus=popHouse(haus.index,haus.quality,haus.buyer)
     # then, replace it with a populated house
-    env.allHouses[idx]=popHouse(haus.index,haus.quality,haus.buyer)
+    env.allHouses[idx]=popHaus
     # finally, add the owner to the list of agents in hotels
     push!(env.hotelList,hotelGen(env,haus.owner,salePrice))
     # remove the sold house from the sold house list
     deleteat!(env.soldHouses,findfirst(x->x==haus,env.soldHouses))
+    return popHaus
 end
 # now a function that converts a sold exit house to a populated house
 # the sale price is only for records
 function soldExitToPop!(env::environment,haus::soldExitHouse)
     # first, find the index of the house in the environment
     idx=findfirst(x->x.index==haus.index,env.allHouses)
+    popHaus=popHouse(haus.index,haus.quality,haus.buyer)
     # then, replace it with a populated house
-    env.allHouses[idx]=popHouse(haus.index,haus.quality,haus.buyer)
+    env.allHouses[idx]=popHaus
     # finally, do not add the owner to the list of agents in hotels
     # remove the sold exit house from the sold exit house list
     deleteat!(env.soldExitHouses,findfirst(x->x==haus,env.soldExitHouses))
+    return popHaus
 end 
 
 # now a function to convert a populated house to a for sale house
@@ -64,6 +68,7 @@ function popToForSale!(env::environment,haus::popHouse)
     idx=findfirst(x->x.index==haus.index,env.allHouses)
     # then, replace it with a populated house
     env.allHouses[idx]=forSaleHaus
+    return forSaleHaus
 end
 
 # finally, a function to convert an empty house to a sold empty
@@ -81,6 +86,7 @@ function emptyToSoldEmpty!(env::environment,haus::emptyHouse,salePrice::Float64,
     env.allHouses[idx]=soldEmpty
     # now remove the hotel from the hotels list
     deleteat!(env.allHotels,findfirst(x->x==buyer,env.allHotels))
+    return soldEmpty
 end
 
 # and a function to convert a sold empty house to a populated house
@@ -95,5 +101,5 @@ function soldEmptyToPop!(env::environment,haus::soldEmptyHouse)
     idx=findfirst(x->x.index==haus.index,env.allHouses)
     # then, replace it with a populated house
     env.allHouses[idx]=popHaus
-
+    return popHaus
 end
