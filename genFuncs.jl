@@ -72,7 +72,7 @@ function initialSwapping!(env::environment)
     end
 end
 
-function initMod!()
+function initMod()
     env=initAll()
     initAgents!(env)
     initHouses!(env)

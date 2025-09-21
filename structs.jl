@@ -110,7 +110,7 @@ mutable struct environment
     # distribution of house qualities 
     qualityDistribution::Union{Nothing,Distribution} # 2
     paymentDistribution::Union{Nothing,Distribution} # 3
-    qualityError::Union(Nothing,Distribution) #4
+    qualityError::Union{Nothing,Distribution} #4
     # initial agent count
     agtCnt::Union{Nothing,Int64} # 5
     # population inflow (agents who can buy without selling)

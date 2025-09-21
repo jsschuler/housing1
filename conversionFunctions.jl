@@ -4,7 +4,7 @@
 # since all buyers live in hotels
 function sell!(env::environment,haus::forSaleHouse,buyer::hotel,salePrice::Float64)
     # first pay off the mortgage
-    deleteat!(env.loanList,findfirst(env.loanList,haus.owner.loan)
+    deleteat!(env.loanList,findfirst(env.loanList,haus.owner.loan))
     # then we need to remove the house from the for sale list
     deleteat!(env.forSaleHouses,findfirst(x->x==haus,env.forSaleHouses))
     # then we need to create a new sold house object
@@ -25,7 +25,7 @@ end
 
 function sell!(env::environment,haus::exitHouse,buyer::hotel,salePrice::Float64)
     # first pay off the mortgage
-    deleteat!(env.loanList,findfirst(env.loanList,haus.owner.loan)
+    deleteat!(env.loanList,findfirst(env.loanList,haus.owner.loan))
     # then we need to remove the house from the exit list
     deleteat!(env.exitHouses,findfirst(x->x==haus,env.exitHouses))
     # then we need to create a new sold exit house object
@@ -115,7 +115,7 @@ end
 
 # finally, a function to convert an empty house to a sold empty
 
-function sell!(env::environment,haus::emptyHouse,salePrice::Float64,buyer::hotel,salePrice::Float64)
+function sell!(env::environment,haus::emptyHouse,buyer::hotel,salePrice::Float64)
     # first, remove the house from the empty house list
     deleteat!(env.emptyHouses,findfirst(x->x==haus,env.emptyHouses))
     # then, create a new for sale house object      
