@@ -30,30 +30,30 @@ function outstandingBalance(ln::loan,k::Int64)
     return floor(Int64,ln.initialBalance*ratio)
 end
 
-# the function generating a loan with a given quantity works differently
+# the function generating initial loans takes the owner as the borrower
 function loanGen(env::environment,collat::popHouse,amount::Float64)
     newLoan=loan(env.interestRate,amount,collat.owner.budget,amount,0,collat,false)
     push!(env.loanList,newLoan)
     return env
 end
-
+# the ones in transactions take the buyer
 # the function generating a loan with a given quantity works differently
 function loanGen(env::environment,collat::soldExitHouse,amount::Float64)
-    newLoan=loan(env.interestRate,amount,collat.owner.budget,amount,0,collat,false)
+    newLoan=loan(env.interestRate,amount,collat.buyer.budget,amount,0,collat,false)
     push!(env.loanList,newLoan)
     return env
 end
 
 # the function generating a loan with a given quantity works differently
 function loanGen(env::environment,collat::soldEmptyHouse,amount::Float64)
-    newLoan=loan(env.interestRate,amount,collat.owner.budget,amount,0,collat,false)
+    newLoan=loan(env.interestRate,amount,collat.buyer.budget,amount,0,collat,false)
     push!(env.loanList,newLoan)
     return env
 end
 
 # the function generating a loan with a given quantity works differently
 function loanGen(env::environment,collat::soldHouse,amount::Float64)
-    newLoan=loan(env.interestRate,amount,collat.owner.budget,amount,0,collat,false)
+    newLoan=loan(env.interestRate,amount,collat.buyer.budget,amount,0,collat,false)
     push!(env.loanList,newLoan)
     return env
 end

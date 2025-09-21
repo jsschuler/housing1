@@ -4,8 +4,10 @@
 # since all buyers live in hotels
 function sell!(env::environment,haus::forSaleHouse,buyer::hotel,salePrice::Float64)
     # first pay off the mortgage if there is one.
-    if !isnothing(haus.owner.loan)
-        deleteat!(env.loanList,findfirst(x->x==haus.owner.loan,env.loanList))
+    if typeof(haus)!=emptyHouse
+        if !isnothing(haus.owner.loan)
+            deleteat!(env.loanList,findfirst(x->x==haus.owner.loan,env.loanList))
+        end
     end
     # then we need to remove the house from the for sale list
     deleteat!(env.forSaleHouses,findfirst(x->x==haus,env.forSaleHouses))
@@ -27,8 +29,10 @@ end
 
 function sell!(env::environment,haus::exitHouse,buyer::hotel,salePrice::Float64)
     # first pay off the mortgage if there is one.
-    if !isnothing(haus.owner.loan)
-        deleteat!(env.loanList,findfirst(x->x==haus.owner.loan,env.loanList))
+    if typeof(haus)!=emptyHouse
+        if !isnothing(haus.owner.loan)
+            deleteat!(env.loanList,findfirst(x->x==haus.owner.loan,env.loanList))
+        end
     end
     #println(env.exitHouses)
     #println(haus)
@@ -124,15 +128,17 @@ end
 
 function sell!(env::environment,haus::emptyHouse,buyer::hotel,salePrice::Float64)
     # first pay off the mortgage if there is one.
-    if !isnothing(haus.owner.loan)
-        deleteat!(env.loanList,findfirst(x->x==haus.owner.loan,env.loanList))
-    end    
+    if typeof(haus)!=emptyHouse
+        if !isnothing(haus.owner.loan)
+            deleteat!(env.loanList,findfirst(x->x==haus.owner.loan,env.loanList))
+        end
+    end 
     # then, remove the house from the empty house list
     deleteat!(env.emptyHouses,findfirst(x->x==haus,env.emptyHouses))
     # then, create a new for sale house object      
-    soldEmpty=soldEmptyHouse(haus.index,haus.quality,haus.owner,salePrice,buyer.owner)
+    soldEmpty=soldEmptyHouse(haus.index,haus.quality,salePrice,buyer.owner)
     # then, add the new for sale house to the for sale house list
-    push!(env.soldEmptyHouse,soldEmpty)
+    push!(env.soldEmptyHouses,soldEmpty)
     # finally update its place in the all houses list
     idx=findfirst(x->x.index==haus.index,env.allHouses)
     # then, replace it with a populated house
@@ -153,7 +159,7 @@ end
 # and a function to convert a sold empty house to a populated house
 function populate!(env::environment,haus::soldEmptyHouse)
     # first, remove the house from the sold empty house list
-    deleteat!(env.soldEmptyHouses,findfirst(x->x==haus,env.soldEmptyHouse))
+    deleteat!(env.soldEmptyHouses,findfirst(x->x==haus,env.soldEmptyHouses))
     # then, create a new for sale house object      
     popHaus=popHouse(haus.index,haus.quality,haus.buyer)
     # then, add the new for sale house to the for sale house list
