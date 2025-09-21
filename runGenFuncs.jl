@@ -3,9 +3,6 @@
 
 function hotelGen(env::environment)
     env.hotelTicker=env.hotelTicker+1
-    if ownr==nothing
-        ownr=
-    end
     outHotel=hotel(env.hotelTicker,agtGen!(env),0.0)
     push!(env.hotelList,outHotel)
     #hotelLog(env,outHotel)

@@ -13,25 +13,4 @@
         # the exit or for sale houses become sold exit houses
         # this means that agents which successfully, do not re-enter the market until the next tick
 
-# we need a function that converts a sold house to a populated house
-
-function soldToPop!(env::environment,haus::soldHouse,salePrice::Float64)
-    # first, find the index of the house in the environment
-    idx=findfirst(x->x.index==haus.index,env.allHouses)
-    # then, replace it with a populated house
-    env.allHouses[idx]=popHouse(haus.index,haus.quality,haus.buyer)
-    # finally, add the owner to the list of agents in hotels
-    push!(env.hotelList,hotelGen(env,haus.owner,salePrice))
-end
-
-# we need a function that converts a sold exit house to a populated house
-# the sale price is only for records
-function soldExitToPop!(env::environment,haus::soldExitHouse,salePrice::Float64)
-    # first, find the index of the house in the environment
-    idx=findfirst(x->x.index==haus.index,env.allHouses)
-    # then, replace it with a populated house
-    env.allHouses[idx]=popHouse(haus.index,haus.quality,haus.buyer)
-    # finally, do not add the owner to the list of agents in hotels
-end
-
 
