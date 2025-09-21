@@ -9,7 +9,7 @@ end
 # and a function where new agents enter
 function allEnter!(env::environment)
     for i in 1:env.inFlow
-        println("Hotel "*string(i)*" generated!")
+        #println("Hotel "*string(i)*" generated!")
         hotelGen!(env)
     end
 end
