@@ -1,7 +1,7 @@
 # this code contains all the funtions needed to initialize the environment
 
 function initEnv()
-    return environment(repeat([nothing],26)... )
+    return environment(repeat([nothing],27)... )
 end
 
 # now we need functions to initialize every parameter in the environment
@@ -73,6 +73,11 @@ end
 function setAgtTicker!(env::environment)
     env.agtTicker=0
 end
+
+function setHotelTicker!(env::environment)
+    env.hotelTicker=0
+end
+
 
 function initAll()
     env=initEnv()

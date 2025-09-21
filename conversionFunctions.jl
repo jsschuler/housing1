@@ -2,7 +2,7 @@
 # while the model is running
 # in the functions mapping houses up for sale to sold houses, we reference hotels rather than buyers
 # since all buyers live in hotels
-function forSaleToSold!(env::environment,haus::forSaleHouse,buyer::hotel,salePrice::Float64)
+function sell!(env::environment,haus::forSaleHouse,buyer::hotel,salePrice::Float64)
     # first we need to remove the house from the for sale list
     deleteat!(env.forSaleHouses,findfirst(x->x==haus,env.forSaleHouses))
     # then we need to create a new sold house object
@@ -15,7 +15,7 @@ function forSaleToSold!(env::environment,haus::forSaleHouse,buyer::hotel,salePri
     return soldHaus
 end
 
-function exitToSoldExit!(env::environment,haus::exitHouse,buyer::hotel,salePrice::Float64)
+function sell!(env::environment,haus::exitHouse,buyer::hotel,salePrice::Float64)
     # first we need to remove the house from the exit list
     deleteat!(env.exitHouses,findfirst(x->x==haus,env.exitHouses))
     # then we need to create a new sold exit house object
@@ -30,7 +30,7 @@ end
 
 # now a function that converts a sold house to a populated house
 # the sale price is only for records
-function soldToPop!(env::environment,haus::soldHouse)
+function populate!(env::environment,haus::soldHouse)
     # first, find the index of the house in the environment
     idx=findfirst(x->x.index==haus.index,env.allHouses)
     popHaus=popHouse(haus.index,haus.quality,haus.buyer)
@@ -44,7 +44,7 @@ function soldToPop!(env::environment,haus::soldHouse)
 end
 # now a function that converts a sold exit house to a populated house
 # the sale price is only for records
-function soldExitToPop!(env::environment,haus::soldExitHouse)
+function populate!(env::environment,haus::soldExitHouse)
     # first, find the index of the house in the environment
     idx=findfirst(x->x.index==haus.index,env.allHouses)
     popHaus=popHouse(haus.index,haus.quality,haus.buyer)
@@ -57,7 +57,7 @@ function soldExitToPop!(env::environment,haus::soldExitHouse)
 end 
 
 # now a function to convert a populated house to a for sale house
-function popToForSale!(env::environment,haus::popHouse)
+function list!(env::environment,haus::popHouse)
     # first, remove the house from the populated house list
     deleteat!(env.popHouses,findfirst(x->x==haus,env.popHouses))
     # then, create a new for sale house object      
@@ -71,9 +71,25 @@ function popToForSale!(env::environment,haus::popHouse)
     return forSaleHaus
 end
 
+# and an exit function
+function exit!(env::environment,haus::popHouse)
+    # first, remove the house from the populated house list
+    deleteat!(env.popHouses,findfirst(x->x==haus,env.popHouses))
+    # then, create a new for sale house object      
+    forSaleHaus=exitHouse(haus.index,haus.quality,haus.owner)
+    # then, add the new for sale house to the for sale house list
+    push!(env.forSaleHouses,forSaleHaus)
+    # finally update its place in the all houses list
+    idx=findfirst(x->x.index==haus.index,env.allHouses)
+    # then, replace it with a populated house
+    env.allHouses[idx]=forSaleHaus
+    return forSaleHaus
+end
+
+
 # finally, a function to convert an empty house to a sold empty
 
-function emptyToSoldEmpty!(env::environment,haus::emptyHouse,salePrice::Float64,buyer::hotel)
+function sell!(env::environment,haus::emptyHouse,salePrice::Float64,buyer::hotel,salePrice::Float64)
     # first, remove the house from the empty house list
     deleteat!(env.emptyHouses,findfirst(x->x==haus,env.emptyHouses))
     # then, create a new for sale house object      
@@ -90,7 +106,7 @@ function emptyToSoldEmpty!(env::environment,haus::emptyHouse,salePrice::Float64,
 end
 
 # and a function to convert a sold empty house to a populated house
-function soldEmptyToPop!(env::environment,haus::soldEmptyHouse)
+function populate!(env::environment,haus::soldEmptyHouse)
     # first, remove the house from the sold empty house list
     deleteat!(env.soldEmptyHouses,findfirst(x->x==haus,env.soldEmptyHouse))
     # then, create a new for sale house object      

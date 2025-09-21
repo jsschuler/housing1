@@ -2,7 +2,7 @@
 # this includes newly built houses, entering agents, loans, and hotels 
 
 function hotelGen(env::environment)
-    env.hotelTicker=env.hotelTicker+1
+    env.hotelTicker=env.hotelTicker-1
     outHotel=hotel(env.hotelTicker,agtGen!(env),0.0)
     push!(env.hotelList,outHotel)
     #hotelLog(env,outHotel)

@@ -139,5 +139,7 @@ mutable struct environment
     intDict::Union{Nothing,Dict{Int64,dwelling}} # 25
     # agent Ticker
     agtTicker::Union{Nothing,Int64} # 26
+    # hotel ticker
+    hotelTicker::Union{Nothing,Int64} # 27x
 end
 
