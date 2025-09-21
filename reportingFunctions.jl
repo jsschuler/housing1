@@ -45,14 +45,14 @@ function loanFullLog(env::environment,ln::loan)
 end
 # and agents moving into the market
 function agtMoveInLog(env::environment,dwell::dwelling,agt::agent)
-    dArray=DataFrame([[env.key],[env.tick],[dwell.index],[agt.index]],:auto)
+    dArray=DataFrame([[env.key],[env.tick],[dwell.index],[agt.init]],:auto)
     CSV.write("../housingData/moveIn"*env.key*".csv",dArray,header=false,append=true)
 end
 
 
 # and agents moving out of the market
-function agtLeaveLog(env::environment,origin::dwelling,agt::agent)
-    dArray=DataFrame([[env.key],[env.tick],[origin.index],[agt.index]],:auto)
+function agtLeaveLog(env::environment,origin::dwelling,agt::Union{Nothing,agent})
+    dArray=DataFrame([[env.key],[env.tick],[origin.index],[agt.init]],:auto)
     CSV.write("../housingData/agtLeave"*env.key*".csv",dArray,header=false,append=true)
 end
 

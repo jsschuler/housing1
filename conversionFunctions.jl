@@ -163,8 +163,7 @@ function sell!(env::environment,haus::emptyHouse,buyer::hotel,salePrice::Float64
     # now remove the hotel from the hotels list
     hotelDelLog(env,env.allHotels[findfirst(x->x==buyer,env.allHotels)])
     deleteat!(env.allHotels,findfirst(x->x==buyer,env.allHotels))
-    agtLeaveLog(env,soldEmpty,soldEmpty.owner)
-    saleLog(env,soldHaus,salePrice)
+    saleLog(env,soldEmpty,salePrice)
     return soldEmpty
 end
 
