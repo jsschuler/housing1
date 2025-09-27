@@ -10,6 +10,16 @@ function hotelGen!(env::environment)
     return outHotel
 end
 
+function hotelGen!(env::environment,agt::agent,salePrice::Float64)
+    env.hotelTicker=env.hotelTicker-1
+    outHotel=hotel(env.hotelTicker,salePrice,agt)
+    hotelGenLog(env,outHotel)
+    push!(env.allHotels,outHotel)
+    #hotelLog(env,outHotel)
+    return outHotel
+end
+
+
 
 
 # we need a function to generate a single new house
