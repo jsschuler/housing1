@@ -17,7 +17,8 @@ saleDat %>% filter(key==cKey) %>% group_by(tick) %>% summarise(q05=quantile(log(
                                          q50=quantile(log(price),.5),
                                          q75=quantile(log(price),.75),
                                          q95=quantile(log(price),.95)) %>%
-  pivot_longer(names_to = "quantile",cols = q05|q25|q50|q75|q95) %>%
-  ggplot() + geom_line(aes(x=tick,y=value,color=quantile))
-ggsave(paste0("../housingPlots/plot",key,".png"))
+  pivot_longer(names_to = "quantile",cols = q05|q25|q50|q75|q95) -> newDat
+  ggplot(data=newDat) + geom_line(aes(x=tick,y=value,color=quantile))
+ggsave(paste0("../housingPlots/plot",cKey,".png"))
 }
+

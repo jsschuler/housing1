@@ -17,7 +17,7 @@ function sell!(env::environment,haus::forSaleHouse,buyer::hotel,salePrice::Float
     push!(env.soldHouses,soldHaus)
     borrowedBalance::Float64=max(salePrice-buyer.budget,0.0)
     if borrowedBalance > 0.0
-        loanGen(env,soldHaus,borrowedBalance4)
+        loanGen(env,soldHaus,borrowedBalance)
     else
         buyer.owner.loan=nothing
     end

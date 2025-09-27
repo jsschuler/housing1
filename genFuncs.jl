@@ -73,20 +73,22 @@ function initialSwapping!(env::environment)
     end
 end
 
-function seedGen!()
-    global seed
-    newSeed=sample(1:100000,1,replace=false)[1]
-    println("New Seed")
-    println(newSeed)
-    Random.seed!(newSeed)
-    seed=newSeed
+function seedPull!()
+    global allSeeds
+    newSeed=pop!(allSeeds)
+    return newSeed
 end
+
+
 
 function initMod()
     global seed
     #currSeed=sample(1:100000,1,replace=false)[1]
     #seed=currSeed
     #Random.seed!(currSeed)
+    newSeed=fetch(@spawnat 1 seedPull!())
+    println("Setting Seed: "*string(newSeed))
+    Random.seed!(newSeed)
     env=initAll()
     initAgents!(env)
     initHouses!(env)

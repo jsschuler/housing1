@@ -25,7 +25,7 @@ using Distributed
 @everywhere using Dates
 
 #
-@everywhere seed=23
+#@everywhere seed=23
 # initialize environment with parameters
 
 # we need a global variable which is a switch to pause 
@@ -50,7 +50,7 @@ end
 # initial agent count
 @everywhere agtCnt::Int64=500
 # population inflow (agents who can buy without selling)
-@everywhere inFlow::Int64=30
+@everywhere inFlow::Int64=50
 # population outflow (agents who can sell without buying)
 @everywhere outFlow::Int64=30
 # new housing construction 
@@ -61,12 +61,8 @@ end
 # how many ticks to run the model ?
 @everywhere allTicks=100
 
+cores=16
 
-
-#for c in 2:cores
-#    @spawnat c myCore(c)
-#end
-#sleep(5)
 
 @everywhere include("structs.jl")
 @everywhere include("reportingFunctions.jl")
@@ -79,22 +75,21 @@ end
 @everywhere include("modelRunFunctions.jl")
 @everywhere include("qualityDistribution.jl")
 
-cores=16
-for c in 2:cores
-    fetch(@spawnat c seedGen!())
-end
+
+# process seed
+@everywhere seed=42
+allSeeds=sample(1:1000000,15,replace=false)
 
 #env=initMod()
 #modelRun!(env)
 coreDict=Dict()
 resultDict=Dict()
 rowDict=Dict()
-for j in 2:cores
-    coreDict[j]=nothing
-    @spawnat j println(seed)
+for c in 2:cores
+    coreDict[c]=nothing
 end
-r=1
-while r < 15
+
+while length(allSeeds) > 0
     for c in keys(coreDict)
         #println(sum(jointFrame.completed))
         #println("Core")
@@ -119,8 +114,6 @@ while r < 15
             #println("Ready")
             #println(coreDict[c])
             coreDict[c]=fetch(coreDict[c])
-            global r
-            r=r+1
             #println(coreDict[c])
             #println(sum(jointFrame.completed) < size(jointFrame,1))
             #println(sum(jointFrame.completed))
