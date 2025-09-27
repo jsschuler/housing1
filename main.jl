@@ -43,9 +43,9 @@ end
 # the interest rate (mutable)
 interestRate::Float64=.04
 # distribution of agent budgets
-paymentDistribution=Truncated(Levy(500,100),0,5*10^9)
+@everywhere paymentDistribution=Truncated(Levy(500,100),0,5*10^9)
 # distribution of house qualities 
-qualityDistribution=Truncated(Levy(0,10),0,63658)
+@everywhere qualityDistribution=Truncated(Levy(0,10),0,63658)
 # initial agent count
 agtCnt::Int64=500
 # population inflow (agents who can buy without selling)
@@ -60,69 +60,62 @@ inPlace::Int64=30
 # how many ticks to run the model ?
 allTicks=100
 cores=16
-#@everywhere workerCore=1
 
-
-# major parameters
-@everywhere depth::Int64=1000
-
-@everywhere include("objects.jl")
-
-@everywhere include("functions4.jl")
 
 for c in 2:cores
     @spawnat c myCore(c)
 end
 sleep(5)
 
-include("structs.jl")
-include("reportingFunctions.jl")
-#include("functions.jl")
-include("environments.jl")
-include("genFuncs.jl")
-include("testFuncs.jl")
-include("loanFunctions.jl")
-include("runGenFuncs.jl")
-include("conversionFunctions.jl")
-include("modelRunFunctions.jl")
-include("qualityDistribution.jl")
+@everywhere include("structs.jl")
+@everywhere include("reportingFunctions.jl")
+@everywhere include("environments.jl")
+@everywhere include("genFuncs.jl")
+@everywhere include("testFuncs.jl")
+@everywhere include("loanFunctions.jl")
+@everywhere include("runGenFuncs.jl")
+@everywhere include("conversionFunctions.jl")
+@everywhere include("modelRunFunctions.jl")
+@everywhere include("qualityDistribution.jl")
 
-env=initMod()
-modelRun!(env)
+#env=initMod()
+#modelRun!(env)
 coreDict=Dict()
 resultDict=Dict()
 rowDict=Dict()
 for j in 2:cores
     coreDict[j]=nothing
 end
-for r in 1:16
-        for c in keys(coreDict)
-            #println(sum(jointFrame.completed))
-            #println("Core")
+r=1
+while r < 15
+    for c in keys(coreDict)
+        #println(sum(jointFrame.completed))
+        #println("Core")
+        #println(c)
+        #println(coreDict[c])
+        #println(isReady(coreDict[c]))
+        #println(isnothing(coreDict[c]))
+        #readline()
+        if isnothing(coreDict[c])
+            # if the core dictionary is nothing, we send it the parameters
+            #println("Sending Parameters")
+            #println("core")
             #println(c)
             #println(coreDict[c])
-            #println(isReady(coreDict[c]))
-            #println(isnothing(coreDict[c]))
-            #readline()
-            if isnothing(coreDict[c])
-                # if the core dictionary is nothing, we send it the parameters
-                #println("Sending Parameters")
-                #println("core")
-                #println(c)
-                #println(coreDict[c])
-                # read parameters from the first row
-                # step 1: get the index of the first non-started row
-                
-                coreDict[c]=@spawnat c modelRun!(env)
-                #println(coreDict[c])
-                #println(resultDict==:complete)
-            elseif isReady(coreDict[c])
-                #println("Ready")
-                #println(coreDict[c])
-                coreDict[c]=fetch(coreDict[c])
-                #println(coreDict[c])
-                #println(sum(jointFrame.completed) < size(jointFrame,1))
-                #println(sum(jointFrame.completed))
-            end
-        end    
+            # read parameters from the first row
+            # step 1: get the index of the first non-started row
+            set.seed!(sample(1:100000,1,replace=false)[1])
+            coreDict[c]=@spawnat c modelRun!(initMod())
+            #println(coreDißct[c])
+            #println(resultDict==:complete)
+        elseif isReady(coreDict[c])
+            #println("Ready")
+            #println(coreDict[c])
+            coreDict[c]=fetch(coreDict[c])
+            r=r+1
+            #println(coreDict[c])
+            #println(sum(jointFrame.completed) < size(jointFrame,1))
+            #println(sum(jointFrame.completed))
+        end
+    end    
 end
