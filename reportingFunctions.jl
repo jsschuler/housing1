@@ -1,8 +1,14 @@
 # we need a function that logs environments
 function envLog(env::environment)
-    dArray=DataFrame([[env.key],[string(typeof(qualityDistribution))],[string(typeof(paymentDistribution))],[agtCnt],[inFlow],[outFlow],[construction],[inPlace]],:auto)
+    dArray=DataFrame([[env.key],[string(typeof(env.qualityDistribution))],[string(typeof(env.paymentDistribution))],[env.agtCnt],[env.inFlow],[env.outFlow],[env.construction],[env.inPlace]],:auto)
     CSV.write("../housingData/modelRun"*env.key*".csv",dArray,header=false,append=true)
 end
+
+function interestReport(env::environment)
+     dArray=DataFrame([[env.key],[tick],[env.interestRate]],:auto)
+    CSV.write("../housingData/rates"*env.key*".csv",dArray,header=false,append=true)   
+end
+
 # We need a function that logs housing construction
 function houseLog(env::environment,haus::emptyHouse)
     dArray=DataFrame([[env.key],[env.tick],[haus.index],[haus.quality]],:auto)

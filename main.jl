@@ -12,17 +12,17 @@
 # but this data only becomes available after the model runs 
 # so for the first k ticks, agents will sell at random 
 # we can turn off this feature to see what difference it makes 
-
+using Distributed
 # load libraries
-using Graphs
-using Distributions
-using StatsBase
-using DataFrames
-using Random
-#using TikzGraphs, TikzPictures
-using SparseArrays
-using CSV
-using Dates
+@everywhere using Distributed
+@everywhere using Graphs
+@everywhere using Distributions
+@everywhere using StatsBase
+@everywhere using DataFrames
+@everywhere using Random
+@everywhere using SparseArrays
+@everywhere using CSV
+@everywhere using Dates
 
 
 # initialize environment with parameters
