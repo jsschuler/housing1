@@ -95,7 +95,7 @@ rowDict=Dict()
 for j in 2:cores
     coreDict[j]=nothing
 end
-for r in 1:100
+for r in 1:16
         for c in keys(coreDict)
             #println(sum(jointFrame.completed))
             #println("Core")
