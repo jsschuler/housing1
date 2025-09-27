@@ -29,8 +29,9 @@ using Distributed
 
 # we need a global variable which is a switch to pause 
 pauseBool::Bool=true
-seed=43884
-Random.seed!(seed)
+#seed=43884
+@everywhere seed=sample(1:100000,1,replace=false)[1]
+@everywhere Random.seed!(seed)
 function checkPoint(message)
     global pauseBool
     if pauseBool
@@ -105,7 +106,7 @@ while r < 15
             # read parameters from the first row
             # step 1: get the index of the first non-started row
             
-            coreDict[c]=@spawnat c modelRun!(initMod(currSeed))
+            coreDict[c]=@spawnat c modelRun!(initMod())
             #println(coreDißct[c])
             #println(resultDict==:complete)
         elseif isready(coreDict[c])

@@ -75,9 +75,9 @@ end
 
 function initMod()
     global seed
-    currSeed=sample(1:100000,1,replace=false)[1]
-    seed=currSeed
-    Random.seed!(currSeed)
+    #currSeed=sample(1:100000,1,replace=false)[1]
+    #seed=currSeed
+    #Random.seed!(currSeed)
     env=initAll()
     initAgents!(env)
     initHouses!(env)
