@@ -73,7 +73,10 @@ function initialSwapping!(env::environment)
     end
 end
 
-function initMod()
+function initMod(currSeed::Int64)
+    global seed
+    seed=currSeed
+    Random.seed!(currSeed)
     env=initAll()
     initAgents!(env)
     initHouses!(env)

@@ -41,24 +41,24 @@ function checkPoint(message)
 end
 
 # the interest rate (mutable)
-interestRate::Float64=.04
+@everywhere interestRate::Float64=.04
 # distribution of agent budgets
 @everywhere paymentDistribution=Truncated(Levy(500,100),0,5*10^9)
 # distribution of house qualities 
 @everywhere qualityDistribution=Truncated(Levy(0,10),0,63658)
 # initial agent count
-agtCnt::Int64=500
+@everywhere agtCnt::Int64=500
 # population inflow (agents who can buy without selling)
-inFlow::Int64=30
+@everywhere inFlow::Int64=30
 # population outflow (agents who can sell without buying)
-outFlow::Int64=30
+@everywhere outFlow::Int64=30
 # new housing construction 
-construction::Int64=30
+@everywhere construction::Int64=30
 # how many agents simply want to move within the market?
-inPlace::Int64=30
+@everywhere inPlace::Int64=30
 # what 
 # how many ticks to run the model ?
-allTicks=100
+@everywhere allTicks=100
 cores=16
 
 
@@ -104,14 +104,15 @@ while r < 15
             #println(coreDict[c])
             # read parameters from the first row
             # step 1: get the index of the first non-started row
-            set.seed!(sample(1:100000,1,replace=false)[1])
-            coreDict[c]=@spawnat c modelRun!(initMod())
+            currSeed=sample(1:100000,1,replace=false)[1]
+            coreDict[c]=@spawnat c modelRun!(initMod(currSeed))
             #println(coreDißct[c])
             #println(resultDict==:complete)
-        elseif isReady(coreDict[c])
+        elseif isready(coreDict[c])
             #println("Ready")
             #println(coreDict[c])
             coreDict[c]=fetch(coreDict[c])
+            global r
             r=r+1
             #println(coreDict[c])
             #println(sum(jointFrame.completed) < size(jointFrame,1))

@@ -74,7 +74,7 @@ function dictGen!(env::environment)
 end
 
 # we need a function whereby an agent perceives house quality
-function qualGen(haus::house)
+function qualGen(env::environment,haus::house)
     apparentQual::Float64=haus.quality
     apparentQual=apparentQual+rand(env.qualityError,1)[1]
     return apparentQual
@@ -93,7 +93,7 @@ function graphGen!(env::environment)
         bestHaus::Union{Nothing,dwelling}=nothing
         bestQual=0.0
         for haus in vcat(env.forSaleHouses,env.emptyHouses,env.exitHouses)
-            currQual=qualGen(haus)
+            currQual=qualGen(env,haus)
             if currQual > bestQual
                 bestHaus=haus
                 #println("better!")
@@ -284,6 +284,7 @@ end
 
 function modelRun!(env::environment)
     global allTicks
+
     for t in 1:allTicks
         modelTick!(env)
     end
