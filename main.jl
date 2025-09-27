@@ -59,7 +59,21 @@ inPlace::Int64=30
 # what 
 # how many ticks to run the model ?
 allTicks=100
-# also, what is the 
+cores=16
+#@everywhere workerCore=1
+
+
+# major parameters
+@everywhere depth::Int64=1000
+
+@everywhere include("objects.jl")
+
+@everywhere include("functions4.jl")
+
+for c in 2:cores
+    @spawnat c myCore(c)
+end
+sleep(5)
 
 include("structs.jl")
 include("reportingFunctions.jl")
@@ -75,3 +89,40 @@ include("qualityDistribution.jl")
 
 env=initMod()
 modelRun!(env)
+coreDict=Dict()
+resultDict=Dict()
+rowDict=Dict()
+for j in 2:cores
+    coreDict[j]=nothing
+end
+for r in 1:100
+        for c in keys(coreDict)
+            #println(sum(jointFrame.completed))
+            #println("Core")
+            #println(c)
+            #println(coreDict[c])
+            #println(isReady(coreDict[c]))
+            #println(isnothing(coreDict[c]))
+            #readline()
+            if isnothing(coreDict[c])
+                # if the core dictionary is nothing, we send it the parameters
+                #println("Sending Parameters")
+                #println("core")
+                #println(c)
+                #println(coreDict[c])
+                # read parameters from the first row
+                # step 1: get the index of the first non-started row
+                
+                coreDict[c]=@spawnat c modelRun!(env)
+                #println(coreDict[c])
+                #println(resultDict==:complete)
+            elseif isReady(coreDict[c])
+                #println("Ready")
+                #println(coreDict[c])
+                coreDict[c]=fetch(coreDict[c])
+                #println(coreDict[c])
+                #println(sum(jointFrame.completed) < size(jointFrame,1))
+                #println(sum(jointFrame.completed))
+            end
+        end    
+end

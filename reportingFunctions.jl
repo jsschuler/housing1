@@ -4,7 +4,7 @@ function envLog(env::environment)
     CSV.write("../housingData/modelRun"*env.key*".csv",dArray,header=false,append=true)
 end
 
-function interestReport(env::environment)
+function interestLog(env::environment)
      dArray=DataFrame([[env.key],[tick],[env.interestRate]],:auto)
     CSV.write("../housingData/rates"*env.key*".csv",dArray,header=false,append=true)   
 end

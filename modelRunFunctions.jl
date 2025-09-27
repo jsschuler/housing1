@@ -287,4 +287,5 @@ function modelRun!(env::environment)
     for t in 1:allTicks
         modelTick!(env)
     end
+    return nothing
 end
