@@ -24,14 +24,14 @@ using Distributed
 @everywhere using CSV
 @everywhere using Dates
 
-
+#
+@everywhere seed=23
 # initialize environment with parameters
 
 # we need a global variable which is a switch to pause 
 pauseBool::Bool=true
-#seed=43884
-@everywhere seed=sample(1:100000,1,replace=false)[1]
-@everywhere Random.seed!(seed)
+
+
 function checkPoint(message)
     global pauseBool
     if pauseBool
@@ -60,13 +60,13 @@ end
 # what 
 # how many ticks to run the model ?
 @everywhere allTicks=100
-cores=16
 
 
-for c in 2:cores
-    @spawnat c myCore(c)
-end
-sleep(5)
+
+#for c in 2:cores
+#    @spawnat c myCore(c)
+#end
+#sleep(5)
 
 @everywhere include("structs.jl")
 @everywhere include("reportingFunctions.jl")
@@ -79,6 +79,11 @@ sleep(5)
 @everywhere include("modelRunFunctions.jl")
 @everywhere include("qualityDistribution.jl")
 
+cores=16
+for c in 2:cores
+    fetch(@spawnat c seedGen!())
+end
+
 #env=initMod()
 #modelRun!(env)
 coreDict=Dict()
@@ -86,6 +91,7 @@ resultDict=Dict()
 rowDict=Dict()
 for j in 2:cores
     coreDict[j]=nothing
+    @spawnat j println(seed)
 end
 r=1
 while r < 15

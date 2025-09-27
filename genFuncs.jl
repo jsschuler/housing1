@@ -73,6 +73,15 @@ function initialSwapping!(env::environment)
     end
 end
 
+function seedGen!()
+    global seed
+    newSeed=sample(1:100000,1,replace=false)[1]
+    println("New Seed")
+    println(newSeed)
+    Random.seed!(newSeed)
+    seed=newSeed
+end
+
 function initMod()
     global seed
     #currSeed=sample(1:100000,1,replace=false)[1]
