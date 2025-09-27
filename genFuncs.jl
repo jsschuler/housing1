@@ -73,8 +73,9 @@ function initialSwapping!(env::environment)
     end
 end
 
-function initMod(currSeed::Int64)
+function initMod()
     global seed
+    currSeed=sample(1:100000,1,replace=false)[1]
     seed=currSeed
     Random.seed!(currSeed)
     env=initAll()

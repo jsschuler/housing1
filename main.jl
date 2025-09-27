@@ -104,7 +104,7 @@ while r < 15
             #println(coreDict[c])
             # read parameters from the first row
             # step 1: get the index of the first non-started row
-            currSeed=sample(1:100000,1,replace=false)[1]
+            
             coreDict[c]=@spawnat c modelRun!(initMod(currSeed))
             #println(coreDißct[c])
             #println(resultDict==:complete)
