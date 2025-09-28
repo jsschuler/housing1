@@ -4,10 +4,11 @@
 # since all buyers live in hotels
 function sell!(env::environment,haus::forSaleHouse,buyer::hotel,salePrice::Float64)
     # first pay off the mortgage if there is one.
-    if typeof(haus)!=emptyHouse
-        if !isnothing(haus.owner.loan)
-            deleteat!(env.loanList,findfirst(x->x==haus.owner.loan,env.loanList))
-        end
+    if !isnothing(haus.owner.loan)
+        println(countmap(typeof.(env.loanList)))
+        println(haus.owner.loan)
+        deleteat!(env.loanList,findfirst(x->x==haus.owner.loan,env.loanList))
+    
     end
     # then we need to remove the house from the for sale list
     deleteat!(env.forSaleHouses,findfirst(x->x==haus,env.forSaleHouses))
