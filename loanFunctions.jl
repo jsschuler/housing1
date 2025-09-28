@@ -53,14 +53,16 @@ end
 # the function generating a loan with a given quantity works differently
 function loanGen(env::environment,collat::soldExitHouse,amount::Float64)
     # how much did the house sell for?
-    salePrice=soldExitHouse.salePrice
+    salePrice=collat.salePrice
     # how much money does the buyer have from the prior transaction?
-    buyerHotel=findfirst(env.allHotels,hot -> hot.owneer==collat.buyer)
+    buyerHotel=env.allHotels[findfirst(hot -> hot.owner==collat.buyer,env.allHotels)]
+    #println("Debug")
+    #println(buyerHotel)
     # now, how much does the agent have to finance?
     neededLoan=max(0,salePrice-buyerHotel.budget)
     if neededLoan > 0
         newLoan=loan(env.interestRate,neededLoan,collat.buyer.budget,neededLoan,0,collat,false)
-        agt.loan=newLoan
+        collat.buyer.loan=newLoan
     
         loanLog(env,newLoan)
         push!(env.loanList,newLoan)
@@ -71,14 +73,14 @@ end
 # the function generating a loan with a given quantity works differently
 function loanGen(env::environment,collat::soldEmptyHouse,amount::Float64)
     # how much did the house sell for?
-    salePrice=soldExitHouse.salePrice
+    salePrice=collat.salePrice
     # how much money does the buyer have from the prior transaction?
-    buyerHotel=findfirst(env.allHotels,hot -> hot.owneer==collat.buyer)
+    buyerHotel=env.allHotels[findfirst(hot -> hot.owner==collat.buyer,env.allHotels)]
     # now, how much does the agent have to finance?
     neededLoan=max(0,salePrice-buyerHotel.budget)
     if neededLoan > 0
         newLoan=loan(env.interestRate,neededLoan,collat.buyer.budget,neededLoan,0,collat,false)
-        agt.loan=newLoan
+        collat.buyer.loan=newLoan
     
         loanLog(env,newLoan)
         push!(env.loanList,newLoan)
@@ -89,14 +91,14 @@ end
 # the function generating a loan with a given quantity works differently
 function loanGen(env::environment,collat::soldHouse,amount::Float64)
     # how much did the house sell for?
-    salePrice=soldExitHouse.salePrice
+    salePrice=collat.salePrice
     # how much money does the buyer have from the prior transaction?
-    buyerHotel=findfirst(env.allHotels,hot -> hot.owneer==collat.buyer)
+    buyerHotel=env.allHotels[findfirst(hot -> hot.owner==collat.buyer,env.allHotels)]
     # now, how much does the agent have to finance?
     neededLoan=max(0,salePrice-buyerHotel.budget)
     if neededLoan > 0
         newLoan=loan(env.interestRate,neededLoan,collat.buyer.budget,neededLoan,0,collat,false)
-        agt.loan=newLoan
+        collat.buyer.loan=newLoan
     
         loanLog(env,newLoan)
         push!(env.loanList,newLoan)
