@@ -78,7 +78,7 @@ cores=16
 
 # process seed
 @everywhere seed=42
-allSeeds=sample(1:1000000,15,replace=false)
+allSeeds=sample(1:1000000,200,replace=false)
 
 #env=initMod()
 #modelRun!(env)

@@ -199,7 +199,8 @@ function modelTick!(env::environment)
     
     # every loan is paid
     for loan in env.loanList
-        payLoan(env,loan)
+        payLoan(loan)
+        assessInterest(loan)
     end
     # now, if the agent has paid the loan in full, delete it
     tmpList=loan[]

@@ -30,6 +30,18 @@ function outstandingBalance(ln::loan,k::Int64)
     return floor(Int64,ln.initialBalance*ratio)
 end
 
+
+#mutable struct loan
+#    interestRate::Float64
+#    initialBalance::Float64
+#    monthlyPayment::Float64
+#    outstandingBalance::Float64
+#    paymentsMade::Int64
+#    collateral::house
+#    paidInFull::Bool
+#end
+
+
 # the function generating initial loans takes the owner as the borrower
 function loanGen(env::environment,collat::popHouse,amount::Float64)
     newLoan=loan(env.interestRate,amount,collat.owner.budget,amount,0,collat,false)
@@ -40,32 +52,62 @@ end
 # the ones in transactions take the buyer
 # the function generating a loan with a given quantity works differently
 function loanGen(env::environment,collat::soldExitHouse,amount::Float64)
-    newLoan=loan(env.interestRate,amount,collat.buyer.budget,amount,0,collat,false)
-    loanLog(env,newLoan)
-    push!(env.loanList,newLoan)
+    # how much did the house sell for?
+    salePrice=soldExitHouse.salePrice
+    # how much money does the buyer have from the prior transaction?
+    buyerHotel=findfirst(env.allHotels,hot -> hot.owneer==collat.buyer)
+    # now, how much does the agent have to finance?
+    neededLoan=max(0,salePrice-buyerHotel.budget)
+    if neededLoan > 0
+        newLoan=loan(env.interestRate,neededLoan,collat.buyer.budget,neededLoan,0,collat,false)
+        agt.loan=newLoan
+    
+        loanLog(env,newLoan)
+        push!(env.loanList,newLoan)
+    end 
     return env
 end
 
 # the function generating a loan with a given quantity works differently
 function loanGen(env::environment,collat::soldEmptyHouse,amount::Float64)
-    newLoan=loan(env.interestRate,amount,collat.buyer.budget,amount,0,collat,false)
-    loanLog(env,newLoan)
-    push!(env.loanList,newLoan)
+    # how much did the house sell for?
+    salePrice=soldExitHouse.salePrice
+    # how much money does the buyer have from the prior transaction?
+    buyerHotel=findfirst(env.allHotels,hot -> hot.owneer==collat.buyer)
+    # now, how much does the agent have to finance?
+    neededLoan=max(0,salePrice-buyerHotel.budget)
+    if neededLoan > 0
+        newLoan=loan(env.interestRate,neededLoan,collat.buyer.budget,neededLoan,0,collat,false)
+        agt.loan=newLoan
+    
+        loanLog(env,newLoan)
+        push!(env.loanList,newLoan)
+    end 
     return env
 end
 
 # the function generating a loan with a given quantity works differently
 function loanGen(env::environment,collat::soldHouse,amount::Float64)
-    newLoan=loan(env.interestRate,amount,collat.buyer.budget,amount,0,collat,false)
-    loanLog(env,newLoan)
-    push!(env.loanList,newLoan)
+    # how much did the house sell for?
+    salePrice=soldExitHouse.salePrice
+    # how much money does the buyer have from the prior transaction?
+    buyerHotel=findfirst(env.allHotels,hot -> hot.owneer==collat.buyer)
+    # now, how much does the agent have to finance?
+    neededLoan=max(0,salePrice-buyerHotel.budget)
+    if neededLoan > 0
+        newLoan=loan(env.interestRate,neededLoan,collat.buyer.budget,neededLoan,0,collat,false)
+        agt.loan=newLoan
+    
+        loanLog(env,newLoan)
+        push!(env.loanList,newLoan)
+    end 
     return env
 end
 
 
 ##### LOAN PAYING FUNCTIONS #####
 # the function that pays down a loan
-function payLoan(env::environment,obj::loan)
+function payLoan(obj::loan)
     
     if !obj.paidInFull 
         obj.paymentsMade=obj.paymentsMade+1
@@ -76,4 +118,9 @@ function payLoan(env::environment,obj::loan)
         obj.paidInFull=true
         obj.outstandingBalance=0
     end
+end
+
+# now we need a function that assesses interest
+function assessInterest(loan)
+    loan.outstandingBalance=loan.outstandingBalance*(1+loan.interestRate/12)
 end
