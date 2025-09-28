@@ -99,6 +99,9 @@ function graphGen!(env::environment)
                 #println("better!")
             end
         end
+        println("Debug")
+        println(hot)
+        println(bestHaus)
         add_edge!(env.transactionGraph,env.nodeDict[hot],env.nodeDict[bestHaus])
     end
     return env.transactionGraph
@@ -289,4 +292,12 @@ function modelRun!(env::environment)
         modelTick!(env)
     end
     return nothing
+end
+
+function isReady(arg::Int64)
+    if isready(coreDict[c])
+        return true
+    else
+        return false
+    end
 end

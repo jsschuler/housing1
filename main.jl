@@ -88,8 +88,9 @@ rowDict=Dict()
 for c in 2:cores
     coreDict[c]=nothing
 end
-
-while length(allSeeds) > 0
+cnt=0
+initLength=length(allSeeds)
+while cnt < initLength
     for c in keys(coreDict)
         #println(sum(jointFrame.completed))
         #println("Core")
@@ -114,6 +115,8 @@ while length(allSeeds) > 0
             #println("Ready")
             #println(coreDict[c])
             coreDict[c]=fetch(coreDict[c])
+            global cnt
+            cnt= cnt+1
             #println(coreDict[c])
             #println(sum(jointFrame.completed) < size(jointFrame,1))
             #println(sum(jointFrame.completed))
