@@ -5,10 +5,15 @@
 function sell!(env::environment,haus::forSaleHouse,buyer::hotel,salePrice::Float64)
     # first pay off the mortgage if there is one.
     if !isnothing(haus.owner.loan)
-        println(countmap(typeof.(env.loanList)))
-        println(haus.owner.loan)
-        deleteat!(env.loanList,findfirst(x->x==haus.owner.loan,env.loanList))
-    
+        try
+            deleteat!(env.loanList,findfirst(x->x==haus.owner.loan,env.loanList))
+        catch e
+            println("For Sale House")
+            println(e)
+            println(countmap(typeof.(env.loanList)))
+            println(haus.owner.loan)
+            exit()
+        end
     end
     # then we need to remove the house from the for sale list
     deleteat!(env.forSaleHouses,findfirst(x->x==haus,env.forSaleHouses))
@@ -34,11 +39,15 @@ end
 function sell!(env::environment,haus::exitHouse,buyer::hotel,salePrice::Float64)
     # first pay off the mortgage if there is one.
 
-    if !isnothing(haus.owner.loan)
-        println(countmap(typeof.(env.loanList)))
-        println(haus.owner.loan)
-        deleteat!(env.loanList,findfirst(x->x==haus.owner.loan,env.loanList))
-    end
+        try
+            deleteat!(env.loanList,findfirst(x->x==haus.owner.loan,env.loanList))
+        catch e
+            println("Exit House")
+            println(e)
+            println(countmap(typeof.(env.loanList)))
+            println(haus.owner.loan)
+            exit()
+        end
     
     #println(env.exitHouses)
     #println(haus)
