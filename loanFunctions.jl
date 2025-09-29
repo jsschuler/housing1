@@ -44,7 +44,8 @@ end
 
 # the function generating initial loans takes the owner as the borrower
 function loanGen(env::environment,collat::popHouse,amount::Float64)
-    newLoan=loan(env.interestRate,amount,collat.owner.budget,amount,0,collat,false)
+    newLoan=loan(env.loanTicker+1,env.interestRate,amount,collat.owner.budget,amount,0,collat,false)
+    env.loanTicker += 1
     loanLog(env,newLoan)
     push!(env.loanList,newLoan)
     return env
@@ -72,6 +73,7 @@ end
 
 # the function generating a loan with a given quantity works differently
 function loanGen(env::environment,collat::soldEmptyHouse,amount::Float64)
+    
     # how much did the house sell for?
     salePrice=collat.salePrice
     # how much money does the buyer have from the prior transaction?
@@ -79,9 +81,9 @@ function loanGen(env::environment,collat::soldEmptyHouse,amount::Float64)
     # now, how much does the agent have to finance?
     neededLoan=max(0,salePrice-buyerHotel.budget)
     if neededLoan > 0
-        newLoan=loan(env.interestRate,neededLoan,collat.buyer.budget,neededLoan,0,collat,false)
+        newLoan=loan(env.loanTicker +1 ,env.interestRate,neededLoan,collat.buyer.budget,neededLoan,0,collat,false)
         collat.buyer.loan=newLoan
-    
+        env.loanTicker += 1
         loanLog(env,newLoan)
         push!(env.loanList,newLoan)
     end 
@@ -90,6 +92,7 @@ end
 
 # the function generating a loan with a given quantity works differently
 function loanGen(env::environment,collat::soldHouse,amount::Float64)
+    
     # how much did the house sell for?
     salePrice=collat.salePrice
     # how much money does the buyer have from the prior transaction?
@@ -97,9 +100,9 @@ function loanGen(env::environment,collat::soldHouse,amount::Float64)
     # now, how much does the agent have to finance?
     neededLoan=max(0,salePrice-buyerHotel.budget)
     if neededLoan > 0
-        newLoan=loan(env.interestRate,neededLoan,collat.buyer.budget,neededLoan,0,collat,false)
+        newLoan=loan(env.loanTicker+1,env.interestRate,neededLoan,collat.buyer.budget,neededLoan,0,collat,false)
         collat.buyer.loan=newLoan
-    
+        env.loanTicker += 1
         loanLog(env,newLoan)
         push!(env.loanList,newLoan)
     end 

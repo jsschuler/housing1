@@ -4,6 +4,7 @@ abstract type dwelling <: object end
 abstract type house <: dwelling end
 # basic loan object 
 mutable struct loan
+    index::Int64
     interestRate::Float64
     initialBalance::Float64
     monthlyPayment::Float64
@@ -96,7 +97,8 @@ Base.hash(m::hotel) = hash(-m.index)
 Base.hash(m::house) = hash(m.index)
 Base.:(==)(m1::dwelling, m2::dwelling) = ((m1.index == m2.index))
 
-
+Base.hash(m::loan) = hash(m.index)
+Base.:(==)(m1::loan, m2::loan) = ((m1.index == m2.index))
 
 
 
@@ -143,5 +145,7 @@ mutable struct environment
     agtTicker::Union{Nothing,Int64} # 27
     # hotel ticker
     hotelTicker::Union{Nothing,Int64} # 28
+    # loan ticker
+    loanTicker::Union{Nothing,Int64} #29
 end
 
