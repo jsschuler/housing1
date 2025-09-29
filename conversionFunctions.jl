@@ -16,11 +16,13 @@ function sell!(env::environment,haus::forSaleHouse,buyer::hotel,salePrice::Float
             println(haus)
             println(haus.owner)
             println(haus.owner.loan)
+        finally
             println("Debug")
             println(env.loanList.==haus.owner.loan)
             println(typeof(env.loanList.==haus.owner.loan))
             println(maximum(env.loanList.==haus.owner.loan))
-            rethrow()
+            
+            #rethrow()
         end
     end
     # then we need to remove the house from the for sale list
@@ -62,7 +64,7 @@ function sell!(env::environment,haus::exitHouse,buyer::hotel,salePrice::Float64)
             println(env.loanList.==haus.owner.loan)
             println(typeof(env.loanList.==haus.owner.loan))
             println(maximum(env.loanList.==haus.owner.loan))
-            rethrow()
+            #rethrow()
         end
     
     #println(env.exitHouses)
