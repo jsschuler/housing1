@@ -33,11 +33,11 @@ end
 
 function sell!(env::environment,haus::exitHouse,buyer::hotel,salePrice::Float64)
     # first pay off the mortgage if there is one.
-    if typeof(haus)!=emptyHouse
-        if !isnothing(haus.owner.loan)
-            deleteat!(env.loanList,findfirst(x->x==haus.owner.loan,env.loanList))
-        end
+
+    if !isnothing(haus.owner.loan)
+        deleteat!(env.loanList,findfirst(x->x==haus.owner.loan,env.loanList))
     end
+    
     #println(env.exitHouses)
     #println(haus)
     #println(findfirst(x->x==haus,env.exitHouses))
@@ -138,11 +138,6 @@ end
 
 function sell!(env::environment,haus::emptyHouse,buyer::hotel,salePrice::Float64)
     # first pay off the mortgage if there is one.
-    if typeof(haus)!=emptyHouse
-        if !isnothing(haus.owner.loan)
-            deleteat!(env.loanList,findfirst(x->x==haus.owner.loan,env.loanList))
-        end
-    end 
     # then, remove the house from the empty house list
     deleteat!(env.emptyHouses,findfirst(x->x==haus,env.emptyHouses))
     # then, create a new for sale house object      
