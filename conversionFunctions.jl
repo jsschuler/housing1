@@ -35,6 +35,8 @@ function sell!(env::environment,haus::exitHouse,buyer::hotel,salePrice::Float64)
     # first pay off the mortgage if there is one.
 
     if !isnothing(haus.owner.loan)
+        println(countmap(typeof.(env.loanList)))
+        println(haus.owner.loan)
         deleteat!(env.loanList,findfirst(x->x==haus.owner.loan,env.loanList))
     end
     
