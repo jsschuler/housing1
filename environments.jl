@@ -85,7 +85,7 @@ function setHotelTicker!(env::environment)
 end
 
 function setLoanTicker!(env::environment)
-    env.loanTicker=-
+    env.loanTicker=0
 end
 
 function initAll()

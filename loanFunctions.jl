@@ -62,7 +62,8 @@ function loanGen(env::environment,collat::soldExitHouse,amount::Float64)
     # now, how much does the agent have to finance?
     neededLoan=max(0,salePrice-buyerHotel.budget)
     if neededLoan > 0
-        newLoan=loan(env.interestRate,neededLoan,collat.buyer.budget,neededLoan,0,collat,false)
+        newLoan=loan(env.loanTicker+1,env.interestRate,neededLoan,collat.buyer.budget,neededLoan,0,collat,false)
+        env.loanTicker+=1
         collat.buyer.loan=newLoan
     
         loanLog(env,newLoan)
