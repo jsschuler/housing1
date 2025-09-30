@@ -7,6 +7,8 @@ function sell!(env::environment,haus::forSaleHouse,buyer::hotel,salePrice::Float
     if !isnothing(haus.owner.loan)
         try
             if !isnothing(haus.owner.loan)
+                println("Trying")
+                println(findfirst(x->x==haus.owner.loan,env.loanList))
                 deleteat!(env.loanList,findfirst(x->x==haus.owner.loan,env.loanList))
             end
         catch e
@@ -16,12 +18,10 @@ function sell!(env::environment,haus::forSaleHouse,buyer::hotel,salePrice::Float
             println(haus)
             println(haus.owner)
             println(haus.owner.loan)
-        finally
             println("Debug")
-            println(env.loanList.==haus.owner.loan)
-            println(typeof(env.loanList.==haus.owner.loan))
-            println(maximum(env.loanList.==haus.owner.loan))
-            
+            println(haus.owner.loan in env.loanList)
+
+
             #rethrow()
         end
     end
@@ -51,6 +51,8 @@ function sell!(env::environment,haus::exitHouse,buyer::hotel,salePrice::Float64)
 
         try
             if !isnothing(haus.owner.loan)
+                println("Trying")
+                println(findfirst(x->x==haus.owner.loan,env.loanList))
                 deleteat!(env.loanList,findfirst(x->x==haus.owner.loan,env.loanList))
             end
         catch e
