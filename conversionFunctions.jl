@@ -5,25 +5,26 @@
 function sell!(env::environment,haus::forSaleHouse,buyer::hotel,salePrice::Float64)
     # first pay off the mortgage if there is one.
     if !isnothing(haus.owner.loan)
-        try
+        #try
             if !isnothing(haus.owner.loan)
                 println("Trying")
                 println(findfirst(x->x==haus.owner.loan,env.loanList))
+                loanPreLog(env,haus.owner.loan)
                 deleteat!(env.loanList,findfirst(x->x==haus.owner.loan,env.loanList))
             end
-        catch e
-            println("For Sale House")
-            println(e)
-            println(countmap(typeof.(env.loanList)))
-            println(haus)
-            println(haus.owner)
-            println(haus.owner.loan)
-            println("Debug")
-            println(haus.owner.loan in env.loanList)
-
-
-            #rethrow()
-        end
+        #catch e
+        #    println("For Sale House")
+        #    println(e)
+        #    println(countmap(typeof.(env.loanList)))
+        #    println(haus)
+        #    println(haus.owner)
+        #    println(haus.owner.loan)
+        #    println("Debug")
+        #    println(haus.owner.loan in env.loanList)
+        #
+        #
+        #    #rethrow()
+        #end
     end
     # then we need to remove the house from the for sale list
     deleteat!(env.forSaleHouses,findfirst(x->x==haus,env.forSaleHouses))
@@ -49,25 +50,26 @@ end
 function sell!(env::environment,haus::exitHouse,buyer::hotel,salePrice::Float64)
     # first pay off the mortgage if there is one.
 
-        try
+        #try
             if !isnothing(haus.owner.loan)
                 println("Trying")
                 println(findfirst(x->x==haus.owner.loan,env.loanList))
+                loanPreLog(env,haus.owner.loan)
                 deleteat!(env.loanList,findfirst(x->x==haus.owner.loan,env.loanList))
             end
-        catch e
-            println("Exit House")
-            println(e)
-            println(countmap(typeof.(env.loanList)))
-            println(haus)
-            println(haus.owner)
-            println(haus.owner.loan)
-            println("Debug")
-            println(env.loanList.==haus.owner.loan)
-            println(typeof(env.loanList.==haus.owner.loan))
-            println(maximum(env.loanList.==haus.owner.loan))
-            #rethrow()
-        end
+        #catch e
+        #    println("Exit House")
+        #    println(e)
+        #    println(countmap(typeof.(env.loanList)))
+        #    println(haus)
+        #    println(haus.owner)
+        #    println(haus.owner.loan)
+        #    println("Debug")
+        #    println(env.loanList.==haus.owner.loan)
+        #    println(typeof(env.loanList.==haus.owner.loan))
+        #    println(maximum(env.loanList.==haus.owner.loan))
+        #    #rethrow()
+        #end
     
     #println(env.exitHouses)
     #println(haus)

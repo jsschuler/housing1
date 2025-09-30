@@ -22,3 +22,19 @@ saleDat %>% filter(key==cKey) %>% group_by(tick) %>% summarise(q05=quantile(log(
 ggsave(paste0("../housingPlots/plot",cKey,".png"))
 }
 
+loanList <- list()
+for (fi in list.files()[grepl("loanGen",list.files())]){
+  read.csv(fi,header=FALSE) -> loanList[[length(loanList)+1]]
+}
+rbindlist(loanList) -> loanDat
+names(loanDat) <- c("key","tick","rate","initialBalance","monthlyPayment","collateral")
+table(loanDat$initialBalance < loanDat$monthlyPayment)
+
+
+loanList <- list()
+for (fi in list.files()[grepl("loanFull",list.files())]){
+  read.csv(fi,header=FALSE) -> loanList[[length(loanList)+1]]
+}
+rbindlist(loanList) -> loanPaidDat
+names(loanPaidDat) <- c("key","tick","rate","collateral")
+
