@@ -27,7 +27,7 @@ for (fi in list.files()[grepl("loanGen",list.files())]){
   read.csv(fi,header=FALSE) -> loanList[[length(loanList)+1]]
 }
 rbindlist(loanList) -> loanDat
-names(loanDat) <- c("key","tick","rate","initialBalance","monthlyPayment","collateral")
+names(loanDat) <- c("key","idx","origTick","rate","initialBalance","monthlyPayment","collateral")
 table(loanDat$initialBalance < loanDat$monthlyPayment)
 
 
@@ -36,5 +36,19 @@ for (fi in list.files()[grepl("loanFull",list.files())]){
   read.csv(fi,header=FALSE) -> loanList[[length(loanList)+1]]
 }
 rbindlist(loanList) -> loanPaidDat
-names(loanPaidDat) <- c("key","tick","rate","collateral")
+names(loanPaidDat) <- c("key","paidTick","rate","collateral")
 
+loanList <- list()
+for (fi in list.files()[grepl("loanPre",list.files())]){
+  read.csv(fi,header=FALSE) -> loanList[[length(loanList)+1]]
+}
+rbindlist(loanList) -> loanPrePaidDat
+names(loanPrePaidDat) <- c("key","idx","prePaidTick","rate","collateral")
+
+merge(loanDat,loanPrePaidDat,by=c("key","idx")) -> jointLoan
+
+jointLoan %>% group_by(key,idx) -> jointLoan
+
+jointLoan %>% group_by(key,idx) %>% summarise(cnt=n()) -> smry
+merge(jointLoan,smry,by=c("key","idx")) -> jointLoan
+jointLoan[jointLoan$cnt >1,]

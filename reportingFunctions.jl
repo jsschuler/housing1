@@ -40,19 +40,19 @@ function hotelDelLog(env::environment,hot::hotel)
 end
 # and loan generation
 function loanLog(env::environment,ln::loan)
-    dArray=DataFrame([[env.key],[env.tick],[ln.interestRate],[ln.initialBalance],[ln.monthlyPayment],[ln.collateral.index]],:auto)
+    dArray=DataFrame([[env.key],[ln.index],[env.tick],[ln.interestRate],[ln.initialBalance],[ln.monthlyPayment],[ln.collateral.index]],:auto)
     CSV.write("../housingData/loanGen"*env.key*".csv",dArray,header=false,append=true)
     
 end
 # and loan payment in full
 function loanFullLog(env::environment,ln::loan)
-    dArray=DataFrame([[env.key],[env.tick],[ln.interestRate],[ln.collateral.index]],:auto)
+    dArray=DataFrame([[env.key],[ln.index],[env.tick],[ln.interestRate],[ln.collateral.index]],:auto)
     CSV.write("../housingData/loanFull"*env.key*".csv",dArray,header=false,append=true)
 end
 
 function loanPreLog(env::environment,ln::loan)
-    dArray=DataFrame([[env.key],[env.tick],[ln.interestRate],[ln.collateral.index]],:auto)
-    CSV.write("../housingData/loanFull"*env.key*".csv",dArray,header=false,append=true)
+    dArray=DataFrame([[env.key],[ln.index],[env.tick],[ln.interestRate],[ln.collateral.index]],:auto)
+    CSV.write("../housingData/loanPre"*env.key*".csv",dArray,header=false,append=true)
 end
 # and agents moving into the market
 function agtMoveInLog(env::environment,dwell::dwelling,agt::agent)
@@ -95,3 +95,6 @@ function saleLog(env::environment,haus::dwelling,price::Float64)
     CSV.write("../housingData/sales"*env.key*".csv",dArray,header=false,append=true)
 end
 
+function indexReturn(dwell::dwelling)
+    return dwell.index
+end

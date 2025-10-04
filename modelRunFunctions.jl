@@ -127,6 +127,8 @@ function auction!(env::environment)
     #println("Exiting")
     #println(length(env.exitHouses))
     # now, loop over all houses for sale
+    println("Debug Loop")
+    println(countmap(indexReturn.(vcat(env.forSaleHouses,env.exitHouses,env.emptyHouses))))
     for haus in vcat(env.forSaleHouses,env.exitHouses,env.emptyHouses)
         # get all nodes with arrows pointing in to the house
         saleNode=env.nodeDict[haus]
