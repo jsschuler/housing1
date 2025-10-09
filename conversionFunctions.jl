@@ -5,26 +5,30 @@
 function sell!(env::environment,haus::forSaleHouse,buyer::hotel,salePrice::Float64)
     # first pay off the mortgage if there is one.
     if !isnothing(haus.owner.loan)
-        #try
+        try
             if !isnothing(haus.owner.loan)
-                println("Trying")
-                println(findfirst(x->x==haus.owner.loan,env.loanList))
+                #println("Trying")
+                #println(findfirst(x->x==haus.owner.loan,env.loanList))
                 loanPreLog(env,haus.owner.loan)
                 deleteat!(env.loanList,findfirst(x->x==haus.owner.loan,env.loanList))
             end
-        #catch e
+        catch e
         #    println("For Sale House")
-        #    println(e)
-        #    println(countmap(typeof.(env.loanList)))
-        #    println(haus)
-        #    println(haus.owner)
-        #    println(haus.owner.loan)
+            bt = catch_backtrace()
+            showerror(stdout, e, bt)
+            println(env.key)
+            println("Loan List")
+            println(countmap(indexReturn.(env.loanList)))
+            println("House")
+            println(haus.index)
+            println("Loan")
+            println(haus.owner.loan.index)
         #    println("Debug")
         #    println(haus.owner.loan in env.loanList)
         #
-        #
+            killAll()
         #    #rethrow()
-        #end
+        end
     end
     # then we need to remove the house from the for sale list
     deleteat!(env.forSaleHouses,findfirst(x->x==haus,env.forSaleHouses))
@@ -50,26 +54,32 @@ end
 function sell!(env::environment,haus::exitHouse,buyer::hotel,salePrice::Float64)
     # first pay off the mortgage if there is one.
 
-        #try
+    if !isnothing(haus.owner.loan)
+        try
             if !isnothing(haus.owner.loan)
-                println("Trying")
-                println(findfirst(x->x==haus.owner.loan,env.loanList))
+                #println("Trying")
+                #println(findfirst(x->x==haus.owner.loan,env.loanList))
                 loanPreLog(env,haus.owner.loan)
                 deleteat!(env.loanList,findfirst(x->x==haus.owner.loan,env.loanList))
             end
-        #catch e
-        #    println("Exit House")
-        #    println(e)
-        #    println(countmap(typeof.(env.loanList)))
-        #    println(haus)
-        #    println(haus.owner)
-        #    println(haus.owner.loan)
+        catch e
+        #    println("For Sale House")
+            bt = catch_backtrace()
+            showerror(stdout, e, bt)
+            println(env.key)
+            println("Loan List")
+            println(countmap(indexReturn.(env.loanList)))
+            println("House")
+            println(haus.index)
+            println("Loan")
+            println(haus.owner.loan.index)
         #    println("Debug")
-        #    println(env.loanList.==haus.owner.loan)
-        #    println(typeof(env.loanList.==haus.owner.loan))
-        #    println(maximum(env.loanList.==haus.owner.loan))
+        #    println(haus.owner.loan in env.loanList)
+        #
+            killAll()
         #    #rethrow()
-        #end
+        end
+    end
     
     #println(env.exitHouses)
     #println(haus)

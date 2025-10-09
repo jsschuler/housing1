@@ -23,7 +23,7 @@ using Distributed
 @everywhere using SparseArrays
 @everywhere using CSV
 @everywhere using Dates
-
+using JLD2
 #
 #@everywhere seed=23
 # initialize environment with parameters
@@ -48,15 +48,15 @@ end
 # distribution of house qualities 
 @everywhere qualityDistribution=Truncated(Levy(0,10),0,63658)
 # initial agent count
-@everywhere agtCnt::Int64=500
+@everywhere agtCnt::Int64=20
 # population inflow (agents who can buy without selling)
-@everywhere inFlow::Int64=50
+@everywhere inFlow::Int64=5
 # population outflow (agents who can sell without buying)
-@everywhere outFlow::Int64=30
+@everywhere outFlow::Int64=5
 # new housing construction 
-@everywhere construction::Int64=30
+@everywhere construction::Int64=5
 # how many agents simply want to move within the market?
-@everywhere inPlace::Int64=30
+@everywhere inPlace::Int64=5
 # what 
 # how many ticks to run the model ?
 @everywhere allTicks=100
@@ -80,46 +80,48 @@ cores=16
 @everywhere seed=42
 allSeeds=sample(1:1000000,200,replace=false)
 
+modelRun!(initMod())
+
 #env=initMod()
 #modelRun!(env)
-coreDict=Dict()
-resultDict=Dict()
-rowDict=Dict()
-for c in 2:cores
-    coreDict[c]=nothing
-end
-cnt=0
-initLength=length(allSeeds)
-while cnt < initLength
-    for c in keys(coreDict)
-        #println(sum(jointFrame.completed))
-        #println("Core")
-        #println(c)
-        #println(coreDict[c])
-        #println(isReady(coreDict[c]))
-        #println(isnothing(coreDict[c]))
-        #readline()
-        if isnothing(coreDict[c])
-            # if the core dictionary is nothing, we send it the parameters
-            #println("Sending Parameters")
-            #println("core")
-            #println(c)
-            #println(coreDict[c])
-            # read parameters from the first row
-            # step 1: get the index of the first non-started row
-            
-            coreDict[c]=@spawnat c modelRun!(initMod())
-            #println(coreDißct[c])
-            #println(resultDict==:complete)
-        elseif isready(coreDict[c])
-            #println("Ready")
-            #println(coreDict[c])
-            coreDict[c]=fetch(coreDict[c])
-            global cnt
-            cnt= cnt+1
-            #println(coreDict[c])
-            #println(sum(jointFrame.completed) < size(jointFrame,1))
-            #println(sum(jointFrame.completed))
-        end
-    end    
-end
+#coreDict=Dict()
+#resultDict=Dict()
+#rowDict=Dict()
+#for c in 2:cores
+#    coreDict[c]=nothing
+#end
+#cnt=0
+#initLength=length(allSeeds)
+#while cnt < initLength
+#    for c in keys(coreDict)
+#        #println(sum(jointFrame.completed))
+#        #println("Core")
+#        #println(c)
+#        #println(coreDict[c])
+#        #println(isReady(coreDict[c]))
+#        #println(isnothing(coreDict[c]))
+#        #readline()
+#        if isnothing(coreDict[c])
+#            # if the core dictionary is nothing, we send it the parameters
+#            #println("Sending Parameters")
+#            #println("core")
+#            #println(c)
+#            #println(coreDict[c])
+#            # read parameters from the first row
+#            # step 1: get the index of the first non-started row
+#            
+#            coreDict[c]=@spawnat c modelRun!(initMod())
+#            #println(coreDißct[c])
+#            #println(resultDict==:complete)
+#        elseif isready(coreDict[c])
+#            #println("Ready")
+#            #println(coreDict[c])
+#            coreDict[c]=fetch(coreDict[c])
+#            global cnt
+#            cnt= cnt+1
+#            #println(coreDict[c])
+#            #println(sum(jointFrame.completed) < size(jointFrame,1))
+#            #println(sum(jointFrame.completed))
+#        end
+#    end    
+#end

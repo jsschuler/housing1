@@ -127,8 +127,8 @@ function auction!(env::environment)
     #println("Exiting")
     #println(length(env.exitHouses))
     # now, loop over all houses for sale
-    println("Debug Loop")
-    println(countmap(indexReturn.(vcat(env.forSaleHouses,env.exitHouses,env.emptyHouses))))
+    #println("Debug Loop")
+    #println(countmap(indexReturn.(vcat(env.forSaleHouses,env.exitHouses,env.emptyHouses))))
     for haus in vcat(env.forSaleHouses,env.exitHouses,env.emptyHouses)
         # get all nodes with arrows pointing in to the house
         saleNode=env.nodeDict[haus]
@@ -220,12 +220,14 @@ function modelTick!(env::environment)
         end
     end
     env.loanList=tmpList
-
+    println("After Loan Payment tick "*string(env.tick)*" "*env.key)
+    checkPoint(env)
 
 
     # process all sold houses
     allSold!(env)
-    
+    println("After All Sold tick "*string(env.tick)*" "*env.key)
+    checkPoint(env)
     #println("After All Sold")
     #println(env.tick)
     #println("Hotels")
@@ -238,7 +240,8 @@ function modelTick!(env::environment)
     #println(length(env.exitHouses))
     # build new homes
     allConstruct!(env)
-
+    println("After All Constructed tick "*string(env.tick)*" "*env.key)
+    checkPoint(env)
     #println("After Constructed")
     #println(env.tick)
     #println("Hotels")
@@ -251,7 +254,8 @@ function modelTick!(env::environment)
     #println(length(env.exitHouses))
     # new agents enter
     allEnter!(env)
-    
+    println("After Entering tick "*string(env.tick)*" "*env.key)
+    checkPoint(env)
     #println("After Entering")
     #println(env.tick)
     #println("Hotels")
@@ -265,7 +269,8 @@ function modelTick!(env::environment)
 
     # put all houses up for sale
     upForSale!(env)
-
+    println("After Up For Sale tick "*string(env.tick)*" "*env.key)
+    checkPoint(env)
     #println("After Up For Sale")
     #println(env.tick)
     #println("Hotels")
@@ -282,6 +287,8 @@ function modelTick!(env::environment)
     while length(vcat(env.forSaleHouses,env.exitHouses,env.emptyHouses)) > 0
         aTick=aTick+1
         auction!(env)
+        println("After Auction tick "*string(env.tick)*"."*string(aTick)*" "*env.key)
+        checkPoint(env)
         if aTick==10000
             break
         end
@@ -303,4 +310,21 @@ function isReady(arg::Int64)
     else
         return false
     end
+end
+
+# we need a function that kills all processes
+function killAll()
+    for c in workers()
+        rmprocs(c)
+    end
+    exit(2)
+end
+
+# and a check point function
+function checkPoint(env::environment)
+    serialize("checkPoint"*env.key*".jls",env)
+    # now pause the simulation and wait for user input
+    println("Check Point reached. Press Enter to continue.")
+    readline()
+
 end

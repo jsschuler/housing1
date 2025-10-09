@@ -98,3 +98,7 @@ end
 function indexReturn(dwell::dwelling)
     return dwell.index
 end
+
+function indexReturn(ln::loan)
+    return ln.index
+end
