@@ -22,6 +22,9 @@ saleDat %>% filter(key==cKey) %>% group_by(tick) %>% summarise(q05=quantile(log(
 ggsave(paste0("../housingPlots/plot",cKey,".png"))
 }
 
+
+# find all sales associated with the house with problematic loans
+
 loanList <- list()
 for (fi in list.files()[grepl("loanGen",list.files())]){
   read.csv(fi,header=FALSE) -> loanList[[length(loanList)+1]]
@@ -52,3 +55,9 @@ jointLoan %>% group_by(key,idx) -> jointLoan
 jointLoan %>% group_by(key,idx) %>% summarise(cnt=n()) -> smry
 merge(jointLoan,smry,by=c("key","idx")) -> jointLoan
 jointLoan[jointLoan$cnt >1,]
+
+
+probLoans <- jointLoan[jointLoan$cnt > 1,]
+names(saleDat)[[3]] <- "idx"
+merge(probLoans,saleDat,by=c("key","idx")) -> saleLoan
+
