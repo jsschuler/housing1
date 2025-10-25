@@ -215,7 +215,14 @@ function modelTick!(env::environment)
         #checkPoint(env)
         if !isnothing(agt.loan)
             if agt.loan.paidInFull
-                loanFullLog(env,loan)
+                try
+                    loanFullLog(env,loan)
+                catch e 
+                    println("Logging loan full failed at tick "*string(env.tick)*" "*env.key)
+                    checkPoint(env)
+                finally
+                     loanFullLog(env,loan)   
+                end
                 agt.loan=nothing
             end
         end
