@@ -212,6 +212,7 @@ function modelTick!(env::environment)
         end
     end
     for agt in env.agtList
+        #checkPoint(env)
         if !isnothing(agt.loan)
             if agt.loan.paidInFull
                 loanFullLog(env,loan)
@@ -220,14 +221,14 @@ function modelTick!(env::environment)
         end
     end
     env.loanList=tmpList
-    println("After Loan Payment tick "*string(env.tick)*" "*env.key)
-    checkPoint(env)
+    #println("After Loan Payment tick "*string(env.tick)*" "*env.key)
+    #checkPoint(env)
 
 
     # process all sold houses
     allSold!(env)
-    println("After All Sold tick "*string(env.tick)*" "*env.key)
-    checkPoint(env)
+    #println("After All Sold tick "*string(env.tick)*" "*env.key)
+    #checkPoint(env)
     #println("After All Sold")
     #println(env.tick)
     #println("Hotels")
@@ -240,8 +241,8 @@ function modelTick!(env::environment)
     #println(length(env.exitHouses))
     # build new homes
     allConstruct!(env)
-    println("After All Constructed tick "*string(env.tick)*" "*env.key)
-    checkPoint(env)
+    #println("After All Constructed tick "*string(env.tick)*" "*env.key)
+    #checkPoint(env)
     #println("After Constructed")
     #println(env.tick)
     #println("Hotels")
@@ -254,8 +255,8 @@ function modelTick!(env::environment)
     #println(length(env.exitHouses))
     # new agents enter
     allEnter!(env)
-    println("After Entering tick "*string(env.tick)*" "*env.key)
-    checkPoint(env)
+    #println("After Entering tick "*string(env.tick)*" "*env.key)
+    #checkPoint(env)
     #println("After Entering")
     #println(env.tick)
     #println("Hotels")
@@ -269,8 +270,8 @@ function modelTick!(env::environment)
 
     # put all houses up for sale
     upForSale!(env)
-    println("After Up For Sale tick "*string(env.tick)*" "*env.key)
-    checkPoint(env)
+    #println("After Up For Sale tick "*string(env.tick)*" "*env.key)
+    #checkPoint(env)
     #println("After Up For Sale")
     #println(env.tick)
     #println("Hotels")
@@ -287,8 +288,8 @@ function modelTick!(env::environment)
     while length(vcat(env.forSaleHouses,env.exitHouses,env.emptyHouses)) > 0
         aTick=aTick+1
         auction!(env)
-        println("After Auction tick "*string(env.tick)*"."*string(aTick)*" "*env.key)
-        checkPoint(env)
+        #println("After Auction tick "*string(env.tick)*"."*string(aTick)*" "*env.key)
+        #checkPoint(env)
         if aTick==10000
             break
         end
@@ -322,9 +323,9 @@ end
 
 # and a check point function
 function checkPoint(env::environment)
-    serialize("checkPoint"*env.key*".jls",env)
+    #serialize("checkPoint"*env.key*".jls",env)
     # now pause the simulation and wait for user input
     println("Check Point reached. Press Enter to continue.")
     readline()
-
+    @save "checkPoint"*env.key*".jld2" env
 end
