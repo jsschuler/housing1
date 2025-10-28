@@ -59,7 +59,7 @@ end
 @everywhere inPlace::Int64=5
 # what 
 # how many ticks to run the model ?
-@everywhere allTicks=1000
+@everywhere allTicks=100
 
 cores=16
 
@@ -77,13 +77,13 @@ cores=16
 
 
 # process seed
-@everywhere seed=42
+@everywhere seed=78
 allSeeds=sample(1:1000000,200,replace=false)
 
 #modelRun!(initMod())
 
-env=initMod()
-modelRun!(env)
+#env=initMod()
+#modelRun!(env)
 coreDict=Dict()
 resultDict=Dict()
 rowDict=Dict()
@@ -93,6 +93,7 @@ end
 cnt=0
 initLength=length(allSeeds)
 while cnt < initLength
+    println(cnt)
     for c in keys(coreDict)
         #println(sum(jointFrame.completed))
         #println("Core")
