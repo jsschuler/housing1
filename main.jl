@@ -42,7 +42,7 @@ function checkPoint(message)
 end
 
 # the interest rate (mutable)
-@everywhere interestRate::Float64=.04
+@everywhere interestRate::Float64=.1
 # distribution of agent budgets
 @everywhere paymentDistribution=Truncated(Levy(500,100),0,5*10^9)
 # distribution of house qualities 
