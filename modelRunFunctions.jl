@@ -188,17 +188,7 @@ end
 function modelTick!(env::environment)
     #increment model tick
     env.tick=env.tick+1
-    #println("Initial")
-    #println(env.tick)
-    #println("Hotels")
-    #println(length(env.allHotels))
-    #println("For Sale")
-    #println(length(env.forSaleHouses))
-    #println("Empty")
-    #println(length(env.emptyHouses))
-    #println("Exiting")
-    #println(length(env.exitHouses))
-    
+
     # every loan is paid
     for loan in env.loanList
         payLoan(loan)
@@ -214,11 +204,11 @@ function modelTick!(env::environment)
     for agt in env.agtList
         #checkPoint(env)
         if !isnothing(agt.loan)
-            if agt.loan.paidInFull
+            if agt.loan.paidInFull 
                 try
                     loanFullLog(env,loan)
                 catch e 
-                    println("Logging loan full failed at tick "*string(env.tick)*" "*env.key)
+                    #println("Logging loan full failed at tick "*string(env.tick)*" "*env.key)
                     checkPoint(env)
                 finally
                      loanFullLog(env,loan)   
