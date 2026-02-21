@@ -116,7 +116,7 @@ function populate!(env::environment,haus::soldHouse)
     # then, replace it with a populated house
     env.allHouses[idx]=popHaus
     # finally, add the owner to the list of agents in hotels
-    push!(env.allHotels,hotelGen!(env,haus.owner,haus.salePrice))
+    hotelGen!(env,haus.owner,haus.salePrice)
     # remove the sold house from the sold house list
     deleteat!(env.soldHouses,findfirst(x->x==haus,env.soldHouses))
     # now update the loan information

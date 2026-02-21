@@ -44,7 +44,8 @@ end
 # the interest rate (mutable)
 @everywhere interestRate::Float64=.1
 # distribution of agent budgets
-@everywhere paymentDistribution=Truncated(Levy(500,100),0,5*10^9)
+# use a lighter-tailed budget/payment distribution to reduce extreme bid outliers
+@everywhere paymentDistribution=Truncated(LogNormal(log(2500),0.45),200,15000)
 # distribution of house qualities 
 @everywhere qualityDistribution=Truncated(Levy(0,10),0,63658)
 # initial agent count

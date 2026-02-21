@@ -91,18 +91,21 @@ function graphGen!(env::environment)
     # there is a link between any hotel and the house the agent in the hotel likes most
     for hot in env.allHotels
         bestHaus::Union{Nothing,dwelling}=nothing
-        bestQual=0.0
+        bestQual=-Inf
         for haus in vcat(env.forSaleHouses,env.emptyHouses,env.exitHouses)
             currQual=qualGen(env,haus)
             if currQual > bestQual
                 bestHaus=haus
+                bestQual=currQual
                 #println("better!")
             end
         end
         #println("Debug")
         #println(hot)
         #println(bestHaus)
-        add_edge!(env.transactionGraph,env.nodeDict[hot],env.nodeDict[bestHaus])
+        if !isnothing(bestHaus)
+            add_edge!(env.transactionGraph,env.nodeDict[hot],env.nodeDict[bestHaus])
+        end
     end
     return env.transactionGraph
 end
@@ -143,15 +146,7 @@ function auction!(env::environment)
             # calculate max bid
             bigMort=maxMortgage(env,env.intDict[i]) 
             currBudget=env.intDict[i].budget 
-            if typeof(haus)!=emptyHouse
-                if !isnothing(haus.owner.loan)
-                    totBudget=bigMort+currBudget-haus.owner.loan.outstandingBalance
-                else
-                    totBudget=bigMort+currBudget
-                end
-            else    
-                totBudget=bigMort+currBudget
-            end
+            totBudget=bigMort+currBudget
             #println("Total Budget is: "*string(totBudget))
             if totBudget > ultimateBid
                 #println("Outbidded!")
@@ -161,13 +156,42 @@ function auction!(env::environment)
                 ultimateBidder=env.intDict[i]
             end
         end
-        # now, if the second highest bid is 0, we use 90% of the highest bid instead
-        if penultimateBid==0.0
-            penultimateBid=.9*ultimateBid
+        minAcceptablePrice::Float64=0.0
+        if (typeof(haus)==forSaleHouse) || (typeof(haus)==exitHouse)
+            if !isnothing(haus.owner.loan)
+                minAcceptablePrice=haus.owner.loan.outstandingBalance
+            end
         end
-        # now that we have the highest bidder, we can sell the house
-        if !isnothing(ultimateBidder)
-            sell!(env,haus,ultimateBidder,penultimateBid)    
+        # Single-bidder fallback pricing:
+        # When only one bidder exists, there is no market-based second price.
+        # The old rule (0.9 * winner max financing capacity) made one-bidder prices
+        # too sensitive to leverage outliers and created large spikes.
+        #
+        # New logic anchors fallback pricing to seller fundamentals:
+        # 1) If the listing has debt, keep price near the debt floor:
+        #      target = 1.05 * debt_floor
+        #    then clamp it to [debt_floor, winner_budget_cap].
+        #    This preserves no-negative-equity sales while limiting thin-market spikes.
+        # 2) If there is no debt floor (e.g., empty house), use a conservative share
+        #    of winner capacity (60%) instead of 90%.
+        #
+        # This is intentionally simple and transparent; the constants (1.05, 0.60)
+        # can be promoted to parameters later if we want calibration sweeps.
+        if penultimateBid==0.0
+            if minAcceptablePrice > 0.0
+                debtAnchoredTarget=1.05*minAcceptablePrice
+                penultimateBid=min(ultimateBid,debtAnchoredTarget)
+                penultimateBid=max(penultimateBid,minAcceptablePrice)
+            else
+                penultimateBid=0.60*ultimateBid
+            end
+        end
+        # Seller debt-floor rule:
+        # A current owner should not be forced to sell below outstanding loan balance.
+        # If the clearing price is below this floor, the listing remains on market.
+        # now that we have the highest bidder, sell only if the debt-floor constraint is met
+        if !isnothing(ultimateBidder) && (penultimateBid >= minAcceptablePrice)
+            sell!(env,haus,ultimateBidder,penultimateBid)
         end
     end
 end
